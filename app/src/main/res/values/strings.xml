@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">WeatherCompose</string>
+    <!-- weather descriptions -->
+    <string name="clear_sky_weather_description">Clear sky</string>
+    <string name="mainly_clear_weather_description">Mainly clear</string>
+    <string name="partly_cloudy_weather_description">Partly cloudy</string>
+    <string name="overcast_weather_description">Overcast</string>
+    <string name="fog_weather_description">Fog</string>
+    <string name="depositing_rime_fog_weather_description">Depositing rime fog</string>
+    <string name="light_drizzle_weather_description">Light drizzle</string>
+    <string name="moderate_drizzle_weather_description">Moderate drizzle</string>
+    <string name="dense_drizzle_weather_description">Dense drizzle</string>
+    <string name="light_freezing_drizzle_weather_description">Light freezing drizzle</string>
+    <string name="dense_freezing_drizzle_weather_description">Dense freezing drizzle</string>
+    <string name="slight_rain_weather_description">Slight rain</string>
+    <string name="moderate_rain_weather_description">Moderate rain</string>
+    <string name="heavy_rain_weather_description">Heavy rain</string>
+    <string name="light_freezing_rain_weather_description">Light freezing rain</string>
+    <string name="heavy_freezing_rain_weather_description">Heavy freezing rain</string>
+    <string name="slight_snow_fall_weather_description">Slight snow fall</string>
+    <string name="moderate_snow_fall_weather_description">Moderate snow fall</string>
+    <string name="heavy_snow_fall_weather_description">Heavy snow fall</string>
+    <string name="snow_grains_weather_description">Snow grains</string>
+    <string name="slight_rain_showers_weather_description">Slight rain showers</string>
+    <string name="moderate_rain_showers_weather_description">Moderate rain showers</string>
+    <string name="violent_rain_showers_weather_description">Violent rain showers</string>
+    <string name="slight_snow_showers_weather_description">Slight snow showers</string>
+    <string name="heavy_snow_showers_weather_description">Heavy snow showers</string>
+    <string name="thunderstorm_weather_description">Thunderstorm</string>
+    <string name="thunderstorm_with_slight_hail_weather_description">Thunderstorm with slight hail</string>
+    <string name="thunderstorm_with_heavy_hail_weather_description">Thunderstorm with heavy hail</string>
+    <string name="not_existing_weather_code">Not existing weather code</string>
+
+    <string name="max_temperature_label">max: %d°</string>
+    <string name="min_temperature_label">min: %d°</string>
+</resources>
