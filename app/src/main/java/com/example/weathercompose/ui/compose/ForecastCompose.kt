@@ -29,8 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.weathercompose.R
-import com.example.weathercompose.ui.UIState
-import com.example.weathercompose.ui.model.CityUIModel
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.ui.viewmodel.MainViewModel
@@ -38,9 +36,10 @@ import com.example.weathercompose.ui.viewmodel.MainViewModel
 @Composable
 fun ForecastContent(
     viewModel: MainViewModel,
+    //sharedViewModel: SharedViewModel,
     navController: NavController,
 ) {
-    val currentCity by viewModel.currentCityState.collectAsState(initial = UIState.Loading())
+    val currentCityUIState by viewModel.currentCityUIState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -48,41 +47,82 @@ fun ForecastContent(
             .padding(all = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (currentCity) {
-            is UIState.Content -> {
-                val currentCityData = (currentCity as UIState.Content<CityUIModel>).data
+        if (!currentCityUIState.isLoading) {
 
-                Text(
-                    text = currentCityData.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 30.dp)
-                        .padding(start = 15.dp),
-                    color = Color.White,
-                    fontSize = 30.sp,
-                )
+            when {
+                currentCityUIState.forecastLoadingErrorMessage.isNotEmpty() -> {
+                    Text(text = currentCityUIState.forecastLoadingErrorMessage)
+                }
 
-                HourlyForecastList(
-                    currentCityData.forecasts[0].hourlyForecasts
-                )
+                currentCityUIState.errorMessage.isNotEmpty() -> {
+                    Text(text = currentCityUIState.errorMessage)
+                }
 
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(30.dp)
-                )
+                else -> {
+                    Text(
+                        text = currentCityUIState.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 30.dp)
+                            .padding(start = 15.dp),
+                        color = Color.White,
+                        fontSize = 30.sp,
+                    )
 
-                DailyForecastList(
-                    currentCityData.forecasts
-                )
+                    HourlyForecastList(
+                        currentCityUIState.forecasts[0].hourlyForecasts
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(30.dp)
+                    )
+
+                    DailyForecastList(
+                        currentCityUIState.forecasts
+                    )
+                }
             }
-
-            is UIState.Empty -> {}
-            is UIState.Error -> {}
-            is UIState.Loading -> {
-                LoadingProgressBar()
-            }
+        } else {
+            LoadingProcessIndicator()
         }
+
+//        when (currentCity) {
+//            is UIState.Content -> {
+//                val currentCityData = (currentCity as UIState.Content<CityUIState>).data
+//
+//                Text(
+//                    text = currentCityData.name,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 30.dp)
+//                        .padding(start = 15.dp),
+//                    color = Color.White,
+//                    fontSize = 30.sp,
+//                )
+//
+//                HourlyForecastList(
+//                    currentCityData.forecasts[0].hourlyForecasts
+//                )
+//
+//                Spacer(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(30.dp)
+//                )
+//
+//                DailyForecastList(
+//                    currentCityData.forecasts
+//                )
+//            }
+//
+//            is UIState.Empty -> {}
+//            is UIState.Error -> {}
+//            is UIState.Loading -> {
+//                LoadingProgressBar()
+//            }
+//        }
     }
 }
 
@@ -120,8 +160,8 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
         )
 
         Image(
-            painter = painterResource(R.drawable.blue_cloud_and_lightning_16466),
-            contentDescription = "test image",
+            painter = painterResource(id = hourlyForecastItem.weatherIconRes),
+            contentDescription = "The ${hourlyForecastItem.weatherDescription} weather icon",
             modifier = Modifier.size(45.dp),
         )
 
@@ -130,7 +170,7 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
         Text(
             modifier = Modifier.padding(top = 2.5.dp, bottom = 20.dp),
             fontSize = 16.sp,
-            text = hourlyForecastItem.temperature.toString(),
+            text = stringResource(R.string.temperature_label, hourlyForecastItem.temperature),
             textAlign = TextAlign.Center,
             color = Color.White,
         )
@@ -179,8 +219,8 @@ fun DailyForecastListItem(dailyForecastItem: DailyForecastItem) {
         )
 
         Image(
-            painter = painterResource(R.drawable.blue_cloud_and_lightning_16466),
-            contentDescription = "test image",
+            painter = painterResource(id = dailyForecastItem.weatherIconRes),
+            contentDescription = "The ${dailyForecastItem.weatherDescription} weather icon",
             modifier = Modifier.size(45.dp),
         )
 

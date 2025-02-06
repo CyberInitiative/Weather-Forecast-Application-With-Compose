@@ -22,6 +22,7 @@ val dataModule = module {
         ForecastRepositoryImpl(
             dispatcher = dispatcher,
             forecastService = getForecastService(),
+            cityDao = get(),
         )
     }
 

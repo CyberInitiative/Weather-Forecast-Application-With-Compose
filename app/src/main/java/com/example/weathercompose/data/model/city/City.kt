@@ -31,7 +31,7 @@ data class City(
     @SerializedName("feature_code")
     val featureCode: String?,
     @SerializedName("id")
-    val id: Int?,
+    val id: Long?,
     @SerializedName("latitude")
     val latitude: Double?,
     @SerializedName("longitude")

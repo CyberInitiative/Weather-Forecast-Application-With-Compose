@@ -1,0 +1,29 @@
+package com.example.weathercompose.data.database.entity.forecast
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+import com.example.weathercompose.data.database.entity.city.CityEntity
+import com.example.weathercompose.domain.model.forecast.WeatherDescription
+
+@Entity(
+    tableName = "daily_forecasts",
+    foreignKeys = [ForeignKey(
+        entity = CityEntity::class,
+        parentColumns = arrayOf("cityId"),
+        childColumns = arrayOf("cityId"),
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE,
+    )]
+)
+data class DailyForecastEntity(
+    val cityId: Long,
+    val date: String,
+    val weatherDescription: WeatherDescription,
+    val maxTemperature: Double,
+    val minTemperature: Double,
+    val sunrise: String,
+    val sunset: String,
+    @PrimaryKey(autoGenerate = true)
+    val dailyForecastId: Long = 0,
+)

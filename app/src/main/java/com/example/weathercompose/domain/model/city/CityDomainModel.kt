@@ -5,15 +5,15 @@ import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 data class CityDomainModel(
     val latitude: Double,
     val longitude: Double,
-    val id: Int,
+    val id: Long,
     val name: String,
     val firstAdministrativeLevel: String,
     val secondAdministrativeLevel: String,
     val thirdAdministrativeLevel: String,
     val fourthAdministrativeLevel: String,
     val country: String,
-    val timezone: String,
-    val forecast: List<DailyForecastDomainModel>?,
+    val timeZone: String,
+    val forecast: List<DailyForecastDomainModel>,
 ) {
 
     fun getFullLocation(): String {

@@ -50,36 +50,71 @@ fun NavigationHost(navHostController: NavHostController) {
         startDestination = NavigationRoutes.Forecast,
         modifier = Modifier.fillMaxSize()
     ) {
-        composable<NavigationRoutes.Forecast> { navBackStackEntry ->
-            navBackStackEntry.viewModelStore
-            val savedCityId = navBackStackEntry.savedStateHandle.get<Int>(SAVED_CITY_ID_KEY)
-            val viewModel = koinViewModel<MainViewModel>()
+        composable<NavigationRoutes.Forecast> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navHostController.getBackStackEntry(NavigationRoutes.Forecast)
+            }
+
+            //val sharedViewModel = koinViewModel<SharedViewModel>(viewModelStoreOwner = parentEntry)
+//            val viewModel = koinViewModel<MainViewModel>()
+            val viewModel = koinViewModel<MainViewModel>(viewModelStoreOwner = parentEntry)
+
+            val savedCityId = backStackEntry.savedStateHandle.get<String>(SAVED_CITY_ID_KEY)
             LaunchedEffect(savedCityId) {
                 if (savedCityId != null) {
-                    viewModel.loadForecastForCity(cityId = savedCityId)
+//                    viewModel.loadForecastForCity(cityId = savedCityId.toInt())
                 }
             }
             ForecastContent(
                 viewModel = viewModel,
+                //sharedViewModel = sharedViewModel,
                 navController = navHostController
             )
         }
 
-        composable<NavigationRoutes.CitiesManager> {
+        composable<NavigationRoutes.CitiesManager> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navHostController.getBackStackEntry(NavigationRoutes.Forecast)
+            }
+
+//            val sharedViewModel = koinViewModel<SharedViewModel>(viewModelStoreOwner = parentEntry)
+            val mainViewModel = koinViewModel<MainViewModel>(viewModelStoreOwner = parentEntry)
+
             CityListContent(
                 viewModel = koinViewModel<CityManagerViewModel>(),
+                mainViewModel = mainViewModel,
                 navController = navHostController
             )
         }
 
-        composable<NavigationRoutes.CitySearch> {
+        composable<NavigationRoutes.CitySearch> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navHostController.getBackStackEntry(NavigationRoutes.Forecast)
+            }
+
+            val mainViewModel = koinViewModel<MainViewModel>(viewModelStoreOwner = parentEntry)
+
             CitiesManagerContent(
                 viewModel = koinViewModel<CitySearchViewModel>(),
+                mainViewModel = mainViewModel,
                 navController = navHostController
             )
         }
     }
 }
+
+//@Composable
+//inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(
+//    navController: NavHostController
+//): T {
+//    val navGraphRoute = destination.parent?.route ?: return koinViewModel()
+//
+//    val parentEntry: NavBackStackEntry = remember(this) {
+//        navController.getBackStackEntry(navGraphRoute)
+//    }
+//
+//    return koinViewModel(viewModelStoreOwner = parentEntry)
+//}
 
 @Composable
 fun MainScreen() {

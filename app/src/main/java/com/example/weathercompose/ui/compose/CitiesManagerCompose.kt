@@ -38,6 +38,7 @@ import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.ui.UIState
 import com.example.weathercompose.ui.navigation.NavigationRoutes
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
+import com.example.weathercompose.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -46,6 +47,7 @@ private const val TAG = "CitiesManagerCompose"
 @Composable
 fun CitiesManagerContent(
     viewModel: CitySearchViewModel,
+    mainViewModel: MainViewModel,
     navController: NavController,
 ) {
     var query by remember { mutableStateOf("") }
@@ -53,11 +55,13 @@ fun CitiesManagerContent(
     val citySearchResult by viewModel.citySearchResult.collectAsState(initial = UIState.Loading())
     val onCityItemClick = { city: CityDomainModel ->
         coroutineScope.launch {
-            viewModel.saveCity(city)
-
-            val savedStateHandle =
-                navController.getBackStackEntry<NavigationRoutes.Forecast>().savedStateHandle
-            savedStateHandle[SAVED_CITY_ID_KEY] = city.id
+//            viewModel.saveCity(city).join()
+//            mainViewModel.setCurrentCity(city)
+            mainViewModel.saveCity(city)
+//            val savedStateHandle =
+//                navController.getBackStackEntry<NavigationRoutes.Forecast>().savedStateHandle
+//            savedStateHandle[SAVED_CITY_ID_KEY] = city.id
+//            navController.popBackStack<NavigationRoutes.Forecast>(inclusive = false)
             navController.popBackStack<NavigationRoutes.Forecast>(inclusive = false)
         }
     }
@@ -88,7 +92,7 @@ fun CitiesManagerContent(
             is UIState.Error -> {}
 
             is UIState.Loading -> {
-                LoadingProgressBar()
+                LoadingProcessIndicator()
             }
         }
     }
@@ -171,7 +175,7 @@ fun CityListItem(
 }
 
 @Composable
-fun LoadingProgressBar() {
+fun LoadingProcessIndicator() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

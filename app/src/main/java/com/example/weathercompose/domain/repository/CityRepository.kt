@@ -12,9 +12,9 @@ interface CityRepository {
 
     suspend fun loadAll(): List<CityDomainModel>
 
-    suspend fun load(cityId: Int): CityDomainModel
+    suspend fun load(cityId: Long): CityDomainModel
 
-    suspend fun insert(city: CityDomainModel)
+    suspend fun insert(city: CityDomainModel): Long
 
     suspend fun delete(city: CityDomainModel)
 

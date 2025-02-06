@@ -17,6 +17,9 @@ interface ForecastService {
     ): FullForecast
 
     companion object {
+        const val DEFAULT_TIME_ZONE = "auto"
+        const val DEFAULT_FORECAST_DAYS = 7
+
         val dailyOptions =
             listOf(
                 "temperature_2m_max",
@@ -31,7 +34,5 @@ interface ForecastService {
                 "weather_code",
                 "is_day"
             )
-
-        const val DEFAULT_FORECAST_DAYS = 7
     }
 }

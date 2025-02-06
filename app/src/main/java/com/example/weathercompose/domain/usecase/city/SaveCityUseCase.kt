@@ -5,7 +5,7 @@ import com.example.weathercompose.domain.repository.CityRepository
 
 class SaveCityUseCase(private val cityRepository: CityRepository) {
 
-    suspend fun execute(city: CityDomainModel) {
-        cityRepository.insert(city = city)
+    suspend fun execute(city: CityDomainModel) : Long {
+        return cityRepository.insert(city = city)
     }
 }

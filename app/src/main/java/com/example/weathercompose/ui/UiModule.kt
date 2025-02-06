@@ -5,6 +5,7 @@ import com.example.weathercompose.ui.mapper.ForecastMapper
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
 import com.example.weathercompose.ui.viewmodel.MainViewModel
+import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -12,10 +13,13 @@ import org.koin.dsl.module
 val uiModule = module {
     viewModel {
         MainViewModel(
-            loadForecastUseCase = get(),
-            loadCityUseCase = get(),
-            cityUIModelMapper = get(),
             loadAllCitiesUseCase = get(),
+            loadCityUseCase = get(),
+            loadForecastUseCase = get(),
+            cityUIModelMapper = get(),
+            saveDailyForecastsUseCase = get(),
+            saveHourlyForecastsUseCase = get(),
+            saveCityUseCase = get(),
         )
     }
 
@@ -30,6 +34,14 @@ val uiModule = module {
         CityManagerViewModel(
             loadAllCitiesUseCase = get(),
             cityUIModelMapper = get(),
+        )
+    }
+
+    viewModel {
+        SharedViewModel(
+            loadAllCitiesUseCase = get(),
+            loadForecastUseCase = get(),
+            forecastMapper = get(),
         )
     }
 

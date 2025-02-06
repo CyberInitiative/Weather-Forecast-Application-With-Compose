@@ -72,8 +72,11 @@ enum class WeatherDescription {
             }
         }
 
-        fun weatherDescriptionToString(weatherDescription: WeatherDescription, context: Context): String{
-            return when(weatherDescription){
+        fun weatherDescriptionToString(
+            weatherDescription: WeatherDescription,
+            context: Context
+        ): String {
+            return when (weatherDescription) {
                 CLEAR_SKY -> context.getString(R.string.clear_sky_weather_description)
                 MAINLY_CLEAR -> context.getString(R.string.mainly_clear_weather_description)
                 PARTLY_CLOUDY -> context.getString(R.string.partly_cloudy_weather_description)
@@ -103,6 +106,61 @@ enum class WeatherDescription {
                 THUNDERSTORM_WITH_SLIGHT_HAIL -> context.getString(R.string.thunderstorm_with_slight_hail_weather_description)
                 THUNDERSTORM_WITH_HEAVY_HAIL -> context.getString(R.string.thunderstorm_with_heavy_hail_weather_description)
                 NOT_EXISTING_WEATHER_CODE -> context.getString(R.string.not_existing_weather_code)
+            }
+        }
+
+        fun weatherDescriptionToIconRes(
+            weatherDescription: WeatherDescription, isDay: Boolean = false,
+        ): Int {
+            return when (weatherDescription) {
+                CLEAR_SKY -> if (isDay) {
+                    R.drawable.sun_icon_180
+                } else {
+                    R.drawable.moon_and_clear_sky_16468
+                }
+
+                MAINLY_CLEAR -> if (isDay) {
+                    R.drawable.sun_and_blue_cloud_16460
+                } else {
+                    R.drawable.moon_and_blue_cloud_16469
+                }
+
+                PARTLY_CLOUDY -> if (isDay) {
+                    R.drawable.blue_clouds_and_sun_16461
+                } else {
+                    R.drawable.clouds_and_moon_16470
+                }
+
+                OVERCAST,
+                FOG,
+                DEPOSITING_RIME_FOG,
+                LIGHT_DRIZZLE,
+                MODERATE_DRIZZLE,
+                DENSE_DRIZZLE,
+                LIGHT_FREEZING_DRIZZLE,
+                DENSE_FREEZING_DRIZZLE,
+                SLIGHT_RAIN -> R.drawable.rainy_day_16464
+
+                MODERATE_RAIN,
+                HEAVY_RAIN -> R.drawable.rainy_day_and_blue_cloud_16462
+
+                LIGHT_FREEZING_RAIN -> R.drawable.rainy_day_16464
+                HEAVY_FREEZING_RAIN -> R.drawable.rainy_day_and_blue_cloud_16462
+                SLIGHT_SNOW_FALL -> R.drawable.winter_snowfall_16473
+                MODERATE_SNOW_FALL,
+                HEAVY_SNOW_FALL -> R.drawable.snowy_weather_16472
+
+                SNOW_GRAINS -> R.drawable.winter_snowfall_16473
+                SLIGHT_RAIN_SHOWERS,
+                MODERATE_RAIN_SHOWERS,
+                VIOLENT_RAIN_SHOWERS -> R.drawable.downpour_rain_and_blue_cloud_16463
+
+                SLIGHT_SNOW_SHOWERS -> R.drawable.snowy_weather_16472
+                HEAVY_SNOW_SHOWERS -> R.drawable.snowy_weather_16472
+                THUNDERSTORM -> R.drawable.blue_cloud_and_lightning_16466
+                THUNDERSTORM_WITH_SLIGHT_HAIL -> R.drawable.hail_and_winter_cloud_16490
+                THUNDERSTORM_WITH_HEAVY_HAIL -> R.drawable.hail_and_blue_cloud_16491
+                NOT_EXISTING_WEATHER_CODE -> R.drawable.ic_launcher_background
             }
         }
     }

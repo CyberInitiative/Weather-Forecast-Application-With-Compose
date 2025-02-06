@@ -7,5 +7,5 @@ data class DailyForecastDomainModel(
     val minTemperature: Double,
     val sunrise: String,
     val sunset: String,
-    val hourlyForecastDomainModelData: List<HourlyForecastDomainModel>
+    val hourlyForecasts: List<HourlyForecastDomainModel>
 )

@@ -1,5 +1,6 @@
 package com.example.weathercompose.domain.usecase.forecast
 
+import com.example.weathercompose.data.api.ForecastService
 import com.example.weathercompose.data.api.ResponseResult
 import com.example.weathercompose.domain.mapper.DailyForecastMapper
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
@@ -15,10 +16,10 @@ class LoadForecastUseCase(
     suspend fun execute(
         latitude: Double,
         longitude: Double,
-        timeZone: String,
-        dailyOptions: List<String>,
-        hourlyOptions: List<String>,
-        forecastDays: Int,
+        timeZone: String = ForecastService.DEFAULT_TIME_ZONE,
+        dailyOptions: List<String> = ForecastService.dailyOptions,
+        hourlyOptions: List<String> = ForecastService.hourlyOptions,
+        forecastDays: Int = ForecastService.DEFAULT_FORECAST_DAYS,
     ): ResponseResult<List<DailyForecastDomainModel>> {
         return try {
             val response = forecastRepository.load(

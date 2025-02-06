@@ -35,7 +35,7 @@ class DailyForecastMapper(
                             minTemperature = minTemperatureData!![index],
                             sunrise = sunrises!![index],
                             sunset = sunsets!![index],
-                            hourlyForecastDomainModelData = hourlyForecastDomainModelData!!
+                            hourlyForecasts = hourlyForecastDomainModelData!!
                         )
                     )
                 }
@@ -64,5 +64,7 @@ class DailyForecastMapper(
         }
         return false
     }
+
+
 }
 

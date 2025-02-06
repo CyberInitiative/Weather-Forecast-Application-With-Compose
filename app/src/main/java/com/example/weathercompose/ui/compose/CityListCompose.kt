@@ -33,25 +33,31 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.UIState
-import com.example.weathercompose.ui.model.CityUIModel
+import com.example.weathercompose.ui.model.CityUIState
 import com.example.weathercompose.ui.navigation.NavigationRoutes
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
+import com.example.weathercompose.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
 fun CityListContent(
     viewModel: CityManagerViewModel,
+    //sharedViewModel: SharedViewModel,
+    mainViewModel: MainViewModel,
     navController: NavController,
 ) {
     val citiesLoadResult by viewModel.citiesUIState.collectAsState(initial = UIState.Loading())
     val onButtonClick = { navController.navigate(NavigationRoutes.CitySearch) }
     val coroutineScope = rememberCoroutineScope()
-    val onCityItemClick = { city: CityUIModel ->
+    val onCityItemClick = { city: CityUIState ->
         coroutineScope.launch {
-            val previousBackStackEntry = navController.previousBackStackEntry
-            val savedStateHandle = previousBackStackEntry?.savedStateHandle
-            savedStateHandle?.set(SAVED_CITY_ID_KEY, city.id)
+//            val previousBackStackEntry = navController.previousBackStackEntry
+//            val savedStateHandle = previousBackStackEntry?.savedStateHandle
+//            savedStateHandle?.set(SAVED_CITY_ID_KEY, city.id)
+//            navController.popBackStack()
+            mainViewModel.setCurrentCity(city.id.toLong())
+
             navController.popBackStack()
         }
     }
@@ -81,7 +87,7 @@ fun CityListContent(
                     }
 
                     CityList(
-                        cities = (citiesLoadResult as UIState.Content<List<CityUIModel>>).data,
+                        cities = (citiesLoadResult as UIState.Content<List<CityUIState>>).data,
                         modifier = cityListModifier,
                         onCityItemClick = onCityItemClick,
                     )
@@ -102,9 +108,9 @@ fun CityListContent(
 
 @Composable
 private fun CityList(
-    cities: List<CityUIModel>,
+    cities: List<CityUIState>,
     modifier: Modifier = Modifier,
-    onCityItemClick: (CityUIModel) -> Job,
+    onCityItemClick: (CityUIState) -> Job,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth()
@@ -127,8 +133,8 @@ private fun CityList(
 
 @Composable
 private fun CityListItem(
-    city: CityUIModel,
-    onCityItemClick: (CityUIModel) -> Job,
+    city: CityUIState,
+    onCityItemClick: (CityUIState) -> Job,
 ) {
     Row(
         modifier = Modifier

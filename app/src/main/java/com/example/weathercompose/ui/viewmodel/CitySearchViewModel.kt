@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.ResponseResult
@@ -7,6 +8,7 @@ import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.usecase.city.SaveCityUseCase
 import com.example.weathercompose.domain.usecase.city.SearchCityUseCase
 import com.example.weathercompose.ui.UIState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -55,13 +57,16 @@ class CitySearchViewModel(
         }
     }
 
-    fun saveCity(city: CityDomainModel) {
-        viewModelScope.launch {
-            saveCityUseCase.execute(city = city)
+    fun saveCity(city: CityDomainModel): Job {
+        return viewModelScope.launch {
+            val id = saveCityUseCase.execute(city = city)
+            Log.d(TAG, "saveCity() called; id: $id")
         }
     }
 
     companion object {
+        private const val TAG = "CitySearchViewModel"
+
         private const val DEFAULT_NUMBER_OF_RESULTS = 20
         private const val DEFAULT_LANGUAGE = "en"
         private const val DEFAULT_FORMAT = "json"

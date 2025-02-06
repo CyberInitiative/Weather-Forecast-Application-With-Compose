@@ -2,7 +2,7 @@ package com.example.weathercompose.data.repository.city
 
 import com.example.weathercompose.data.api.CityService
 import com.example.weathercompose.data.database.dao.CityDao
-import com.example.weathercompose.domain.mapper.mapCityToDomainModel
+import com.example.weathercompose.domain.mapper.mapToCityDomainModel
 import com.example.weathercompose.domain.mapper.mapToEntity
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.repository.CityRepository
@@ -27,24 +27,24 @@ class CityRepositoryImpl(
                 count = count,
                 language = language,
                 format = format,
-            ).cities?.map { it.mapCityToDomainModel() } ?: emptyList()
+            ).cities?.map { it.mapToCityDomainModel() } ?: emptyList()
         }
     }
 
     override suspend fun loadAll(): List<CityDomainModel> {
         return withContext(dispatcher) {
-            cityDao.loadAll().map { it.mapCityToDomainModel() }
+            cityDao.loadAll().map { it.mapToCityDomainModel() }
         }
     }
 
-    override suspend fun load(cityId: Int): CityDomainModel {
+    override suspend fun load(cityId: Long): CityDomainModel {
         return withContext(dispatcher) {
-            cityDao.load(cityId = cityId).mapCityToDomainModel()
+            cityDao.load(cityId = cityId).mapToCityDomainModel()
         }
     }
 
-    override suspend fun insert(city: CityDomainModel) {
-        withContext(dispatcher) {
+    override suspend fun insert(city: CityDomainModel): Long {
+        return withContext(dispatcher) {
             cityDao.insert(city.mapToEntity())
         }
     }

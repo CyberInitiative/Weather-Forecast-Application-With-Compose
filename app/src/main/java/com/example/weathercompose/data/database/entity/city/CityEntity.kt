@@ -1,12 +1,12 @@
-package com.example.weathercompose.data.database.entity
+package com.example.weathercompose.data.database.entity.city
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "cities")
 data class CityEntity(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val cityId: Long,
     val latitude: Double,
     val longitude: Double,
     val name: String,

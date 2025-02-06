@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.weathercompose"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -76,6 +76,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     // https://mvnrepository.com/artifact/androidx.constraintlayout/constraintlayout-compose
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.compose.material)
 
     ksp(libs.androidx.room.compiler)
 

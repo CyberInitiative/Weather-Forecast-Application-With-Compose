@@ -20,13 +20,16 @@ class ForecastMapper(private val context: Context) {
             date = date,
             dayNameInWeek = dateStringToDayOfWeek(date),
             monthAndDayNumber = dateStringToMonthAndDayNumber(date),
+            weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
+                weatherDescription = weatherDescription,
+            ),
             weatherDescription = WeatherDescription.weatherDescriptionToString(
                 weatherDescription = weatherDescription,
                 context = context
             ),
             maxTemperature = Math.round(maxTemperature).toInt(),
             minTemperature = Math.round(minTemperature).toInt(),
-            hourlyForecasts = hourlyForecastDomainModelData.map { it.mapToHourlyForecastItem() }
+            hourlyForecasts = hourlyForecasts.map { it.mapToHourlyForecastItem() }
         )
     }
 
@@ -35,6 +38,10 @@ class ForecastMapper(private val context: Context) {
             date = date,
             time = time,
             formattedTime = time,
+            weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
+                weatherDescription = weatherDescription,
+                isDay = isDay,
+            ),
             weatherDescription = WeatherDescription.weatherDescriptionToString(
                 weatherDescription = weatherDescription,
                 context = context,

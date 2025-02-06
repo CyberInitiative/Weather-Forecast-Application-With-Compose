@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
 import com.example.weathercompose.ui.UIState
 import com.example.weathercompose.ui.mapper.CityUIModelMapper
-import com.example.weathercompose.ui.model.CityUIModel
+import com.example.weathercompose.ui.model.CityUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -14,9 +14,9 @@ class CityManagerViewModel(
     private val loadAllCitiesUseCase: LoadAllCitiesUseCase,
     private val cityUIModelMapper: CityUIModelMapper,
 ) : ViewModel() {
-    private val _citiesUIState: MutableStateFlow<UIState<List<CityUIModel>>> =
+    private val _citiesUIState: MutableStateFlow<UIState<List<CityUIState>>> =
         MutableStateFlow(UIState.Loading())
-    val citiesUIState: StateFlow<UIState<List<CityUIModel>>> get() = _citiesUIState
+    val citiesUIState: StateFlow<UIState<List<CityUIState>>> get() = _citiesUIState
 
     init {
         loadCities()
