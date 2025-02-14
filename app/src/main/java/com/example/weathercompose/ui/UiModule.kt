@@ -1,7 +1,8 @@
 package com.example.weathercompose.ui
 
-import com.example.weathercompose.ui.mapper.CityUIModelMapper
+import com.example.weathercompose.ui.mapper.CityMapper
 import com.example.weathercompose.ui.mapper.ForecastMapper
+import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
 import com.example.weathercompose.ui.viewmodel.MainViewModel
@@ -11,17 +12,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val uiModule = module {
-    viewModel {
-        MainViewModel(
-            loadAllCitiesUseCase = get(),
-            loadCityUseCase = get(),
-            loadForecastUseCase = get(),
-            cityUIModelMapper = get(),
-            saveDailyForecastsUseCase = get(),
-            saveHourlyForecastsUseCase = get(),
-            saveCityUseCase = get(),
-        )
-    }
+    viewModel { MainViewModel(forecastUIStateMapper = get()) }
 
     viewModel {
         CitySearchViewModel(
@@ -33,19 +24,25 @@ val uiModule = module {
     viewModel {
         CityManagerViewModel(
             loadAllCitiesUseCase = get(),
-            cityUIModelMapper = get(),
+            forecastUIStateMapper = get(),
+            cityMapper = get(),
         )
     }
 
     viewModel {
         SharedViewModel(
+            loadCityUseCase = get(),
             loadAllCitiesUseCase = get(),
             loadForecastUseCase = get(),
-            forecastMapper = get(),
+            saveForecastsUseCase = get(),
+            deleteForecastsUseCase = get(),
+            networkManager = get(),
         )
     }
 
     factory { ForecastMapper(context = androidApplication()) }
 
-    factory { CityUIModelMapper(forecastMapper = get()) }
+    factory { ForecastUIStateMapper(forecastMapper = get()) }
+
+    factory { CityMapper(context = androidApplication()) }
 }

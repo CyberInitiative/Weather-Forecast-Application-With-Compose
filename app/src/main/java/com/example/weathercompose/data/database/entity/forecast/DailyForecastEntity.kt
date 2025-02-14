@@ -2,6 +2,7 @@ package com.example.weathercompose.data.database.entity.forecast
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.example.weathercompose.data.database.entity.city.CityEntity
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
@@ -26,4 +27,7 @@ data class DailyForecastEntity(
     val sunset: String,
     @PrimaryKey(autoGenerate = true)
     val dailyForecastId: Long = 0,
-)
+) {
+    @Ignore
+    var hourlyForecasts: List<HourlyForecastEntity> = emptyList()
+}

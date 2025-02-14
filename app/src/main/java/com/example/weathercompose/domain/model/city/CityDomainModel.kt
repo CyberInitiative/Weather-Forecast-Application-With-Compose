@@ -14,6 +14,7 @@ data class CityDomainModel(
     val country: String,
     val timeZone: String,
     val forecast: List<DailyForecastDomainModel>,
+    val errorMessage: String = "",
 ) {
 
     fun getFullLocation(): String {

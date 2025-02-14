@@ -31,6 +31,8 @@
     <string name="thunderstorm_with_heavy_hail_weather_description">Thunderstorm with heavy hail</string>
     <string name="not_existing_weather_code">Not existing weather code</string>
 
+    <string name="no_data">No data</string>
+
     <string name="max_temperature_label">max: %d°</string>
     <string name="min_temperature_label">min: %d°</string>
     <string name="temperature_label">%d°</string>

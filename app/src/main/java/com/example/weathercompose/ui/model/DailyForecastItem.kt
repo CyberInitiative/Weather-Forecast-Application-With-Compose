@@ -1,6 +1,7 @@
 package com.example.weathercompose.ui.model
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 
 data class DailyForecastItem(
     val date: String,
@@ -8,7 +9,8 @@ data class DailyForecastItem(
     val monthAndDayNumber: String,
     @DrawableRes
     val weatherIconRes: Int,
-    val weatherDescription: String,
+    @StringRes
+    val weatherDescription: Int,
     val maxTemperature: Int,
     val minTemperature: Int,
     val hourlyForecasts: List<HourlyForecastItem>,

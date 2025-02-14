@@ -17,7 +17,6 @@ class CitySearchViewModel(
     private val searchCityUseCase: SearchCityUseCase,
     private val saveCityUseCase: SaveCityUseCase,
 ) : ViewModel() {
-
     private val _citySearchUIResult: MutableStateFlow<UIState<List<CityDomainModel>>> =
         MutableStateFlow(UIState.Empty())
     val citySearchResult: Flow<UIState<List<CityDomainModel>>> get() = _citySearchUIResult

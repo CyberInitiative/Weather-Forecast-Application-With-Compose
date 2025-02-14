@@ -3,14 +3,14 @@ package com.example.weathercompose.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weathercompose.data.api.ForecastService
 import com.example.weathercompose.data.api.ResponseResult
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
+import com.example.weathercompose.domain.usecase.city.LoadCityUseCase
+import com.example.weathercompose.domain.usecase.forecast.DeleteForecastsUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
-import com.example.weathercompose.ui.mapper.ForecastMapper
-import com.example.weathercompose.ui.model.CityUIState
-import com.example.weathercompose.ui.ui_state.LoadCitiesUIState
+import com.example.weathercompose.domain.usecase.forecast.SaveForecastsUseCase
+import com.example.weathercompose.utils.NetworkManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -21,88 +21,92 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SharedViewModel(
+    private val loadCityUseCase: LoadCityUseCase,
     private val loadAllCitiesUseCase: LoadAllCitiesUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
-    private val forecastMapper: ForecastMapper
+    private val saveForecastsUseCase: SaveForecastsUseCase,
+    private val deleteForecastsUseCase: DeleteForecastsUseCase,
+    private val networkManager: NetworkManager,
 ) : ViewModel() {
-    private val _citiesState = MutableStateFlow<List<CityDomainModel>>(emptyList())
-
-    private val _uiState = MutableStateFlow(LoadCitiesUIState())
-    val uiState: StateFlow<LoadCitiesUIState> = _uiState.asStateFlow()
-
-//    val citiesState: StateFlow<List<CityDomainModel>> = _citiesState.asStateFlow()
+    private val _loadedCitiesState = MutableStateFlow<List<CityDomainModel>>(value = emptyList())
+    val loadedCitiesState: StateFlow<List<CityDomainModel>> = _loadedCitiesState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            loadCitiesAndForecasts()
+            loadCities()
         }
     }
 
-    private suspend fun loadCitiesAndForecasts() {
-        val loadedCities = loadAllCitiesUseCase.execute()
+    suspend fun loadCity(cityId: Long) {
+        if (!isCityLoaded(cityId = cityId)) {
+            val loadedCity = loadCityUseCase(cityId = cityId)
+            _loadedCitiesState.update { it + loadForecastForCity(loadedCity) }
+        }
+    }
 
-        if (loadedCities.isEmpty()) {
-            Log.d(TAG, "LoadedCities is empty")
-            _uiState.update {
-                it.copy(
-                    cities = emptyList(),
-                    isLoading = false,
-                )
-            }
-            return
+    private fun isCityLoaded(cityId: Long): Boolean {
+        val currentLoadedCities = _loadedCitiesState.value
+        return currentLoadedCities.any { city -> city.id == cityId }
+    }
+
+    private suspend fun loadCities() {
+        val loadedCities = if (networkManager.isInternetAvailable()) {
+            loadForecastsForCities(loadAllCitiesUseCase())
+        } else {
+            loadAllCitiesUseCase()
         }
 
-        Log.d(TAG, "LoadedCities: ${loadedCities.joinToString()}")
+        _loadedCitiesState.update { loadedCities }
+    }
 
-        val loadedCitiesWithForecast = coroutineScope {
-            loadedCities.map { city ->
+    private suspend fun loadForecastsForCities(cities: List<CityDomainModel>): List<CityDomainModel> =
+        coroutineScope {
+            cities.map { city ->
                 async {
-                    val forecastLoadingResult = loadForecastUseCase.execute(
-                        latitude = city.latitude,
-                        longitude = city.longitude,
-                        timeZone = city.timeZone,
-                        dailyOptions = ForecastService.dailyOptions,
-                        hourlyOptions = ForecastService.hourlyOptions,
-                        forecastDays = ForecastService.DEFAULT_FORECAST_DAYS,
-                    )
-
-                    when (forecastLoadingResult) {
-                        is ResponseResult.Success -> {
-                            CityUIState(
-                                id = city.id.toString(),
-                                name = city.name,
-                                country = city.country,
-                                firstAdministrativeLevel = city.firstAdministrativeLevel,
-                                secondAdministrativeLevel = city.secondAdministrativeLevel,
-                                thirdAdministrativeLevel = city.thirdAdministrativeLevel,
-                                fourthAdministrativeLevel = city.fourthAdministrativeLevel,
-                                forecasts = forecastMapper.mapForecast(
-                                    forecasts = forecastLoadingResult.data
-                                )
-                            )
-                        }
-
-                        is ResponseResult.Error -> {
-                            CityUIState(
-                                errorMessage = forecastLoadingResult.buildErrorMessage()
-                            )
-                        }
-
-                        is ResponseResult.Exception -> {
-                            CityUIState(
-                                errorMessage = forecastLoadingResult.buildExceptionMessage()
-                            )
-                        }
-                    }
+                    loadForecastForCity(city)
                 }
             }.awaitAll()
         }
 
-        _uiState.update {
-            it.copy(
-                cities = loadedCitiesWithForecast,
-                isLoading = false,
+    private suspend fun loadForecastForCity(city: CityDomainModel): CityDomainModel {
+        with(city) {
+            val forecastLoadingResponseResult = loadForecastUseCase.execute(
+                latitude = latitude,
+                longitude = longitude,
+                timeZone = timeZone,
             )
+
+            return when (forecastLoadingResponseResult) {
+                is ResponseResult.Success -> {
+                    val dailyForecasts = forecastLoadingResponseResult.data
+
+                    deleteForecastsUseCase.invoke(cityId = city.id)
+                    saveForecastsUseCase(
+                        cityId = city.id,
+                        dailyForecasts = dailyForecasts,
+                    )
+
+                    city.copy(forecast = dailyForecasts)
+                }
+
+                is ResponseResult.Error -> {
+                    Log.d(
+                        TAG, "loadForecastForCity() called; ResponseResult.Error: ${
+                            forecastLoadingResponseResult.buildErrorMessage()
+                        }"
+                    )
+                    city.copy(errorMessage = forecastLoadingResponseResult.buildErrorMessage())
+                }
+
+                is ResponseResult.Exception -> {
+                    Log.d(
+                        TAG, "loadForecastForCity() called; ResponseResult.Exception: ${
+                            forecastLoadingResponseResult.buildExceptionMessage()
+                        }"
+                    )
+                    city.copy(errorMessage = forecastLoadingResponseResult.buildExceptionMessage())
+                }
+            }
         }
     }
 

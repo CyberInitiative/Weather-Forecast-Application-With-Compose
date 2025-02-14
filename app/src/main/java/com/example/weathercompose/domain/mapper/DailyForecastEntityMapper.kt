@@ -15,7 +15,7 @@ fun DailyForecastWithHourlyForecast.mapToDailyForecastDomainModel(): DailyForeca
         hourlyForecasts = hourlyForecasts.map { hourlyForecastItem ->
             HourlyForecastDomainModel(
                 date = hourlyForecastItem.date,
-                time = hourlyForecastItem.time,
+                hour = hourlyForecastItem.hour,
                 weatherDescription = hourlyForecastItem.weatherDescription,
                 temperature = hourlyForecastItem.temperature,
                 isDay = hourlyForecastItem.isDay,

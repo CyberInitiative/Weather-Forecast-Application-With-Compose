@@ -1,6 +1,5 @@
 package com.example.weathercompose.domain.model.forecast
 
-import android.content.Context
 import com.example.weathercompose.R
 
 // https://open-meteo.com/en/docs
@@ -74,43 +73,42 @@ enum class WeatherDescription {
 
         fun weatherDescriptionToString(
             weatherDescription: WeatherDescription,
-            context: Context
-        ): String {
+        ): Int {
             return when (weatherDescription) {
-                CLEAR_SKY -> context.getString(R.string.clear_sky_weather_description)
-                MAINLY_CLEAR -> context.getString(R.string.mainly_clear_weather_description)
-                PARTLY_CLOUDY -> context.getString(R.string.partly_cloudy_weather_description)
-                OVERCAST -> context.getString(R.string.overcast_weather_description)
-                FOG -> context.getString(R.string.fog_weather_description)
-                DEPOSITING_RIME_FOG -> context.getString(R.string.depositing_rime_fog_weather_description)
-                LIGHT_DRIZZLE -> context.getString(R.string.light_drizzle_weather_description)
-                MODERATE_DRIZZLE -> context.getString(R.string.moderate_drizzle_weather_description)
-                DENSE_DRIZZLE -> context.getString(R.string.dense_drizzle_weather_description)
-                LIGHT_FREEZING_DRIZZLE -> context.getString(R.string.light_freezing_drizzle_weather_description)
-                DENSE_FREEZING_DRIZZLE -> context.getString(R.string.dense_freezing_drizzle_weather_description)
-                SLIGHT_RAIN -> context.getString(R.string.slight_rain_weather_description)
-                MODERATE_RAIN -> context.getString(R.string.moderate_rain_weather_description)
-                HEAVY_RAIN -> context.getString(R.string.heavy_rain_weather_description)
-                LIGHT_FREEZING_RAIN -> context.getString(R.string.light_freezing_rain_weather_description)
-                HEAVY_FREEZING_RAIN -> context.getString(R.string.heavy_freezing_rain_weather_description)
-                SLIGHT_SNOW_FALL -> context.getString(R.string.slight_snow_fall_weather_description)
-                MODERATE_SNOW_FALL -> context.getString(R.string.moderate_snow_fall_weather_description)
-                HEAVY_SNOW_FALL -> context.getString(R.string.heavy_snow_fall_weather_description)
-                SNOW_GRAINS -> context.getString(R.string.snow_grains_weather_description)
-                SLIGHT_RAIN_SHOWERS -> context.getString(R.string.slight_rain_showers_weather_description)
-                MODERATE_RAIN_SHOWERS -> context.getString(R.string.moderate_rain_showers_weather_description)
-                VIOLENT_RAIN_SHOWERS -> context.getString(R.string.violent_rain_showers_weather_description)
-                SLIGHT_SNOW_SHOWERS -> context.getString(R.string.slight_snow_showers_weather_description)
-                HEAVY_SNOW_SHOWERS -> context.getString(R.string.heavy_snow_showers_weather_description)
-                THUNDERSTORM -> context.getString(R.string.thunderstorm_weather_description)
-                THUNDERSTORM_WITH_SLIGHT_HAIL -> context.getString(R.string.thunderstorm_with_slight_hail_weather_description)
-                THUNDERSTORM_WITH_HEAVY_HAIL -> context.getString(R.string.thunderstorm_with_heavy_hail_weather_description)
-                NOT_EXISTING_WEATHER_CODE -> context.getString(R.string.not_existing_weather_code)
+                CLEAR_SKY -> R.string.clear_sky_weather_description
+                MAINLY_CLEAR -> R.string.mainly_clear_weather_description
+                PARTLY_CLOUDY -> R.string.partly_cloudy_weather_description
+                OVERCAST -> R.string.overcast_weather_description
+                FOG -> R.string.fog_weather_description
+                DEPOSITING_RIME_FOG -> R.string.depositing_rime_fog_weather_description
+                LIGHT_DRIZZLE -> R.string.light_drizzle_weather_description
+                MODERATE_DRIZZLE -> R.string.moderate_drizzle_weather_description
+                DENSE_DRIZZLE -> R.string.dense_drizzle_weather_description
+                LIGHT_FREEZING_DRIZZLE -> R.string.light_freezing_drizzle_weather_description
+                DENSE_FREEZING_DRIZZLE -> R.string.dense_freezing_drizzle_weather_description
+                SLIGHT_RAIN -> R.string.slight_rain_weather_description
+                MODERATE_RAIN -> R.string.moderate_rain_weather_description
+                HEAVY_RAIN -> R.string.heavy_rain_weather_description
+                LIGHT_FREEZING_RAIN -> R.string.light_freezing_rain_weather_description
+                HEAVY_FREEZING_RAIN -> R.string.heavy_freezing_rain_weather_description
+                SLIGHT_SNOW_FALL -> R.string.slight_snow_fall_weather_description
+                MODERATE_SNOW_FALL -> R.string.moderate_snow_fall_weather_description
+                HEAVY_SNOW_FALL -> R.string.heavy_snow_fall_weather_description
+                SNOW_GRAINS -> R.string.snow_grains_weather_description
+                SLIGHT_RAIN_SHOWERS -> R.string.slight_rain_showers_weather_description
+                MODERATE_RAIN_SHOWERS -> R.string.moderate_rain_showers_weather_description
+                VIOLENT_RAIN_SHOWERS -> R.string.violent_rain_showers_weather_description
+                SLIGHT_SNOW_SHOWERS -> R.string.slight_snow_showers_weather_description
+                HEAVY_SNOW_SHOWERS -> R.string.heavy_snow_showers_weather_description
+                THUNDERSTORM -> R.string.thunderstorm_weather_description
+                THUNDERSTORM_WITH_SLIGHT_HAIL -> R.string.thunderstorm_with_slight_hail_weather_description
+                THUNDERSTORM_WITH_HEAVY_HAIL -> R.string.thunderstorm_with_heavy_hail_weather_description
+                NOT_EXISTING_WEATHER_CODE -> R.string.not_existing_weather_code
             }
         }
 
         fun weatherDescriptionToIconRes(
-            weatherDescription: WeatherDescription, isDay: Boolean = false,
+            weatherDescription: WeatherDescription, isDay: Boolean = true,
         ): Int {
             return when (weatherDescription) {
                 CLEAR_SKY -> if (isDay) {
@@ -133,7 +131,8 @@ enum class WeatherDescription {
 
                 OVERCAST,
                 FOG,
-                DEPOSITING_RIME_FOG,
+                DEPOSITING_RIME_FOG -> R.drawable.cloudy_weather_16459
+
                 LIGHT_DRIZZLE,
                 MODERATE_DRIZZLE,
                 DENSE_DRIZZLE,

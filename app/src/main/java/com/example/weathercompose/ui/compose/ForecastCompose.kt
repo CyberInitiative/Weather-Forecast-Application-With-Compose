@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,19 +28,41 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.ui.viewmodel.MainViewModel
+import com.example.weathercompose.ui.viewmodel.SharedViewModel
+
+private const val TAG = "ForecastCompose"
 
 @Composable
 fun ForecastContent(
     viewModel: MainViewModel,
-    //sharedViewModel: SharedViewModel,
-    navController: NavController,
+    sharedViewModel: SharedViewModel,
+    //TODO add navigate function as parameter for search city screen navigation;
 ) {
-    val currentCityUIState by viewModel.currentCityUIState.collectAsState()
+    val loadedCities by sharedViewModel.loadedCitiesState.collectAsState()
+
+//    val hasSavedCities by viewModel.hasSavedCities.collectAsState()
+    val forecastUIState by viewModel.forecastUIState.collectAsState()
+
+    LaunchedEffect(loadedCities) {
+        //TODO if cities empty add logic to navigate to another screen;
+        viewModel.setLoadedCities(loadedCities)
+    }
+
+    //TODO If we have no cities, we need move to search city screen;
+//    LaunchedEffect(hasSavedCities) {
+//        if (!hasSavedCities) {
+//            Log.d(TAG, "has no saved cities!")
+//            navController.navigate(NavigationRoutes.CitySearch) {
+//                popUpTo(NavigationRoutes.Forecast) {
+//                    inclusive = true
+//                } // Optional: Remove current screen from stack
+//            }
+//        }
+//    }
 
     Column(
         modifier = Modifier
@@ -47,20 +70,16 @@ fun ForecastContent(
             .padding(all = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (!currentCityUIState.isLoading) {
+        if (!forecastUIState.isDataLoading) {
 
             when {
-                currentCityUIState.forecastLoadingErrorMessage.isNotEmpty() -> {
-                    Text(text = currentCityUIState.forecastLoadingErrorMessage)
-                }
-
-                currentCityUIState.errorMessage.isNotEmpty() -> {
-                    Text(text = currentCityUIState.errorMessage)
+                forecastUIState.errorMessage.isNotEmpty() -> {
+                    Text(text = forecastUIState.errorMessage)
                 }
 
                 else -> {
                     Text(
-                        text = currentCityUIState.name,
+                        text = forecastUIState.cityName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 30.dp)
@@ -70,7 +89,7 @@ fun ForecastContent(
                     )
 
                     HourlyForecastList(
-                        currentCityUIState.forecasts[0].hourlyForecasts
+                        forecastUIState.forecasts[0].hourlyForecasts
                     )
 
                     Spacer(
@@ -80,7 +99,7 @@ fun ForecastContent(
                     )
 
                     DailyForecastList(
-                        currentCityUIState.forecasts
+                        forecastUIState.forecasts
                     )
                 }
             }
@@ -154,7 +173,7 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
         Text(
             modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
             fontSize = 14.sp,
-            text = hourlyForecastItem.formattedTime,
+            text = hourlyForecastItem.formattedHour,
             textAlign = TextAlign.Center,
             color = Color.White,
         )
@@ -165,7 +184,7 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
             modifier = Modifier.size(45.dp),
         )
 
-        WeatherDescriptionLabel(text = hourlyForecastItem.weatherDescription)
+        WeatherDescriptionLabel(text = stringResource(hourlyForecastItem.weatherDescription))
 
         Text(
             modifier = Modifier.padding(top = 2.5.dp, bottom = 20.dp),
@@ -224,7 +243,7 @@ fun DailyForecastListItem(dailyForecastItem: DailyForecastItem) {
             modifier = Modifier.size(45.dp),
         )
 
-        WeatherDescriptionLabel(text = dailyForecastItem.weatherDescription)
+        WeatherDescriptionLabel(text = stringResource(dailyForecastItem.weatherDescription))
 
         Text(
             modifier = Modifier.padding(top = 10.dp, bottom = 2.5.dp),

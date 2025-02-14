@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.compose
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,37 +33,28 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.ui.UIState
-import com.example.weathercompose.ui.navigation.NavigationRoutes
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
-import com.example.weathercompose.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private const val TAG = "CitiesManagerCompose"
 
 @Composable
-fun CitiesManagerContent(
+fun CitiesSearchContent(
     viewModel: CitySearchViewModel,
-    mainViewModel: MainViewModel,
-    navController: NavController,
+    onNavigateToForecastScreen: (CityDomainModel) -> Any,
 ) {
     var query by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     val citySearchResult by viewModel.citySearchResult.collectAsState(initial = UIState.Loading())
     val onCityItemClick = { city: CityDomainModel ->
         coroutineScope.launch {
-//            viewModel.saveCity(city).join()
-//            mainViewModel.setCurrentCity(city)
-            mainViewModel.saveCity(city)
-//            val savedStateHandle =
-//                navController.getBackStackEntry<NavigationRoutes.Forecast>().savedStateHandle
-//            savedStateHandle[SAVED_CITY_ID_KEY] = city.id
-//            navController.popBackStack<NavigationRoutes.Forecast>(inclusive = false)
-            navController.popBackStack<NavigationRoutes.Forecast>(inclusive = false)
+            Log.d(TAG, "onCityItemClick!")
+            viewModel.saveCity(city).join()
+            onNavigateToForecastScreen(city)
         }
     }
 

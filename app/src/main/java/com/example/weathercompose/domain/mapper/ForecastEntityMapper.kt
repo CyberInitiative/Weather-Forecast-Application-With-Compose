@@ -5,8 +5,10 @@ import com.example.weathercompose.data.database.entity.forecast.HourlyForecastEn
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 
+const val NO_DAILY_FORECAST_ID_SET = -1L
+
 fun DailyForecastDomainModel.mapToEntity(cityId: Long): DailyForecastEntity {
-    return DailyForecastEntity(
+    val dailyForecast = DailyForecastEntity(
         cityId = cityId,
         date = date,
         weatherDescription = weatherDescription,
@@ -15,13 +17,15 @@ fun DailyForecastDomainModel.mapToEntity(cityId: Long): DailyForecastEntity {
         sunrise = sunrise,
         sunset = sunset,
     )
+    dailyForecast.hourlyForecasts = hourlyForecasts.map { it.mapToEntity() }
+    return dailyForecast
 }
 
-fun HourlyForecastDomainModel.mapToEntity(dailyForecastId: Long): HourlyForecastEntity {
+fun HourlyForecastDomainModel.mapToEntity(): HourlyForecastEntity {
     return HourlyForecastEntity(
-        dailyForecastId = dailyForecastId,
+        dailyForecastId = NO_DAILY_FORECAST_ID_SET,
         date = date,
-        time = time,
+        hour = hour,
         weatherDescription = weatherDescription,
         temperature = temperature,
         isDay = isDay

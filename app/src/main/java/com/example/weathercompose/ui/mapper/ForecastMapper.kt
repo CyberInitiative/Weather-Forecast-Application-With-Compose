@@ -25,7 +25,6 @@ class ForecastMapper(private val context: Context) {
             ),
             weatherDescription = WeatherDescription.weatherDescriptionToString(
                 weatherDescription = weatherDescription,
-                context = context
             ),
             maxTemperature = Math.round(maxTemperature).toInt(),
             minTemperature = Math.round(minTemperature).toInt(),
@@ -36,15 +35,14 @@ class ForecastMapper(private val context: Context) {
     private fun HourlyForecastDomainModel.mapToHourlyForecastItem(): HourlyForecastItem {
         return HourlyForecastItem(
             date = date,
-            time = time,
-            formattedTime = time,
+            hour = hour,
+            formattedHour = "$hour:00",
             weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
                 weatherDescription = weatherDescription,
                 isDay = isDay,
             ),
             weatherDescription = WeatherDescription.weatherDescriptionToString(
                 weatherDescription = weatherDescription,
-                context = context,
             ),
             temperature = Math.round(temperature).toInt(),
         )

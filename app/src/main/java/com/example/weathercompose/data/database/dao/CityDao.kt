@@ -11,42 +11,82 @@ import com.example.weathercompose.data.database.entity.city.CityEntity
 import com.example.weathercompose.data.database.entity.combined.CityWithDailyForecasts
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.database.entity.forecast.HourlyForecastEntity
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 @Dao
-interface CityDao {
+abstract class CityDao {
 
     @Transaction
     @Query("SELECT * FROM cities")
-    suspend fun loadAll(): List<CityWithDailyForecasts>
+    abstract suspend fun loadAll(): List<CityWithDailyForecasts>
 
     @Transaction
     @Query("SELECT * FROM cities WHERE cityId = :cityId")
-    suspend fun load(cityId: Long): CityWithDailyForecasts
+    abstract suspend fun load(cityId: Long): CityWithDailyForecasts
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(city: CityEntity): Long
+    abstract suspend fun insert(city: CityEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(dailyForecasts: DailyForecastEntity): Long
+    abstract suspend fun insert(dailyForecast: DailyForecastEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(hourlyForecasts: HourlyForecastEntity): Long
+    abstract suspend fun insert(hourlyForecast: HourlyForecastEntity): Long
 
     @Delete
-    suspend fun delete(city: CityEntity)
+    abstract suspend fun delete(city: CityEntity)
 
     @Delete
-    suspend fun delete(dailyForecasts: DailyForecastEntity)
+    abstract suspend fun delete(dailyForecasts: DailyForecastEntity)
 
     @Delete
-    suspend fun delete(hourlyForecasts: HourlyForecastEntity)
+    abstract suspend fun delete(hourlyForecasts: HourlyForecastEntity)
 
     @Update
-    suspend fun update(city: CityEntity)
+    abstract suspend fun update(city: CityEntity)
 
     @Update
-    suspend fun update(dailyForecasts: DailyForecastEntity)
+    abstract suspend fun update(dailyForecasts: DailyForecastEntity)
 
     @Update
-    suspend fun update(dailyForecasts: HourlyForecastEntity)
+    abstract suspend fun update(dailyForecasts: HourlyForecastEntity)
+
+    @Query("DELETE FROM daily_forecasts WHERE cityId = :cityId")
+    abstract suspend fun deleteDailyForecastsByCityId(cityId: Long)
+
+    @Query("DELETE FROM hourly_forecasts WHERE dailyForecastId = :dailyForecasts")
+    abstract suspend fun deleteHourlyForecastsByDailyForecastId(dailyForecasts: Long)
+
+    @Query("SELECT * FROM daily_forecasts WHERE cityId = :cityId")
+    abstract suspend fun findDailyForecastsByCityId(cityId: Long): List<DailyForecastEntity>
+
+    @Transaction
+    open suspend fun deleteForecastsFromCity(cityId: Long) {
+        val dailyForecasts = findDailyForecastsByCityId(cityId = cityId)
+        for (entity in dailyForecasts) {
+            deleteHourlyForecastsByDailyForecastId(dailyForecasts = entity.dailyForecastId)
+        }
+        deleteDailyForecastsByCityId(cityId = cityId)
+    }
+
+    @Transaction
+    open suspend fun saveForecasts(dailyForecasts: List<DailyForecastEntity>) = coroutineScope {
+        dailyForecasts.map { dailyForecastEntity ->
+            async {
+                val dailyForecastEntityId = insert(dailyForecast = dailyForecastEntity)
+
+                if (dailyForecastEntity.hourlyForecasts.isNotEmpty()) {
+                    dailyForecastEntity.hourlyForecasts.map { hourlyForecastEntity ->
+                        async {
+                            insert(hourlyForecast = hourlyForecastEntity.copy(dailyForecastId = dailyForecastEntityId))
+                        }
+                    }.awaitAll()
+                }
+            }
+        }.awaitAll()
+    }
+
+
 }

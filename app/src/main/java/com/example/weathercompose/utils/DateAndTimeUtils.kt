@@ -2,7 +2,9 @@ package com.example.weathercompose.utils
 
 import android.util.Log
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 
 private const val TAG = "DateAndTimeUtils"
 
@@ -22,7 +24,7 @@ fun dateStringToDayOfWeek(date: String): String {
     return if (parsedDate != null) {
         outputFormat.format(parsedDate)
     } else {
-        ""
+        "--"
     }
 }
 
@@ -39,6 +41,27 @@ fun dateStringToMonthAndDayNumber(date: String): String {
     return if (parsedDate != null) {
         outputFormat.format(parsedDate)
     } else {
-        ""
+        "--"
     }
+}
+
+fun timeToHour(time: String): String {
+    val inputFormat = SimpleDateFormat(TIME_FORMAT, Locale.getDefault())
+    val outputFormat = SimpleDateFormat("HH", Locale.getDefault())
+
+    val hour = inputFormat.parse(time)
+
+    return if (hour != null) {
+        outputFormat.format(hour)
+    } else {
+        "--"
+    }
+}
+
+fun getCurrentHourForTimeZone(cityTimeZone: String): String {
+    val timeZone = TimeZone.getTimeZone(cityTimeZone)
+    val calendar = Calendar.getInstance(timeZone)
+    val dateFormat = SimpleDateFormat("HH")
+    dateFormat.timeZone = timeZone
+    return dateFormat.format(calendar.time)
 }

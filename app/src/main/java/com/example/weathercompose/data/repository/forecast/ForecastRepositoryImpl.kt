@@ -2,10 +2,10 @@ package com.example.weathercompose.data.repository.forecast
 
 import com.example.weathercompose.data.api.ForecastService
 import com.example.weathercompose.data.database.dao.CityDao
+import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.model.forecast.FullForecast
 import com.example.weathercompose.domain.mapper.mapToEntity
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
-import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -36,27 +36,25 @@ class ForecastRepositoryImpl(
         }
     }
 
-    override suspend fun saveDailyForecasts(
-        dailyForecastDomainModel: DailyForecastDomainModel,
+    override suspend fun saveForecasts(
         cityId: Long,
-    ): Long {
-        return withContext(dispatcher) {
-            cityDao.insert(
-                dailyForecasts = dailyForecastDomainModel.mapToEntity(cityId = cityId)
-            )
+        dailyForecasts: List<DailyForecastDomainModel>
+    ) {
+        withContext(dispatcher) {
+            val mappedDailyForecasts = mutableListOf<DailyForecastEntity>()
+            for (dailyForecast in dailyForecasts) {
+                val mappedDailyForecast = dailyForecast.mapToEntity(cityId = cityId)
+                val mappedHourlyForecasts = dailyForecast.hourlyForecasts.map { it.mapToEntity() }
+                mappedDailyForecast.hourlyForecasts = mappedHourlyForecasts
+                mappedDailyForecasts.add(mappedDailyForecast)
+            }
+            cityDao.saveForecasts(dailyForecasts = mappedDailyForecasts)
         }
     }
 
-    override suspend fun saveHourlyForecasts(
-        hourlyForecastDomainModel: HourlyForecastDomainModel,
-        dailyForecastId: Long,
-    ): Long {
-        return withContext(dispatcher) {
-            cityDao.insert(
-                hourlyForecasts = hourlyForecastDomainModel.mapToEntity(
-                    dailyForecastId = dailyForecastId
-                )
-            )
+    override suspend fun deleteForecasts(cityId: Long) {
+        withContext(dispatcher) {
+            cityDao.deleteDailyForecastsByCityId(cityId = cityId)
         }
     }
 
