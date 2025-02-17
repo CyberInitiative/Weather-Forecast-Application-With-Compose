@@ -2,11 +2,10 @@ package com.example.weathercompose.ui.model
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import java.time.LocalTime
 
 data class HourlyForecastItem(
-    val date: String,
-    val hour: String,
-    val formattedHour: String,
+    val time: LocalTime,
     @DrawableRes
     val weatherIconRes: Int,
     @StringRes

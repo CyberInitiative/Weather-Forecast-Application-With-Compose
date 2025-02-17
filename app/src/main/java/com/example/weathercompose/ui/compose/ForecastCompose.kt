@@ -33,6 +33,8 @@ import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.ui.viewmodel.MainViewModel
 import com.example.weathercompose.ui.viewmodel.SharedViewModel
+import java.time.format.TextStyle
+import java.util.Locale
 
 private const val TAG = "ForecastCompose"
 
@@ -89,7 +91,8 @@ fun ForecastContent(
                     )
 
                     HourlyForecastList(
-                        forecastUIState.forecasts[0].hourlyForecasts
+//                        forecastUIState.dailyForecasts[0].hourlyForecasts
+                        emptyList()
                     )
 
                     Spacer(
@@ -99,49 +102,13 @@ fun ForecastContent(
                     )
 
                     DailyForecastList(
-                        forecastUIState.forecasts
+                        forecastUIState.dailyForecasts
                     )
                 }
             }
         } else {
             LoadingProcessIndicator()
         }
-
-//        when (currentCity) {
-//            is UIState.Content -> {
-//                val currentCityData = (currentCity as UIState.Content<CityUIState>).data
-//
-//                Text(
-//                    text = currentCityData.name,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 30.dp)
-//                        .padding(start = 15.dp),
-//                    color = Color.White,
-//                    fontSize = 30.sp,
-//                )
-//
-//                HourlyForecastList(
-//                    currentCityData.forecasts[0].hourlyForecasts
-//                )
-//
-//                Spacer(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(30.dp)
-//                )
-//
-//                DailyForecastList(
-//                    currentCityData.forecasts
-//                )
-//            }
-//
-//            is UIState.Empty -> {}
-//            is UIState.Error -> {}
-//            is UIState.Loading -> {
-//                LoadingProgressBar()
-//            }
-//        }
     }
 }
 
@@ -173,7 +140,7 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
         Text(
             modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
             fontSize = 14.sp,
-            text = hourlyForecastItem.formattedHour,
+            text = hourlyForecastItem.time.toString(),
             textAlign = TextAlign.Center,
             color = Color.White,
         )
@@ -221,10 +188,12 @@ fun DailyForecastListItem(dailyForecastItem: DailyForecastItem) {
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val date = dailyForecastItem.date
+
         Text(
             modifier = Modifier.padding(top = 20.dp, bottom = 2.5.dp),
             fontSize = 14.sp,
-            text = dailyForecastItem.dayNameInWeek,
+            text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.US),
             textAlign = TextAlign.Center,
             color = Color.White,
         )
@@ -232,7 +201,7 @@ fun DailyForecastListItem(dailyForecastItem: DailyForecastItem) {
         Text(
             modifier = Modifier.padding(top = 2.5.dp, bottom = 10.dp),
             fontSize = 12.sp,
-            text = dailyForecastItem.monthAndDayNumber,
+            text = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.SHORT, Locale.US)}",
             textAlign = TextAlign.Center,
             color = Color.White,
         )

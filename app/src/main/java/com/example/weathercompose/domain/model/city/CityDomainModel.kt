@@ -13,7 +13,7 @@ data class CityDomainModel(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
-    val forecast: List<DailyForecastDomainModel>,
+    val forecasts: List<DailyForecastDomainModel>,
     val errorMessage: String = "",
 ) {
 

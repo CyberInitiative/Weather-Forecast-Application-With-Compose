@@ -48,12 +48,11 @@ val dataModule = module {
     }
 
     factory {
-        HourlyForecastMapper(context = androidApplication())
+        HourlyForecastMapper()
     }
 
     factory {
         DailyForecastMapper(
-            context = androidApplication(),
             hourlyForecastMapper = get(),
         )
     }

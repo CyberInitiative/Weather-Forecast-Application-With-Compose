@@ -3,7 +3,7 @@ package com.example.weathercompose.data.model.forecast
 import com.google.gson.annotations.SerializedName
 
 // https://open-meteo.com/en/docs
-data class DailyForecast(
+data class DailyForecastDataModel(
     @SerializedName("sunrise")
     val sunrises: List<String>?,
     @SerializedName("sunset")

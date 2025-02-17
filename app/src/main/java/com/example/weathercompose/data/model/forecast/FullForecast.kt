@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 // https://open-meteo.com/en/docs
 data class FullForecast(
     @SerializedName("daily")
-    val dailyForecast: DailyForecast,
+    val dailyForecastDataModel: DailyForecastDataModel,
     @SerializedName("daily_units")
     val dailyUnits: DailyUnits,
     @SerializedName("elevation")
@@ -13,7 +13,7 @@ data class FullForecast(
     @SerializedName("generationtime_ms")
     val generationTimeInMilliseconds: Double,
     @SerializedName("hourly")
-    val hourlyForecast: HourlyForecast,
+    val hourlyForecastDataModel: HourlyForecastDataModel,
     @SerializedName("hourly_units")
     val hourlyUnits: HourlyUnits,
     @SerializedName("latitude")

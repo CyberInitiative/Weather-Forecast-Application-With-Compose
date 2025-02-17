@@ -18,7 +18,7 @@ fun CityWithDailyForecasts.mapToCityDomainModel(): CityDomainModel {
             fourthAdministrativeLevel = city.fourthAdministrativeLevel,
             country = city.country,
             timeZone = city.timezone,
-            forecast = dailyForecasts.map { it.mapToDailyForecastDomainModel() },
+            forecasts = dailyForecasts.map { it.mapToDailyForecastDomainModel() },
         )
     }
 }
@@ -38,7 +38,7 @@ fun City.mapToCityDomainModel(): CityDomainModel {
             fourthAdministrativeLevel = fourthAdministrativeLevel.orEmpty(),
             country = country.orEmpty(),
             timeZone = timezone ?: "auto",
-            forecast = emptyList(),
+            forecasts = emptyList(),
         )
     }
 }
@@ -56,7 +56,7 @@ fun CityEntity.mapToCityDomainModel(): CityDomainModel {
             fourthAdministrativeLevel = fourthAdministrativeLevel,
             country = country,
             timeZone = timezone,
-            forecast = emptyList(),
+            forecasts = emptyList(),
         )
     }
 }

@@ -86,7 +86,7 @@ class SharedViewModel(
                         dailyForecasts = dailyForecasts,
                     )
 
-                    city.copy(forecast = dailyForecasts)
+                    city.copy(forecasts = dailyForecasts)
                 }
 
                 is ResponseResult.Error -> {

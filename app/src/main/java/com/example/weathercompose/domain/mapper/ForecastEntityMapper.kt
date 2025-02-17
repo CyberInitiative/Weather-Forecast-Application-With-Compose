@@ -10,7 +10,7 @@ const val NO_DAILY_FORECAST_ID_SET = -1L
 fun DailyForecastDomainModel.mapToEntity(cityId: Long): DailyForecastEntity {
     val dailyForecast = DailyForecastEntity(
         cityId = cityId,
-        date = date,
+        date = date.toString(),
         weatherDescription = weatherDescription,
         maxTemperature = maxTemperature,
         minTemperature = minTemperature,
@@ -24,8 +24,8 @@ fun DailyForecastDomainModel.mapToEntity(cityId: Long): DailyForecastEntity {
 fun HourlyForecastDomainModel.mapToEntity(): HourlyForecastEntity {
     return HourlyForecastEntity(
         dailyForecastId = NO_DAILY_FORECAST_ID_SET,
-        date = date,
-        hour = hour,
+        date = date.toString(),
+        time = time.toString(),
         weatherDescription = weatherDescription,
         temperature = temperature,
         isDay = isDay

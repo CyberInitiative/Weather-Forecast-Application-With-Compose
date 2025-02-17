@@ -18,7 +18,7 @@ import com.example.weathercompose.domain.model.forecast.WeatherDescription
 data class HourlyForecastEntity(
     val dailyForecastId: Long,
     val date: String,
-    val hour: String,
+    val time: String,
     val weatherDescription: WeatherDescription,
     val temperature: Double,
     val isDay: Boolean,

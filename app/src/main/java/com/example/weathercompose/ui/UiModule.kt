@@ -1,7 +1,6 @@
 package com.example.weathercompose.ui
 
 import com.example.weathercompose.ui.mapper.CityMapper
-import com.example.weathercompose.ui.mapper.ForecastMapper
 import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
@@ -40,9 +39,9 @@ val uiModule = module {
         )
     }
 
-    factory { ForecastMapper(context = androidApplication()) }
+    // factory { ForecastMapper(context = androidApplication()) }
 
-    factory { ForecastUIStateMapper(forecastMapper = get()) }
+    factory { ForecastUIStateMapper() }
 
     factory { CityMapper(context = androidApplication()) }
 }
