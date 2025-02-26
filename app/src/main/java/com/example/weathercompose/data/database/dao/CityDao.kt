@@ -12,7 +12,6 @@ import com.example.weathercompose.data.database.entity.combined.CityWithDailyFor
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.database.entity.forecast.HourlyForecastEntity
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
 @Dao
@@ -62,14 +61,18 @@ abstract class CityDao {
     @Query("SELECT * FROM daily_forecasts WHERE cityId = :cityId")
     abstract suspend fun findDailyForecastsByCityId(cityId: Long): List<DailyForecastEntity>
 
+    // TODO delete later.
+    /*
     @Transaction
     open suspend fun deleteForecastsFromCity(cityId: Long) {
         val dailyForecasts = findDailyForecastsByCityId(cityId = cityId)
+
         for (entity in dailyForecasts) {
             deleteHourlyForecastsByDailyForecastId(dailyForecasts = entity.dailyForecastId)
         }
         deleteDailyForecastsByCityId(cityId = cityId)
     }
+     */
 
     @Transaction
     open suspend fun saveForecasts(dailyForecasts: List<DailyForecastEntity>) = coroutineScope {
@@ -77,16 +80,19 @@ abstract class CityDao {
             async {
                 val dailyForecastEntityId = insert(dailyForecast = dailyForecastEntity)
 
-                if (dailyForecastEntity.hourlyForecasts.isNotEmpty()) {
-                    dailyForecastEntity.hourlyForecasts.map { hourlyForecastEntity ->
-                        async {
-                            insert(hourlyForecast = hourlyForecastEntity.copy(dailyForecastId = dailyForecastEntityId))
-                        }
-                    }.awaitAll()
+                dailyForecastEntity.hourlyForecasts.map { hourlyForecastEntity ->
+                    async {
+                        insert(hourlyForecast = hourlyForecastEntity.copy(dailyForecastId = dailyForecastEntityId))
+                    }
                 }
             }
-        }.awaitAll()
+        }
     }
 
+    @Query("SELECT COUNT(*) FROM daily_forecasts")
+    abstract suspend fun countDailyForecasts(): Int
+
+    @Query("SELECT COUNT(*) FROM hourly_forecasts")
+    abstract suspend fun countHourlyForecasts(): Int
 
 }

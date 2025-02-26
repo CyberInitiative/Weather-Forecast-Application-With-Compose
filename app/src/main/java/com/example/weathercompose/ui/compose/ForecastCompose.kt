@@ -1,5 +1,7 @@
 package com.example.weathercompose.ui.compose
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -22,7 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
+import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.viewmodel.MainViewModel
 import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import java.time.format.TextStyle
@@ -38,33 +41,77 @@ import java.util.Locale
 
 private const val TAG = "ForecastCompose"
 
+private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
+
 @Composable
 fun ForecastContent(
     viewModel: MainViewModel,
     sharedViewModel: SharedViewModel,
+    onAppearanceStateChange: (PrecipitationCondition) -> Unit
+
     //TODO add navigate function as parameter for search city screen navigation;
 ) {
     val loadedCities by sharedViewModel.loadedCitiesState.collectAsState()
 
 //    val hasSavedCities by viewModel.hasSavedCities.collectAsState()
     val forecastUIState by viewModel.forecastUIState.collectAsState()
+    val currentCityIdState by viewModel.currentCityIdState.collectAsState()
 
-    LaunchedEffect(loadedCities) {
-        //TODO if cities empty add logic to navigate to another screen;
-        viewModel.setLoadedCities(loadedCities)
+    val context = LocalContext.current
+
+    val animatedRowColor by animateColorAsState(
+        targetValue = Color(context.getColor(viewModel.rowColor)),
+        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION)
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.precipitationCondition.collect { state ->
+            onAppearanceStateChange(state)
+
+            when (state) {
+                PrecipitationCondition.NO_PRECIPITATION_DAY -> {
+                    viewModel.rowColor = R.color.liberty
+                }
+
+                PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
+                    viewModel.rowColor = R.color.mesmerize
+                }
+
+                PrecipitationCondition.PRECIPITATION_DAY -> {
+                    viewModel.rowColor = R.color.hilo_bay_25_percent_darker
+                }
+
+                PrecipitationCondition.PRECIPITATION_NIGHT -> {
+                    viewModel.rowColor = R.color.english_channel_10_percent_darker
+                }
+            }
+        }
     }
 
-    //TODO If we have no cities, we need move to search city screen;
+    LaunchedEffect(loadedCities, currentCityIdState) {
+        //TODO if cities empty add logic to navigate to another screen;
+        viewModel.setLoadedCities(loadedCities)
+        viewModel.setForecastForCity(currentCityIdState)
+    }
+
+    // TODO If we have no cities, we need move to search city screen;
 //    LaunchedEffect(hasSavedCities) {
 //        if (!hasSavedCities) {
 //            Log.d(TAG, "has no saved cities!")
 //            navController.navigate(NavigationRoutes.CitySearch) {
 //                popUpTo(NavigationRoutes.Forecast) {
 //                    inclusive = true
-//                } // Optional: Remove current screen from stack
+//                }
 //            }
 //        }
 //    }
+
+//    val backGroundColor =
+//        if (appearanceState == PrecipitationsAndTimeOfDayState.NO_PRECIPITATIONS_DAY) {
+//            colorResource(R.color.castle_moat)
+//        } else {
+//            colorResource(R.color.deep_royal)
+//        }
 
     Column(
         modifier = Modifier
@@ -91,8 +138,8 @@ fun ForecastContent(
                     )
 
                     HourlyForecastList(
-//                        forecastUIState.dailyForecasts[0].hourlyForecasts
-                        emptyList()
+                        hourlyForecasts = forecastUIState.hourlyForecasts,
+                        backgroundColor = animatedRowColor
                     )
 
                     Spacer(
@@ -102,7 +149,8 @@ fun ForecastContent(
                     )
 
                     DailyForecastList(
-                        forecastUIState.dailyForecasts
+                        forecastUIState.dailyForecasts,
+                        backgroundColor = animatedRowColor
                     )
                 }
             }
@@ -113,17 +161,20 @@ fun ForecastContent(
 }
 
 @Composable
-fun HourlyForecastList(dailyForecasts: List<HourlyForecastItem>) {
+fun HourlyForecastList(
+    hourlyForecasts: List<HourlyForecastItem>,
+    backgroundColor: Color,
+) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = colorResource(R.color.liberty),
+                color = backgroundColor,
                 shape = RoundedCornerShape(15.dp)
             ),
     ) {
-        items(dailyForecasts) { item ->
+        items(hourlyForecasts) { item ->
             HourlyForecastListItem(item)
         }
     }
@@ -164,13 +215,16 @@ fun HourlyForecastListItem(hourlyForecastItem: HourlyForecastItem) {
 }
 
 @Composable
-fun DailyForecastList(dailyForecasts: List<DailyForecastItem>) {
+fun DailyForecastList(
+    dailyForecasts: List<DailyForecastItem>,
+    backgroundColor: Color,
+) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = colorResource(R.color.liberty),
+                color = backgroundColor,
                 shape = RoundedCornerShape(15.dp)
             ),
     ) {

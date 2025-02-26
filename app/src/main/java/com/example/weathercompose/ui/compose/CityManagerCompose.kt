@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.compose
 
+import androidx.annotation.ColorRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -34,12 +38,14 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.CityItem
+import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.SharedViewModel
 
 @Composable
 fun CityManagerContent(
     viewModel: CityManagerViewModel,
+    precipitationCondition: PrecipitationCondition,
     sharedViewModel: SharedViewModel,
     onNavigateToSearchScreen: () -> Unit,
     onNavigateToForecastScreen: (CityItem) -> Unit,
@@ -49,6 +55,25 @@ fun CityManagerContent(
 
     LaunchedEffect(loadedCities) {
         viewModel.setLoadedCities(cities = loadedCities)
+    }
+
+    var listItemAndAddButtonColor by remember { mutableIntStateOf(R.color.liberty) }
+    when (precipitationCondition) {
+        PrecipitationCondition.NO_PRECIPITATION_DAY -> {
+            listItemAndAddButtonColor = R.color.liberty
+        }
+
+        PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
+            listItemAndAddButtonColor = R.color.mesmerize
+        }
+
+        PrecipitationCondition.PRECIPITATION_DAY -> {
+            listItemAndAddButtonColor = R.color.hilo_bay_25_percent_darker
+        }
+
+        PrecipitationCondition.PRECIPITATION_NIGHT -> {
+            listItemAndAddButtonColor = R.color.english_channel_10_percent_darker
+        }
     }
 
     ConstraintLayout(
@@ -72,11 +97,13 @@ fun CityManagerContent(
             cityItems = cityItems,
             modifier = cityListModifier,
             onCityItemClick = onNavigateToForecastScreen,
+            itemBackgroundColor = listItemAndAddButtonColor,
         )
 
         AddCityButton(
             onButtonClick = onNavigateToSearchScreen,
             modifier = addCityButtonModifier,
+            backgroundColor = listItemAndAddButtonColor
         )
     }
 }
@@ -86,6 +113,8 @@ private fun CityList(
     cityItems: List<CityItem>,
     modifier: Modifier = Modifier,
     onCityItemClick: (CityItem) -> Unit,
+    @ColorRes
+    itemBackgroundColor: Int,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth()
@@ -93,7 +122,8 @@ private fun CityList(
         itemsIndexed(cityItems) { index, item ->
             CityListItem(
                 cityItem = item,
-                onCityItemClick = onCityItemClick
+                onCityItemClick = onCityItemClick,
+                itemBackgroundColor = itemBackgroundColor,
             )
             if (index != cityItems.size - 1) {
                 HorizontalDivider(
@@ -110,18 +140,20 @@ private fun CityList(
 private fun CityListItem(
     cityItem: CityItem,
     onCityItemClick: (CityItem) -> Unit,
+    @ColorRes
+    itemBackgroundColor: Int,
 ) {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = colorResource(R.color.liberty),
+                color = colorResource(itemBackgroundColor),
                 shape = RoundedCornerShape(15.dp)
             )
             .clickable {
                 onCityItemClick(cityItem)
-            },
+            }
     ) {
         val (weatherIcon, weatherDescriptionLabel, temperatureLabel, cityNameLabel) = createRefs()
 
@@ -190,6 +222,8 @@ private fun CityListItem(
 private fun AddCityButton(
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
+    @ColorRes
+    backgroundColor: Int,
 ) {
     Button(
         onClick = onButtonClick,
@@ -197,7 +231,7 @@ private fun AddCityButton(
             .wrapContentWidth()
             .wrapContentHeight(),
         colors = ButtonColors(
-            containerColor = colorResource(R.color.liberty),
+            containerColor = colorResource(backgroundColor),
             contentColor = Color.White,
             disabledContentColor = Color.Gray,
             disabledContainerColor = Color.Gray,

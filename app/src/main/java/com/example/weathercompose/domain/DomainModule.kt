@@ -41,8 +41,6 @@ val domainModule = module {
 
     factory {
         SaveForecastsUseCase(
-//            saveDailyForecastsUseCase = get(),
-//            saveHourlyForecastsUseCase = get(),
             forecastRepository = get(),
         )
     }

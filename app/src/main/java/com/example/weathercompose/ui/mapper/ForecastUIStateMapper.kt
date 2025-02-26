@@ -8,8 +8,8 @@ class ForecastUIStateMapper {
         with(city) {
             return ForecastUIState(
                 cityName = name,
-                dailyForecasts = city.forecasts.map { it.mapToDailyForecastItem() },
-                hourlyForecasts = emptyList(),
+                dailyForecasts = forecasts.map { it.mapToDailyForecastItem() },
+                hourlyForecasts = getForecastFor24Hours().map { it.mapToHourlyForecastItem() },
                 errorMessage = errorMessage,
             )
         }

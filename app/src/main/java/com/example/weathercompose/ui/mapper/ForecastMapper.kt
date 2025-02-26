@@ -33,24 +33,3 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(): HourlyForecastItem {
         temperature = Math.round(temperature).toInt(),
     )
 }
-
-//private fun getForecastFor24Hours(cityDomainModel: CityDomainModel): List<HourlyForecastItem> {
-//    val currentDateAndTime = getCurrentDateAndTimeInTimeZone(cityDomainModel.timeZone)
-//    val nextDateFromCurrent = getNextDateFromCurrent(cityDomainModel.timeZone)
-//    val forecastForCurrentDate =
-//        cityDomainModel.forecasts.firstOrNull { it.date == currentDateAndTime.date }
-//    val forecastForNextDate =
-//        cityDomainModel.forecasts.firstOrNull { it.date == nextDateFromCurrent }
-//
-//    val hourlyForecastsForCurrentDay = forecastForCurrentDate?.hourlyForecasts ?: emptyList()
-//    val hourlyForecastsForNextDay = forecastForNextDate?.hourlyForecasts ?: emptyList()
-//
-//    val combinedForecasts = hourlyForecastsForCurrentDay + hourlyForecastsForNextDay
-//
-//    if (combinedForecasts.isEmpty()) {
-//        return emptyList()
-//    } else {
-////         combinedForecasts.filter {  }
-//    }
-//    return emptyList()
-//}

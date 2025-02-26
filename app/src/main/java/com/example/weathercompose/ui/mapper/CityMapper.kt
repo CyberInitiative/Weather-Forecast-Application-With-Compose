@@ -11,8 +11,13 @@ import java.time.ZonedDateTime
 
 class CityMapper(private val context: Context) {
     fun mapToCityItem(cityDomainModel: CityDomainModel): CityItem {
+        val currentHourInTimeZone = ZonedDateTime
+            .now(ZoneId.of(cityDomainModel.timeZone))
+            .toLocalTime()
+            .hour
+
         val currentHourlyForecast = cityDomainModel.forecasts[0].hourlyForecasts.firstOrNull {
-            it.time == ZonedDateTime.now(ZoneId.of(cityDomainModel.timeZone)).toLocalTime()
+            it.time.hour == currentHourInTimeZone
         }
 
         val (temperature, weatherDescription, icon) = if (currentHourlyForecast != null) {

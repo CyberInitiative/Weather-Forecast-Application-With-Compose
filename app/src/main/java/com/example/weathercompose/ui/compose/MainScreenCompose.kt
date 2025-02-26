@@ -1,6 +1,10 @@
 package com.example.weathercompose.ui.compose
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,13 +25,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -36,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.ui.model.CityItem
+import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoutes
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
@@ -44,14 +51,46 @@ import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "MainScreenCompose"
+
 const val SAVED_CITY_ID_KEY = "saved_city_id_key"
 
+private const val SCREEN_TRANSITION_ANIMATION_DURATION: Int = 500
+private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
+
 @Composable
-fun NavigationHost(navController: NavHostController) {
+fun NavigationHost(
+    navController: NavHostController,
+    precipitationCondition: PrecipitationCondition,
+    onAppearanceStateChange: (PrecipitationCondition) -> Unit,
+) {
     NavHost(
         navController = navController,
         startDestination = NavigationRoutes.Forecast,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+            )
+        }
     ) {
         composable<NavigationRoutes.Forecast> { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
@@ -71,6 +110,7 @@ fun NavigationHost(navController: NavHostController) {
             ForecastContent(
                 viewModel = viewModel,
                 sharedViewModel = sharedViewModel,
+                onAppearanceStateChange = onAppearanceStateChange,
             )
         }
 
@@ -80,9 +120,9 @@ fun NavigationHost(navController: NavHostController) {
             }
 
             val sharedViewModel = koinViewModel<SharedViewModel>(viewModelStoreOwner = parentEntry)
-
             CityManagerContent(
                 viewModel = koinViewModel<CityManagerViewModel>(),
+                precipitationCondition = precipitationCondition,
                 sharedViewModel = sharedViewModel,
                 onNavigateToSearchScreen = { navController.navigate(NavigationRoutes.CitySearch) },
                 onNavigateToForecastScreen = { cityItem: CityItem ->
@@ -106,6 +146,7 @@ fun NavigationHost(navController: NavHostController) {
 
             CitiesSearchContent(
                 viewModel = viewModel,
+                precipitationCondition = precipitationCondition,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
@@ -115,33 +156,72 @@ fun NavigationHost(navController: NavHostController) {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            MainScreenTopAppBar(navController = navController)
+
+    var precipitationCondition by rememberSaveable {
+        mutableStateOf(PrecipitationCondition.NO_PRECIPITATION_DAY)
+    }
+    val onAppearanceStateChange = { state: PrecipitationCondition ->
+        precipitationCondition = state
+    }
+
+    val context = LocalContext.current
+    val backgroundColor by animateColorAsState(
+        targetValue = when (precipitationCondition) {
+            PrecipitationCondition.NO_PRECIPITATION_DAY -> {
+                Color(ContextCompat.getColor(context, R.color.castle_moat))
+            }
+
+            PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
+                Color(ContextCompat.getColor(context, R.color.peaceful_night))
+            }
+
+            PrecipitationCondition.PRECIPITATION_DAY -> {
+                Color(ContextCompat.getColor(context, R.color.hilo_bay))
+            }
+
+            PrecipitationCondition.PRECIPITATION_NIGHT -> {
+                Color(ContextCompat.getColor(context, R.color.english_channel_45_percent_darker))
+            }
+
         },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.4f to colorResource(id = R.color.castle_moat),
-                            1f to colorResource(id = R.color.skysail_blue)
-                        )
-                    )
+        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
+    )
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                MainScreenTopAppBar(
+                    navController = navController,
                 )
-        ) {
-            NavigationHost(navController = navController)
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                NavigationHost(
+                    navController = navController,
+                    precipitationCondition = precipitationCondition,
+                    onAppearanceStateChange = onAppearanceStateChange
+                )
+            }
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainScreenTopAppBar(navController: NavController) {
+private fun MainScreenTopAppBar(
+    navController: NavController,
+) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val onMenuClick = { menuExpanded = !menuExpanded }
@@ -151,7 +231,7 @@ private fun MainScreenTopAppBar(navController: NavController) {
         { navController.navigate(NavigationRoutes.CitiesManager) }
 
     TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = colorResource(R.color.castle_moat),
+        containerColor = Color.Transparent,
         titleContentColor = Color.White,
     ), title = {
         Text("Weather Forecast")
@@ -225,3 +305,12 @@ private fun OptionsMenuItemDivider() {
         color = colorResource(R.color.intercoastal_gray)
     )
 }
+
+/*
+                    brush = Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.4f to colorResource(id = R.color.castle_moat),
+                            1f to colorResource(id = R.color.skysail_blue)
+                        )
+                    )
+ */

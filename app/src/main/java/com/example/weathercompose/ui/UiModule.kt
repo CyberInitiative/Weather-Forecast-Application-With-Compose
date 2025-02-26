@@ -24,6 +24,7 @@ val uiModule = module {
         CityManagerViewModel(
             loadAllCitiesUseCase = get(),
             forecastUIStateMapper = get(),
+            deleteForecastsUseCase = get(),
             cityMapper = get(),
         )
     }

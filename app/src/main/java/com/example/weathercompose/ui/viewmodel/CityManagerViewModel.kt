@@ -1,8 +1,10 @@
 package com.example.weathercompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
+import com.example.weathercompose.domain.usecase.forecast.DeleteForecastsUseCase
 import com.example.weathercompose.ui.mapper.CityMapper
 import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
 import com.example.weathercompose.ui.model.CityItem
@@ -10,12 +12,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class CityManagerViewModel(
     private val loadAllCitiesUseCase: LoadAllCitiesUseCase,
     private val forecastUIStateMapper: ForecastUIStateMapper,
+    private val deleteForecastsUseCase: DeleteForecastsUseCase,
     private val cityMapper: CityMapper,
-    ) : ViewModel() {
+) : ViewModel() {
     private var loadedCities: List<CityDomainModel> = emptyList()
 
     private val _cityItems = MutableStateFlow<List<CityItem>>(emptyList())
@@ -28,19 +32,9 @@ class CityManagerViewModel(
         _cityItems.update { cityItems }
     }
 
-//    private val _citiesUIState: MutableStateFlow<UIState<List<ForecastUIState>>> =
-//        MutableStateFlow(UIState.Loading())
-//    val citiesUIState: StateFlow<UIState<List<ForecastUIState>>> get() = _citiesUIState
-
-//    init {
-//        loadCities()
-//    }
-
-//    fun loadCities() {
-//        viewModelScope.launch {
-//            val cities = loadAllCitiesUseCase()
-//            val mappedCities = cities.map { forecastUIStateMapper.mapToUIModel(it) }
-//            _citiesUIState.value = UIState.Content(data = mappedCities)
-//        }
-//    }
+    fun delete(cityId: Long) {
+        viewModelScope.launch {
+            deleteForecastsUseCase.invoke(cityId = cityId)
+        }
+    }
 }

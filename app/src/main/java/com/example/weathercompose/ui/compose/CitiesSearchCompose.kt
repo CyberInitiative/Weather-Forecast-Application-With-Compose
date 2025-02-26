@@ -1,6 +1,7 @@
 package com.example.weathercompose.ui.compose
 
 import android.util.Log
+import androidx.annotation.ColorRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.ui.UIState
+import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -45,6 +48,7 @@ private const val TAG = "CitiesManagerCompose"
 @Composable
 fun CitiesSearchContent(
     viewModel: CitySearchViewModel,
+    precipitationCondition: PrecipitationCondition,
     onNavigateToForecastScreen: (CityDomainModel) -> Any,
 ) {
     var query by remember { mutableStateOf("") }
@@ -58,6 +62,25 @@ fun CitiesSearchContent(
         }
     }
 
+    var listItemsColor by remember { mutableIntStateOf(R.color.liberty) }
+    when (precipitationCondition) {
+        PrecipitationCondition.NO_PRECIPITATION_DAY -> {
+            listItemsColor = R.color.liberty
+        }
+
+        PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
+            listItemsColor = R.color.mesmerize
+        }
+
+        PrecipitationCondition.PRECIPITATION_DAY -> {
+            listItemsColor = R.color.hilo_bay_25_percent_darker
+        }
+
+        PrecipitationCondition.PRECIPITATION_NIGHT -> {
+            listItemsColor = R.color.english_channel_10_percent_darker
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -68,7 +91,8 @@ fun CitiesSearchContent(
                 coroutineScope.launch {
                     viewModel.searchCity(name = newQuery)
                 }
-            }
+            },
+            itemBackgroundColor = listItemsColor
         )
 
         when (citySearchResult) {
@@ -94,6 +118,8 @@ fun CitiesSearchContent(
 fun SearchBox(
     query: String,
     onQueryChanged: (String) -> Unit,
+    @ColorRes
+    itemBackgroundColor: Int,
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -103,7 +129,7 @@ fun SearchBox(
             modifier = Modifier
                 .size(width = 225.dp, height = 40.dp)
                 .background(
-                    color = colorResource(R.color.liberty),
+                    color = colorResource(itemBackgroundColor),
                     shape = RoundedCornerShape(15.dp)
                 )
                 .padding(top = 10.dp, start = 15.dp, end = 15.dp),
@@ -158,7 +184,7 @@ fun CityListItem(
     ) {
         Text(
             color = Color.White,
-            text = city.getFullLocation(),
+            text = city.getFullLocationName(),
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

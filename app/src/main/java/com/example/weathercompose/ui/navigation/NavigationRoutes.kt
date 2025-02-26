@@ -6,8 +6,10 @@ sealed class NavigationRoutes() {
 
     @Serializable
     object Forecast : NavigationRoutes()
+
     @Serializable
     object CitiesManager : NavigationRoutes()
+
     @Serializable
     object CitySearch : NavigationRoutes()
 }
