@@ -55,6 +55,12 @@ class CityRepositoryImpl(
         }
     }
 
+    override suspend fun deleteCityById(cityId: Long) {
+        withContext(dispatcher) {
+            cityDao.deleteCityById(cityId = cityId)
+        }
+    }
+
     override suspend fun update(city: CityDomainModel) {
         withContext(dispatcher) {
             cityDao.update(city.mapToEntity())

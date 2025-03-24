@@ -47,7 +47,6 @@ import com.example.weathercompose.ui.navigation.NavigationRoutes
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
 import com.example.weathercompose.ui.viewmodel.MainViewModel
-import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "MainScreenCompose"
@@ -61,7 +60,7 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 fun NavigationHost(
     navController: NavHostController,
     precipitationCondition: PrecipitationCondition,
-    onAppearanceStateChange: (PrecipitationCondition) -> Unit,
+    onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -93,37 +92,26 @@ fun NavigationHost(
         }
     ) {
         composable<NavigationRoutes.Forecast> { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(NavigationRoutes.Forecast)
-            }
-
             val viewModel = koinViewModel<MainViewModel>()
-            val sharedViewModel = koinViewModel<SharedViewModel>(viewModelStoreOwner = parentEntry)
 
             val savedCityId = backStackEntry.savedStateHandle.get<Long>(SAVED_CITY_ID_KEY)
+
             LaunchedEffect(savedCityId) {
                 if (savedCityId != null) {
-                    sharedViewModel.loadCity(savedCityId)
-                    viewModel.setCurrentCityId(cityId = savedCityId)
+                    viewModel.setCurrentCityForecast(cityId = savedCityId)
                 }
             }
+
             ForecastContent(
                 viewModel = viewModel,
-                sharedViewModel = sharedViewModel,
-                onAppearanceStateChange = onAppearanceStateChange,
+                onAppearanceStateChange = onPrecipitationConditionChange,
             )
         }
 
-        composable<NavigationRoutes.CitiesManager> { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(NavigationRoutes.Forecast)
-            }
-
-            val sharedViewModel = koinViewModel<SharedViewModel>(viewModelStoreOwner = parentEntry)
+        composable<NavigationRoutes.CitiesManager> {
             CityManagerContent(
                 viewModel = koinViewModel<CityManagerViewModel>(),
                 precipitationCondition = precipitationCondition,
-                sharedViewModel = sharedViewModel,
                 onNavigateToSearchScreen = { navController.navigate(NavigationRoutes.CitySearch) },
                 onNavigateToForecastScreen = { cityItem: CityItem ->
                     val previousBackStackEntry = navController.previousBackStackEntry
@@ -209,7 +197,7 @@ fun MainScreen() {
                 NavigationHost(
                     navController = navController,
                     precipitationCondition = precipitationCondition,
-                    onAppearanceStateChange = onAppearanceStateChange
+                    onPrecipitationConditionChange = onAppearanceStateChange
                 )
             }
         }

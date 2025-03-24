@@ -34,8 +34,11 @@ import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.ui_state.CityForecastUIState
+import com.example.weathercompose.ui.ui_state.CityForecastUIState.CityDataUIState
+import com.example.weathercompose.ui.ui_state.DailyForecastDataUIState
+import com.example.weathercompose.ui.ui_state.HourlyForecastDataUIState
 import com.example.weathercompose.ui.viewmodel.MainViewModel
-import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -46,16 +49,11 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 @Composable
 fun ForecastContent(
     viewModel: MainViewModel,
-    sharedViewModel: SharedViewModel,
     onAppearanceStateChange: (PrecipitationCondition) -> Unit
-
     //TODO add navigate function as parameter for search city screen navigation;
 ) {
-    val loadedCities by sharedViewModel.loadedCitiesState.collectAsState()
 
-//    val hasSavedCities by viewModel.hasSavedCities.collectAsState()
-    val forecastUIState by viewModel.forecastUIState.collectAsState()
-    val currentCityIdState by viewModel.currentCityIdState.collectAsState()
+    val cityForecastUIState by viewModel.cityForecastUIState.collectAsState()
 
     val context = LocalContext.current
 
@@ -88,12 +86,6 @@ fun ForecastContent(
         }
     }
 
-    LaunchedEffect(loadedCities, currentCityIdState) {
-        //TODO if cities empty add logic to navigate to another screen;
-        viewModel.setLoadedCities(loadedCities)
-        viewModel.setForecastForCity(currentCityIdState)
-    }
-
     // TODO If we have no cities, we need move to search city screen;
 //    LaunchedEffect(hasSavedCities) {
 //        if (!hasSavedCities) {
@@ -119,16 +111,13 @@ fun ForecastContent(
             .padding(all = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (!forecastUIState.isDataLoading) {
+        when (cityForecastUIState) {
+            is CityDataUIState -> {
+                val cityDataUIState = cityForecastUIState as CityDataUIState
 
-            when {
-                forecastUIState.errorMessage.isNotEmpty() -> {
-                    Text(text = forecastUIState.errorMessage)
-                }
-
-                else -> {
+                if (!cityDataUIState.isDataLoading) {
                     Text(
-                        text = forecastUIState.cityName,
+                        text = (cityForecastUIState as CityDataUIState).cityName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 30.dp)
@@ -137,10 +126,18 @@ fun ForecastContent(
                         fontSize = 30.sp,
                     )
 
-                    HourlyForecastList(
-                        hourlyForecasts = forecastUIState.hourlyForecasts,
-                        backgroundColor = animatedRowColor
-                    )
+                    when (cityDataUIState.hourlyForecastsUIState) {
+                        is HourlyForecastDataUIState.HourlyForecastDataPresentUIState -> {
+                            HourlyForecastList(
+                                hourlyForecasts = cityDataUIState.hourlyForecastsUIState.hourlyForecastItems,
+                                backgroundColor = animatedRowColor
+                            )
+                        }
+
+                        is HourlyForecastDataUIState.NoActualForecastDataUIState -> {
+                            //TODO add text explaining no data presence
+                        }
+                    }
 
                     Spacer(
                         modifier = Modifier
@@ -148,14 +145,27 @@ fun ForecastContent(
                             .height(30.dp)
                     )
 
-                    DailyForecastList(
-                        forecastUIState.dailyForecasts,
-                        backgroundColor = animatedRowColor
-                    )
+                    when (cityDataUIState.dailyForecastsUIState) {
+                        is DailyForecastDataUIState.DailyForecastDataPresentUIState -> {
+                            DailyForecastList(
+                                dailyForecasts = cityDataUIState.dailyForecastsUIState.dailyForecastItems,
+                                backgroundColor = animatedRowColor
+                            )
+                        }
+
+                        is DailyForecastDataUIState.NoActualForecastDataUIState -> {
+                            //TODO add text explaining no data presence
+                        }
+                    }
+
+                } else {
+                    LoadingProcessIndicator()
                 }
+
             }
-        } else {
-            LoadingProcessIndicator()
+
+            is CityForecastUIState.ErrorForecastUIState -> TODO()
+            CityForecastUIState.NoCityDataForecastUIState -> TODO()
         }
     }
 }

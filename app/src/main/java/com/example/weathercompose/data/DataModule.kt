@@ -47,6 +47,10 @@ val dataModule = module {
         database.cities()
     }
 
+    single {
+        CityCacheManager()
+    }
+
     factory {
         HourlyForecastMapper()
     }

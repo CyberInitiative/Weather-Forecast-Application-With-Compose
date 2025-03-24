@@ -1,5 +1,6 @@
 package com.example.weathercompose.domain
 
+import com.example.weathercompose.domain.usecase.city.DeleteCityUseCase
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
 import com.example.weathercompose.domain.usecase.city.LoadCityUseCase
 import com.example.weathercompose.domain.usecase.city.SaveCityUseCase
@@ -25,9 +26,26 @@ val domainModule = module {
 
     factory { SaveCityUseCase(cityRepository = get { parametersOf(Dispatchers.IO) }) }
 
-    factory { LoadCityUseCase(cityRepository = get { parametersOf(Dispatchers.IO) }) }
+    factory {
+        LoadCityUseCase(
+            cityRepository = get { parametersOf(Dispatchers.IO) },
+            cityCacheManager = get()
+        )
+    }
 
-    factory { LoadAllCitiesUseCase(cityRepository = get { parametersOf(Dispatchers.IO) }) }
+    factory {
+        LoadAllCitiesUseCase(
+            cityRepository = get { parametersOf(Dispatchers.IO) },
+            cityCacheManager = get()
+        )
+    }
+
+    factory {
+        DeleteCityUseCase(
+            cityRepository = get { parametersOf(Dispatchers.IO) },
+            cityCacheManager = get()
+        )
+    }
 
     factory { SaveDailyForecastsUseCase(forecastRepository = get { parametersOf(Dispatchers.IO) }) }
 
@@ -37,7 +55,11 @@ val domainModule = module {
         )
     }
 
-    factory { DeleteForecastsUseCase(forecastRepository = get { parametersOf(Dispatchers.IO) }) }
+    factory {
+        DeleteForecastsUseCase(
+            forecastRepository = get { parametersOf(Dispatchers.IO) },
+        )
+    }
 
     factory {
         SaveForecastsUseCase(

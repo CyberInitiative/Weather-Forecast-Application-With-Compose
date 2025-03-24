@@ -18,5 +18,7 @@ interface CityRepository {
 
     suspend fun delete(city: CityDomainModel)
 
+    suspend fun deleteCityById(cityId: Long)
+
     suspend fun update(city: CityDomainModel)
 }

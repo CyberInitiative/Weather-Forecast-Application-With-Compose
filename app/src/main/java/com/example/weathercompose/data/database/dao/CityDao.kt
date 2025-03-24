@@ -34,6 +34,9 @@ abstract class CityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(hourlyForecast: HourlyForecastEntity): Long
 
+    @Query("DELETE FROM cities WHERE cityId = :cityId")
+    abstract suspend fun deleteCityById(cityId: Long)
+
     @Delete
     abstract suspend fun delete(city: CityEntity)
 

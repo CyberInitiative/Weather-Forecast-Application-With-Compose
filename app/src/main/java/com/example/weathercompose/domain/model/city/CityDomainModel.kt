@@ -1,13 +1,10 @@
 package com.example.weathercompose.domain.model.city
 
-import android.util.Log
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.utils.getCurrentDateAndHourInTimeZone
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 data class CityDomainModel(
     val latitude: Double,
@@ -25,21 +22,20 @@ data class CityDomainModel(
 ) {
 
     fun getForecastForCurrentHour(): HourlyForecastDomainModel {
-        val now = ZonedDateTime.now(ZoneId.of(timeZone))
-            .truncatedTo(ChronoUnit.MINUTES)
-            .withMinute(0)
-        val dailyForecast = forecasts.first { it.date == now.toLocalDate() }
+        val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
+        val dailyForecast = forecasts.first { it.date == currentDateAndHour.toLocalDate() }
 
-        return dailyForecast.hourlyForecasts.first { it.time == now.toLocalTime() }
+        return dailyForecast.hourlyForecasts.first { it.time == currentDateAndHour.toLocalTime() }
     }
 
     fun getForecastFor24Hours(): List<HourlyForecastDomainModel> {
-        val now = ZonedDateTime.now(ZoneId.of(timeZone)).truncatedTo(ChronoUnit.MINUTES)
+        val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
 
         return forecasts.asSequence().filter {
-            it.date == now.toLocalDate() || it.date == now.toLocalDate().plusDays(1)
+            it.date == currentDateAndHour.toLocalDate() ||
+                    it.date == currentDateAndHour.toLocalDate().plusDays(1)
         }.flatMap { it.hourlyForecasts }
-            .filter { LocalDateTime.of(it.date, it.time) > now.toLocalDateTime() }
+            .filter { LocalDateTime.of(it.date, it.time) > currentDateAndHour.toLocalDateTime() }
             .take(24)
             .toList()
     }
@@ -49,25 +45,21 @@ data class CityDomainModel(
         return when {
             hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
                 -> {
-                Log.d(TAG, "case 1")
                 PrecipitationCondition.NO_PRECIPITATION_DAY
             }
 
             !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
                 -> {
-                Log.d(TAG, "case 2")
                 PrecipitationCondition.NO_PRECIPITATION_NIGHT
             }
 
             hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
                 -> {
-                Log.d(TAG, "case 3")
                 PrecipitationCondition.PRECIPITATION_DAY
             }
 
             !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
                 -> {
-                Log.d(TAG, "case 4")
                 PrecipitationCondition.PRECIPITATION_NIGHT
             }
 

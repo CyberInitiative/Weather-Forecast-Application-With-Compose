@@ -23,6 +23,7 @@ fun DailyForecastDomainModel.mapToDailyForecastItem(): DailyForecastItem {
 fun HourlyForecastDomainModel.mapToHourlyForecastItem(): HourlyForecastItem {
     return HourlyForecastItem(
         time = time,
+        date = date,
         weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
             weatherDescription = weatherDescription,
             isDay = isDay,

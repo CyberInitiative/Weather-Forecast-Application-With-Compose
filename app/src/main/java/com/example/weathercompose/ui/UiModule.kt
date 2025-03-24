@@ -11,7 +11,17 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val uiModule = module {
-    viewModel { MainViewModel(forecastUIStateMapper = get()) }
+    viewModel {
+        MainViewModel(
+            forecastUIStateMapper = get(),
+            loadCityUseCase = get(),
+            loadAllCitiesUseCase = get(),
+            loadForecastUseCase = get(),
+            saveForecastsUseCase = get(),
+            deleteForecastsUseCase = get(),
+            networkManager = get()
+        )
+    }
 
     viewModel {
         CitySearchViewModel(
@@ -23,8 +33,7 @@ val uiModule = module {
     viewModel {
         CityManagerViewModel(
             loadAllCitiesUseCase = get(),
-            forecastUIStateMapper = get(),
-            deleteForecastsUseCase = get(),
+            deleteCityUseCase = get(),
             cityMapper = get(),
         )
     }
@@ -42,7 +51,7 @@ val uiModule = module {
 
     // factory { ForecastMapper(context = androidApplication()) }
 
-    factory { ForecastUIStateMapper() }
+    factory { ForecastUIStateMapper(context = androidApplication()) }
 
     factory { CityMapper(context = androidApplication()) }
 }
