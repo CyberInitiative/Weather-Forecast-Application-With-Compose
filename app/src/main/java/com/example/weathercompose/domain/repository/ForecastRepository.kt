@@ -5,7 +5,7 @@ import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 
 interface ForecastRepository {
 
-    suspend fun load(
+    suspend fun loadForecastForCity(
         latitude: Double,
         longitude: Double,
         timeZone: String,
@@ -14,10 +14,10 @@ interface ForecastRepository {
         forecastDays: Int,
     ): FullForecast
 
-    suspend fun saveForecasts(
+    suspend fun saveForecastForCity(
         cityId: Long,
         dailyForecasts: List<DailyForecastDomainModel>,
     )
 
-    suspend fun deleteForecasts(cityId: Long)
+    suspend fun deleteForecastForCity(cityId: Long)
 }

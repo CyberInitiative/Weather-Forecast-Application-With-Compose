@@ -2,10 +2,10 @@ package com.example.weathercompose.ui.model
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import java.time.LocalDate
 
 data class DailyForecastItem(
-    val date: LocalDate,
+    val date: String,
+    val dayOfMonth: String,
     @DrawableRes
     val weatherIconRes: Int,
     @StringRes

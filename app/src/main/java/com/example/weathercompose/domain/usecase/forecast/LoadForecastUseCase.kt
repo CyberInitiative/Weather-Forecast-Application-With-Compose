@@ -22,7 +22,7 @@ class LoadForecastUseCase(
         forecastDays: Int = ForecastService.DEFAULT_FORECAST_DAYS,
     ): ResponseResult<List<DailyForecastDomainModel>> {
         return try {
-            val response = forecastRepository.load(
+            val response = forecastRepository.loadForecastForCity(
                 latitude = latitude,
                 longitude = longitude,
                 timeZone = timeZone,

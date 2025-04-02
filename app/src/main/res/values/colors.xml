@@ -17,8 +17,9 @@
     <color name="deep_royal">#FF143A7A</color>
     <color name="intercoastal_gray">#FFA5B0B9</color>
     <color name="cornflower_blue">#FF95C7FC</color>
-    <color name="peaceful_night">#1D355C</color>
-    <color name="mesmerize">#375C90</color>
+    <color name="chinese_black">#001328</color>
+    <color name="peaceful_night">#002F63</color>
+    <color name="mesmerize">#2f538b</color>
 
     <color name="dark_pewter">#8D9397</color>
     <color name="hilo_bay">#758AA2</color>
@@ -27,5 +28,7 @@
     <color name="hilo_bay_25_percent_darker">#54677d</color>
     <color name="english_channel_45_percent_darker">#2b3540</color>
     <color name="english_channel_10_percent_darker">#465768</color>
+
+    <color name="bridal_veil">#D5D6DD</color>
 
 </resources>

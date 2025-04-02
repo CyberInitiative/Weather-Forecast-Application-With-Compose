@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.domain.usecase.city.DeleteCityUseCase
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
-import com.example.weathercompose.ui.mapper.CityMapper
+import com.example.weathercompose.ui.mapper.CityItemMapper
 import com.example.weathercompose.ui.model.CityItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 class CityManagerViewModel(
     private val loadAllCitiesUseCase: LoadAllCitiesUseCase,
     private val deleteCityUseCase: DeleteCityUseCase,
-    private val cityMapper: CityMapper,
+    private val cityItemMapper: CityItemMapper,
 ) : ViewModel() {
 
     private val _cityItems = MutableStateFlow<List<CityItem>>(emptyList())
@@ -24,7 +24,7 @@ class CityManagerViewModel(
 
     init {
         viewModelScope.launch {
-            val cityItems = loadAllCitiesUseCase.invoke().map { cityMapper.mapToCityItem(it) }
+            val cityItems = loadAllCitiesUseCase.invoke().map { cityItemMapper.mapToCityItem(it) }
             _cityItems.update { cityItems }
         }
     }

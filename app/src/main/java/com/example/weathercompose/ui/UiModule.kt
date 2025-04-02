@@ -1,10 +1,10 @@
 package com.example.weathercompose.ui
 
-import com.example.weathercompose.ui.mapper.CityMapper
+import com.example.weathercompose.ui.mapper.CityItemMapper
 import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
 import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
 import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
-import com.example.weathercompose.ui.viewmodel.MainViewModel
+import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import com.example.weathercompose.ui.viewmodel.SharedViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
@@ -12,14 +12,16 @@ import org.koin.dsl.module
 
 val uiModule = module {
     viewModel {
-        MainViewModel(
-            forecastUIStateMapper = get(),
+        ForecastViewModel(
             loadCityUseCase = get(),
             loadAllCitiesUseCase = get(),
+            deleteCityUseCase = get(),
             loadForecastUseCase = get(),
-            saveForecastsUseCase = get(),
-            deleteForecastsUseCase = get(),
-            networkManager = get()
+            saveForecastUseCase = get(),
+            deleteForecastUseCase = get(),
+            networkManager = get(),
+            forecastUIStateMapper = get(),
+            cityItemsMapper = get(),
         )
     }
 
@@ -34,7 +36,7 @@ val uiModule = module {
         CityManagerViewModel(
             loadAllCitiesUseCase = get(),
             deleteCityUseCase = get(),
-            cityMapper = get(),
+            cityItemMapper = get(),
         )
     }
 
@@ -43,8 +45,8 @@ val uiModule = module {
             loadCityUseCase = get(),
             loadAllCitiesUseCase = get(),
             loadForecastUseCase = get(),
-            saveForecastsUseCase = get(),
-            deleteForecastsUseCase = get(),
+            saveForecastUseCase = get(),
+            deleteForecastUseCase = get(),
             networkManager = get(),
         )
     }
@@ -53,5 +55,5 @@ val uiModule = module {
 
     factory { ForecastUIStateMapper(context = androidApplication()) }
 
-    factory { CityMapper(context = androidApplication()) }
+    factory { CityItemMapper(context = androidApplication()) }
 }

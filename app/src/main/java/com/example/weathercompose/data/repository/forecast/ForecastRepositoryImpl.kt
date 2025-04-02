@@ -16,7 +16,7 @@ class ForecastRepositoryImpl(
     private val cityDao: CityDao,
 ) : ForecastRepository {
 
-    override suspend fun load(
+    override suspend fun loadForecastForCity(
         latitude: Double,
         longitude: Double,
         timeZone: String,
@@ -36,7 +36,7 @@ class ForecastRepositoryImpl(
         }
     }
 
-    override suspend fun saveForecasts(
+    override suspend fun saveForecastForCity(
         cityId: Long,
         dailyForecasts: List<DailyForecastDomainModel>
     ) {
@@ -52,7 +52,7 @@ class ForecastRepositoryImpl(
         }
     }
 
-    override suspend fun deleteForecasts(cityId: Long) {
+    override suspend fun deleteForecastForCity(cityId: Long) {
         withContext(dispatcher) {
             cityDao.deleteDailyForecastsByCityId(cityId = cityId)
         }

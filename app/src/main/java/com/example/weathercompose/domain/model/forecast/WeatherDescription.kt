@@ -112,7 +112,7 @@ enum class WeatherDescription {
         ): Int {
             return when (weatherDescription) {
                 CLEAR_SKY -> if (isDay) {
-                    R.drawable.sun_icon_180
+                    R.drawable.sunny_day_16458
                 } else {
                     R.drawable.moon_and_clear_sky_16468
                 }

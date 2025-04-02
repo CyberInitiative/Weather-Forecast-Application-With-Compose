@@ -5,10 +5,15 @@ import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainMode
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
+import com.example.weathercompose.utils.getCurrentDateInTimeZone
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
-fun DailyForecastDomainModel.mapToDailyForecastItem(): DailyForecastItem {
+fun DailyForecastDomainModel.mapToDailyForecastItem(timeZone: String): DailyForecastItem {
     return DailyForecastItem(
-        date = date,
+        date = getDayOfWeek(date = this.date, timeZone = timeZone),
+        dayOfMonth = "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.SHORT, Locale.US)}",
         weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
             weatherDescription = weatherDescription,
         ),
@@ -18,6 +23,15 @@ fun DailyForecastDomainModel.mapToDailyForecastItem(): DailyForecastItem {
         maxTemperature = Math.round(maxTemperature).toInt(),
         minTemperature = Math.round(minTemperature).toInt(),
     )
+}
+
+private fun getDayOfWeek(date: LocalDate, timeZone: String): String {
+    val currentDateInTimeZone = getCurrentDateInTimeZone(timeZone = timeZone)
+    return if(currentDateInTimeZone == date){
+        "Today"
+    } else {
+        date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.US)
+    }
 }
 
 fun HourlyForecastDomainModel.mapToHourlyForecastItem(): HourlyForecastItem {

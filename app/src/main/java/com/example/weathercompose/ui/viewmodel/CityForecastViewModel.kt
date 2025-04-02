@@ -1,17 +1,16 @@
 package com.example.weathercompose.ui.viewmodel
 
 import android.util.Log
-import androidx.annotation.ColorRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weathercompose.R
 import com.example.weathercompose.data.api.ResponseResult
 import com.example.weathercompose.domain.model.city.CityDomainModel
+import com.example.weathercompose.domain.usecase.city.DeleteCityUseCase
 import com.example.weathercompose.domain.usecase.city.LoadAllCitiesUseCase
 import com.example.weathercompose.domain.usecase.city.LoadCityUseCase
-import com.example.weathercompose.domain.usecase.forecast.DeleteForecastsUseCase
+import com.example.weathercompose.domain.usecase.forecast.DeleteForecastUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
-import com.example.weathercompose.domain.usecase.forecast.SaveForecastsUseCase
+import com.example.weathercompose.domain.usecase.forecast.SaveForecastUseCase
 import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.CityForecastUIState
@@ -25,16 +24,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainViewModel(
+class CityForecastViewModel(
     private val forecastUIStateMapper: ForecastUIStateMapper,
     private val loadCityUseCase: LoadCityUseCase,
     private val loadAllCitiesUseCase: LoadAllCitiesUseCase,
+    private val deleteCityUseCase: DeleteCityUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
-    private val saveForecastsUseCase: SaveForecastsUseCase,
-    private val deleteForecastsUseCase: DeleteForecastsUseCase,
+    private val saveForecastUseCase: SaveForecastUseCase,
+    private val deleteForecastUseCase: DeleteForecastUseCase,
     private val networkManager: NetworkManager,
 ) : ViewModel() {
     private var loadedCities: MutableList<CityDomainModel> = mutableListOf()
+    private var currentCityId: Long = 0
 
     private val _cityForecastUIState =
         MutableStateFlow<CityForecastUIState>(CityForecastUIState.CityDataUIState())
@@ -45,9 +46,6 @@ class MainViewModel(
     )
     val precipitationCondition: StateFlow<PrecipitationCondition>
         get() = _precipitationCondition.asStateFlow()
-
-    @ColorRes
-    var rowColor: Int = R.color.liberty
 
     init {
         viewModelScope.launch {
@@ -65,6 +63,7 @@ class MainViewModel(
         ).also {
             this.loadedCities.add(it)
         }
+        currentCityId = cityId
 
         _precipitationCondition.value = city.getPrecipitationsAndTimeOfDayStateForCurrentHour()
         val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = city)
@@ -105,10 +104,10 @@ class MainViewModel(
                 is ResponseResult.Success -> {
                     val dailyForecasts = forecastLoadingResponseResult.data
 
-                    deleteForecastsUseCase.invoke(cityId = city.id)
-                    saveForecastsUseCase(
+                    deleteForecastUseCase.invoke(cityId = city.id)
+                    saveForecastUseCase(
                         cityId = city.id,
-                        dailyForecasts = dailyForecasts,
+                        dailyForecast = dailyForecasts,
                     )
 
                     city.copy(forecasts = dailyForecasts)
@@ -135,7 +134,21 @@ class MainViewModel(
         }
     }
 
+    fun deleteCity(cityId: Long) {
+        viewModelScope.launch {
+            deleteCityUseCase.invoke(cityId = cityId)
+            loadedCities.firstOrNull {
+                it.id == cityId
+            }?.let {
+                loadedCities.remove(it)
+                if (currentCityId == it.id && loadedCities.isNotEmpty()) {
+                    currentCityId = loadedCities[0].id
+                }
+            }
+        }
+    }
+
     companion object {
-        private const val TAG = "MainViewModel"
+        private const val TAG = "CityForecastViewModel"
     }
 }

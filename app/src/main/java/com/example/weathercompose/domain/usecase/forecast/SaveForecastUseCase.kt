@@ -3,17 +3,17 @@ package com.example.weathercompose.domain.usecase.forecast
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 
-class SaveForecastsUseCase(
+class SaveForecastUseCase(
     private val forecastRepository: ForecastRepository,
 ) {
 
     suspend operator fun invoke(
         cityId: Long,
-        dailyForecasts: List<DailyForecastDomainModel>
+        dailyForecast: List<DailyForecastDomainModel>
     ) {
-        forecastRepository.saveForecasts(
+        forecastRepository.saveForecastForCity(
             cityId = cityId,
-            dailyForecasts = dailyForecasts,
+            dailyForecasts = dailyForecast,
         )
     }
 }

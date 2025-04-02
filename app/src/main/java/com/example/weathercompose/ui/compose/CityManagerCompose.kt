@@ -53,13 +53,13 @@ import androidx.constraintlayout.compose.Dimension
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.CityItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
+import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 private const val ON_DELETE_SWIPE = "ON_DELETE_SWIPE"
 
 @Composable
 fun CityManagerContent(
-    viewModel: CityManagerViewModel,
+    viewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
     onNavigateToSearchScreen: () -> Unit,
     onNavigateToForecastScreen: (CityItem) -> Unit,

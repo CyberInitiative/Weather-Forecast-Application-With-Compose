@@ -4,6 +4,9 @@ import android.content.Context
 import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.ui.ui_state.CityForecastUIState
+import com.example.weathercompose.utils.getCurrentDateInTimeZone
+import java.time.format.TextStyle
+import java.util.Locale
 
 class ForecastUIStateMapper(private val context: Context) {
     fun mapToUIState(city: CityDomainModel): CityForecastUIState {
@@ -11,7 +14,7 @@ class ForecastUIStateMapper(private val context: Context) {
             val currentHourlyForecast = city.getForecastForCurrentHour()
             val currentDayForecast = forecasts[0]
             val weatherDescription =
-                WeatherDescription.weatherDescriptionToIconRes(currentDayForecast.weatherDescription)
+                WeatherDescription.weatherDescriptionToString(currentHourlyForecast.weatherDescription)
             val currentDayMaxTemperature = Math.round(currentDayForecast.maxTemperature).toInt()
             val currentDayMinTemperature = Math.round(currentDayForecast.minTemperature).toInt()
 
@@ -20,11 +23,16 @@ class ForecastUIStateMapper(private val context: Context) {
                 currentHourTemperature = "${
                     Math.round(currentHourlyForecast.temperature).toInt()
                 }°",
-                currentDayMaxAndMinTemperature =
-                "$currentDayMaxTemperature° / $currentDayMinTemperature°",
-                currentDayWeatherStatus = context.getString(weatherDescription),
+                currentDayMaxTemperature = "$currentDayMaxTemperature°",
+                currentDayMinTemperature = "$currentDayMinTemperature°",
+                currentHourWeatherStatus = context.getString(weatherDescription),
+                currentDayOfWeekAndDate = getCurrentDayMaxAndMinTemperature(timeZone = timeZone),
+                currentWeatherIcon = WeatherDescription.weatherDescriptionToIconRes(
+                    weatherDescription = currentHourlyForecast.weatherDescription,
+                ),
                 dailyForecastsUIState = mapToDailyForecastDataUIState(
-                    dailyForecastItems = forecasts.drop(1).map { it.mapToDailyForecastItem() },
+                    dailyForecastItems = forecasts/*.drop(1)*/
+                        .map { it.mapToDailyForecastItem(timeZone = city.timeZone) },
                     timeZone = city.timeZone,
                 ),
                 hourlyForecastsUIState = mapToHourlyForecastDataUIState(
@@ -34,5 +42,17 @@ class ForecastUIStateMapper(private val context: Context) {
                 )
             )
         }
+    }
+
+    private fun getCurrentDayMaxAndMinTemperature(timeZone: String): String {
+        val currentDateInTimeZone = getCurrentDateInTimeZone(timeZone = timeZone)
+        val dayOfWeek = currentDateInTimeZone.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.US)
+        val date = "${currentDateInTimeZone.dayOfMonth} ${
+            currentDateInTimeZone.month.getDisplayName(
+                TextStyle.SHORT,
+                Locale.US
+            )
+        }"
+        return "$dayOfWeek, $date"
     }
 }

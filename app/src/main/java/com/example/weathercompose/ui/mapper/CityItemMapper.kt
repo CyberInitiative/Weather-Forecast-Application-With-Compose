@@ -9,7 +9,7 @@ import com.example.weathercompose.ui.model.CityItem
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class CityMapper(private val context: Context) {
+class CityItemMapper(private val context: Context) {
     fun mapToCityItem(cityDomainModel: CityDomainModel): CityItem {
         val currentHourInTimeZone = ZonedDateTime
             .now(ZoneId.of(cityDomainModel.timeZone))
