@@ -131,20 +131,22 @@ enum class WeatherDescription {
 
                 OVERCAST,
                 FOG,
-                DEPOSITING_RIME_FOG -> R.drawable.cloudy_weather_16459
+                DEPOSITING_RIME_FOG -> R.drawable.overcast_180
 
                 LIGHT_DRIZZLE,
                 MODERATE_DRIZZLE,
                 DENSE_DRIZZLE,
                 LIGHT_FREEZING_DRIZZLE,
                 DENSE_FREEZING_DRIZZLE,
-                SLIGHT_RAIN -> R.drawable.rainy_day_16464
 
-                MODERATE_RAIN,
-                HEAVY_RAIN -> R.drawable.rainy_day_and_blue_cloud_16462
+                SLIGHT_RAIN -> R.drawable.slight_rain_180
 
-                LIGHT_FREEZING_RAIN -> R.drawable.rainy_day_16464
-                HEAVY_FREEZING_RAIN -> R.drawable.rainy_day_and_blue_cloud_16462
+                MODERATE_RAIN -> R.drawable.moderate_rain_180
+
+                HEAVY_RAIN -> R.drawable.heavy_rain_180
+
+                LIGHT_FREEZING_RAIN -> R.drawable.freezing_light_rain_180
+                HEAVY_FREEZING_RAIN -> R.drawable.freezing_heavy_rain_180
                 SLIGHT_SNOW_FALL -> R.drawable.winter_snowfall_16473
                 MODERATE_SNOW_FALL,
                 HEAVY_SNOW_FALL -> R.drawable.snowy_weather_16472

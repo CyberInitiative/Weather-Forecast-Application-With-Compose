@@ -59,7 +59,7 @@ fun CityAndWeatherInfoSection(
         }
 
         val weatherStatusModifier = Modifier.constrainAs(weatherStatus) {
-            top.linkTo(currentTemperature.top)
+            top.linkTo(currentTemperature.top, margin = 5.dp)
             start.linkTo(currentTemperature.end, margin = 10.dp)
             end.linkTo(parent.end)
             width = Dimension.fillToConstraints

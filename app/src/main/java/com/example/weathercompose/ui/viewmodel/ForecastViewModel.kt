@@ -64,16 +64,27 @@ class ForecastViewModel(
     }
 
     suspend fun setCurrentCityForecast(cityId: Long) {
-        val city = loadedCities.firstOrNull { city -> city.id == cityId } ?: loadCityUseCase.invoke(
-            cityId = cityId
-        ).also { currentCity ->
-            this.loadedCities.add(currentCity)
-            val currentCityItem = _cityItems.value
-            _cityItems.update { currentCityItem + cityItemsMapper.mapToCityItem(currentCity) }
+        val loadedCity =
+            loadedCities.firstOrNull { city -> city.id == cityId } ?: loadCityUseCase.invoke(
+                cityId = cityId
+            )
+
+        val currentCity = if (loadedCity.forecasts.isEmpty()) {
+            loadForecastForCity(loadedCity)
+        } else {
+            loadedCity
         }
 
-        _precipitationCondition.value = city.getPrecipitationsAndTimeOfDayStateForCurrentHour()
-        val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = city)
+        if (!loadedCities.contains(currentCity)) {
+            loadedCities.add(currentCity)
+
+            val currentCityItems = _cityItems.value
+            _cityItems.update { currentCityItems + cityItemsMapper.mapToCityItem(currentCity) }
+        }
+
+        _precipitationCondition.value =
+            currentCity.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+        val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = currentCity)
         _cityForecastUIState.update {
             (cityForecastUIState as CityForecastUIState.CityDataUIState).copy(
                 isDataLoading = false

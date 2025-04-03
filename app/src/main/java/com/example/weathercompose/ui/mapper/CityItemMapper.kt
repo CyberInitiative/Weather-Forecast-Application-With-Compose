@@ -6,19 +6,10 @@ import com.example.weathercompose.domain.model.city.CityDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription.Companion.weatherDescriptionToIconRes
 import com.example.weathercompose.domain.model.forecast.WeatherDescription.Companion.weatherDescriptionToString
 import com.example.weathercompose.ui.model.CityItem
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class CityItemMapper(private val context: Context) {
     fun mapToCityItem(cityDomainModel: CityDomainModel): CityItem {
-        val currentHourInTimeZone = ZonedDateTime
-            .now(ZoneId.of(cityDomainModel.timeZone))
-            .toLocalTime()
-            .hour
-
-        val currentHourlyForecast = cityDomainModel.forecasts[0].hourlyForecasts.firstOrNull {
-            it.time.hour == currentHourInTimeZone
-        }
+        val currentHourlyForecast = cityDomainModel.getForecastForCurrentHour()
 
         val (temperature, weatherDescription, icon) = if (currentHourlyForecast != null) {
             with(currentHourlyForecast) {

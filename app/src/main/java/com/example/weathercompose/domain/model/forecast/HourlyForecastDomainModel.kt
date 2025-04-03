@@ -11,8 +11,10 @@ data class HourlyForecastDomainModel(
     val isDay: Boolean,
 ) {
 
+    //TODO change name later
     fun isWeatherWithPrecipitations(): Boolean {
         return when (weatherDescription) {
+            WeatherDescription.OVERCAST,
             WeatherDescription.LIGHT_DRIZZLE,
             WeatherDescription.MODERATE_DRIZZLE,
             WeatherDescription.DENSE_DRIZZLE,
