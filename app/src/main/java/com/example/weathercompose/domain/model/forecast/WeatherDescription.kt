@@ -112,55 +112,59 @@ enum class WeatherDescription {
         ): Int {
             return when (weatherDescription) {
                 CLEAR_SKY -> if (isDay) {
-                    R.drawable.sunny_day_16458
+                    R.drawable.sun_outlined_icon_3_contured_180
                 } else {
-                    R.drawable.moon_and_clear_sky_16468
+                    R.drawable.clear_sky_night
                 }
 
                 MAINLY_CLEAR -> if (isDay) {
-                    R.drawable.sun_and_blue_cloud_16460
+                    R.drawable.mainly_clear_outlined_3_contured_180
                 } else {
-                    R.drawable.moon_and_blue_cloud_16469
+                    R.drawable.mainly_clear_night_outlined_contured_180
                 }
 
                 PARTLY_CLOUDY -> if (isDay) {
-                    R.drawable.blue_clouds_and_sun_16461
+                    R.drawable.partly_cloudy_5_outlined_contured_180
                 } else {
-                    R.drawable.clouds_and_moon_16470
+                    R.drawable.partly_cloudy_night_outlined_contured_180
                 }
 
-                OVERCAST,
-                FOG,
-                DEPOSITING_RIME_FOG -> R.drawable.overcast_180
+                FOG -> R.drawable.fog
 
-                LIGHT_DRIZZLE,
-                MODERATE_DRIZZLE,
-                DENSE_DRIZZLE,
-                LIGHT_FREEZING_DRIZZLE,
-                DENSE_FREEZING_DRIZZLE,
+                OVERCAST -> R.drawable.overcast_outlined_180
 
-                SLIGHT_RAIN -> R.drawable.slight_rain_180
+                DEPOSITING_RIME_FOG -> R.drawable.depositing_rime_fog
 
-                MODERATE_RAIN -> R.drawable.moderate_rain_180
+                LIGHT_DRIZZLE -> R.drawable.light_drizzle
+                MODERATE_DRIZZLE -> R.drawable.moderate_drizzle
+                DENSE_DRIZZLE-> R.drawable.dense_drizzle
 
-                HEAVY_RAIN -> R.drawable.heavy_rain_180
+                LIGHT_FREEZING_DRIZZLE -> R.drawable.freezing_light_drizzle
+                DENSE_FREEZING_DRIZZLE -> R.drawable.freezing_dense_drizzle
 
-                LIGHT_FREEZING_RAIN -> R.drawable.freezing_light_rain_180
-                HEAVY_FREEZING_RAIN -> R.drawable.freezing_heavy_rain_180
-                SLIGHT_SNOW_FALL -> R.drawable.winter_snowfall_16473
+                SLIGHT_RAIN -> R.drawable.slight_rain
+
+                MODERATE_RAIN -> R.drawable.moderate_rain
+
+                HEAVY_RAIN -> R.drawable.heavy_rain
+
+                LIGHT_FREEZING_RAIN -> R.drawable.freezing_light_rain
+                HEAVY_FREEZING_RAIN -> R.drawable.freezing_heavy_rain
+
+                SLIGHT_SNOW_FALL,
                 MODERATE_SNOW_FALL,
-                HEAVY_SNOW_FALL -> R.drawable.snowy_weather_16472
+                HEAVY_SNOW_FALL,
+                SNOW_GRAINS,
+                SLIGHT_SNOW_SHOWERS,
+                HEAVY_SNOW_SHOWERS -> R.drawable.snowflake
 
-                SNOW_GRAINS -> R.drawable.winter_snowfall_16473
-                SLIGHT_RAIN_SHOWERS,
-                MODERATE_RAIN_SHOWERS,
-                VIOLENT_RAIN_SHOWERS -> R.drawable.downpour_rain_and_blue_cloud_16463
+                SLIGHT_RAIN_SHOWERS -> R.drawable.slight_rain_showers
+                MODERATE_RAIN_SHOWERS -> R.drawable.moderate_rain_showers
+                VIOLENT_RAIN_SHOWERS -> R.drawable.violent_rain_showers
 
-                SLIGHT_SNOW_SHOWERS -> R.drawable.snowy_weather_16472
-                HEAVY_SNOW_SHOWERS -> R.drawable.snowy_weather_16472
-                THUNDERSTORM -> R.drawable.blue_cloud_and_lightning_16466
-                THUNDERSTORM_WITH_SLIGHT_HAIL -> R.drawable.hail_and_winter_cloud_16490
-                THUNDERSTORM_WITH_HEAVY_HAIL -> R.drawable.hail_and_blue_cloud_16491
+                THUNDERSTORM -> R.drawable.thunderstorm
+                THUNDERSTORM_WITH_SLIGHT_HAIL -> R.drawable.thunderstorm_with_slight_hail
+                THUNDERSTORM_WITH_HEAVY_HAIL -> R.drawable.thunderstorm_with_heavy_hail
                 NOT_EXISTING_WEATHER_CODE -> R.drawable.ic_launcher_background
             }
         }

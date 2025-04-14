@@ -9,7 +9,6 @@ import com.example.weathercompose.ui.mapper.CityItemMapper
 import com.example.weathercompose.ui.model.CityItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,7 +19,7 @@ class CityManagerViewModel(
 ) : ViewModel() {
 
     private val _cityItems = MutableStateFlow<List<CityItem>>(emptyList())
-    val cityItems: StateFlow<List<CityItem>> = _cityItems.asStateFlow()
+    val cityItems: StateFlow<List<CityItem>> = _cityItems
 
     init {
         viewModelScope.launch {

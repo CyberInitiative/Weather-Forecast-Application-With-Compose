@@ -17,8 +17,6 @@ import com.example.weathercompose.ui.model.CityItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.CityForecastUIState
 import com.example.weathercompose.utils.NetworkManager
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,80 +35,88 @@ class ForecastViewModel(
     private val forecastUIStateMapper: ForecastUIStateMapper,
     private val cityItemsMapper: CityItemMapper,
 ) : ViewModel() {
-    private var loadedCities: MutableList<CityDomainModel> = mutableListOf()
-    private var currentCityId: Long = 0
+    private val _loadedCities = MutableStateFlow<List<CityDomainModel>>(value = emptyList())
+
+    private val _currentCity = MutableStateFlow<CityDomainModel?>(null)
+
+    private val _cityForecastUIState =
+        MutableStateFlow<CityForecastUIState>(CityForecastUIState.InitialUIState)
+    val cityForecastUIState: StateFlow<CityForecastUIState> = _cityForecastUIState
 
     private val _cityItems = MutableStateFlow<List<CityItem>>(emptyList())
     val cityItems: StateFlow<List<CityItem>> = _cityItems.asStateFlow()
 
-    private val _cityForecastUIState =
-        MutableStateFlow<CityForecastUIState>(CityForecastUIState.CityDataUIState())
-    val cityForecastUIState: StateFlow<CityForecastUIState> = _cityForecastUIState.asStateFlow()
+    private val _isCitiesEmpty = MutableStateFlow<Boolean?>(null)
+    val isCitiesEmpty: StateFlow<Boolean?> = _isCitiesEmpty.asStateFlow()
 
     private val _precipitationCondition = MutableStateFlow(
         value = PrecipitationCondition.NO_PRECIPITATION_DAY
     )
     val precipitationCondition: StateFlow<PrecipitationCondition>
-        get() = _precipitationCondition.asStateFlow()
+        get() = _precipitationCondition
 
     init {
         viewModelScope.launch {
-            loadCities()
+            _loadedCities.collect { cities ->
+                val current = _currentCity.value
+                if (current != null) {
+                    val updated = cities.find { it.id == current.id }
+                    if (updated != null && updated != current) {
+                        _currentCity.value = updated
+                    }
+                } else if (_currentCity.value == null && cities.isNotEmpty()) {
+                    _currentCity.update {
+                        cities[0]
+                    }
+                }
 
-            if (loadedCities.isNotEmpty()) {
-                setCurrentCityForecast(loadedCities[0].id)
+                _cityItems.update { cities.map { cityItemsMapper.mapToCityItem(it) } }
+            }
+        }
+
+        viewModelScope.launch {
+            _currentCity.collect { city ->
+                if (city != null) {
+                    _precipitationCondition.value =
+                        city.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+                    val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = city)
+                    _cityForecastUIState.update {
+                        (cityForecastUIState as CityForecastUIState.CityDataUIState).copy(
+                            isDataLoading = false
+                        )
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            loadCities()
+            if (networkManager.isInternetAvailable()) {
+                loadForecastsForLoadedCities()
             }
         }
     }
 
-    suspend fun setCurrentCityForecast(cityId: Long) {
-        val loadedCity =
-            loadedCities.firstOrNull { city -> city.id == cityId } ?: loadCityUseCase.invoke(
-                cityId = cityId
-            )
-
-        val currentCity = if (loadedCity.forecasts.isEmpty()) {
-            loadForecastForCity(loadedCity)
-        } else {
-            loadedCity
-        }
-
-        if (!loadedCities.contains(currentCity)) {
-            loadedCities.add(currentCity)
-
-            val currentCityItems = _cityItems.value
-            _cityItems.update { currentCityItems + cityItemsMapper.mapToCityItem(currentCity) }
-        }
-
-        _precipitationCondition.value =
-            currentCity.getPrecipitationsAndTimeOfDayStateForCurrentHour()
-        val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = currentCity)
-        _cityForecastUIState.update {
-            (cityForecastUIState as CityForecastUIState.CityDataUIState).copy(
-                isDataLoading = false
-            )
-        }
-    }
-
     private suspend fun loadCities() {
-        loadedCities = if (networkManager.isInternetAvailable()) {
-            loadForecastsForCities(loadAllCitiesUseCase()).toMutableList()
-        } else {
-            loadAllCitiesUseCase().toMutableList()
-        }
-
-        val cityItems = loadedCities.map { cityItemsMapper.mapToCityItem(it) }
-        _cityItems.update { cityItems }
+        _loadedCities.update { loadAllCitiesUseCase() }
     }
 
-    private suspend fun loadForecastsForCities(cities: List<CityDomainModel>) =
+    private suspend fun loadForecastsForLoadedCities() {
+        val loadedCitiesValue = _loadedCities.value
+
         coroutineScope {
-            cities.map { city ->
-                async {
-                    loadForecastForCity(city)
+            loadedCitiesValue.forEach { city ->
+                launch {
+                    val result = loadForecastForCity(city)
+                    _loadedCities.update { currentList ->
+                        currentList.map { existing ->
+                            if (existing.id == result.id) result else existing
+                        }
+                    }
                 }
-            }.awaitAll()
+            }
         }
+    }
 
     private suspend fun loadForecastForCity(city: CityDomainModel): CityDomainModel {
         with(city) {
@@ -157,12 +163,13 @@ class ForecastViewModel(
     fun deleteCity(cityId: Long) {
         viewModelScope.launch {
             deleteCityUseCase.invoke(cityId = cityId)
-            loadedCities.firstOrNull {
+            val loadedCitiesValue = _loadedCities.value
+            loadedCitiesValue.firstOrNull {
                 it.id == cityId
             }?.let {
-                loadedCities.remove(it)
-                if (currentCityId == it.id && loadedCities.isNotEmpty()) {
-                    currentCityId = loadedCities[0].id
+                loadedCitiesValue.toMutableList().remove(it)
+                if (_currentCity.value?.id == it.id && loadedCitiesValue.isNotEmpty()) {
+                    _currentCity.value = loadedCitiesValue[0]
                 }
             }
 
@@ -176,7 +183,43 @@ class ForecastViewModel(
         }
     }
 
+    suspend fun setCurrentCityForecast(cityId: Long) {
+        _cityForecastUIState.update {
+            CityForecastUIState.LoadingUIState
+        }
+
+        val loadedCitiesValue = _loadedCities.value
+
+        val loadedCity =
+            loadedCitiesValue.firstOrNull { city -> city.id == cityId } ?: loadCityUseCase.invoke(
+                cityId = cityId
+            )
+
+        val currentCity = if (loadedCity.forecasts.isEmpty()) {
+            loadForecastForCity(loadedCity)
+        } else {
+            loadedCity
+        }
+
+        _currentCity.update { currentCity }
+
+        if (!loadedCitiesValue.contains(currentCity)) {
+            _loadedCities.update { loadedCitiesValue + currentCity }
+
+            val currentCityItems = _cityItems.value
+            _cityItems.update { currentCityItems + cityItemsMapper.mapToCityItem(currentCity) }
+        }
+        _precipitationCondition.value =
+            currentCity.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+        val cityForecastUIState = forecastUIStateMapper.mapToUIState(city = currentCity)
+        _cityForecastUIState.update {
+            (cityForecastUIState as CityForecastUIState.CityDataUIState).copy(
+                isDataLoading = false
+            )
+        }
+    }
+
     companion object {
-        private const val TAG = "MainViewModel"
+        private const val TAG = "ForecastViewModel"
     }
 }

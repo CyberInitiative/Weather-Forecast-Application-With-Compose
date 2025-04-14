@@ -1,6 +1,5 @@
 package com.example.weathercompose.ui.compose
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -68,30 +67,30 @@ fun NavigationHost(
         navController = navController,
         startDestination = NavigationRoute.Forecast,
         modifier = Modifier.fillMaxSize(),
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Start,
-                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Start,
-                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.End,
-                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.End,
-                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-            )
-        }
+//        enterTransition = {
+//            slideIntoContainer(
+//                AnimatedContentTransitionScope.SlideDirection.Start,
+//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+//            )
+//        },
+//        exitTransition = {
+//            slideOutOfContainer(
+//                AnimatedContentTransitionScope.SlideDirection.Start,
+//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+//            )
+//        },
+//        popEnterTransition = {
+//            slideIntoContainer(
+//                AnimatedContentTransitionScope.SlideDirection.End,
+//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+//            )
+//        },
+//        popExitTransition = {
+//            slideOutOfContainer(
+//                AnimatedContentTransitionScope.SlideDirection.End,
+//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
+//            )
+//        }
     ) {
         composable<NavigationRoute.Forecast> { backStackEntry ->
             val viewModel = koinViewModel<ForecastViewModel>(viewModelStoreOwner = backStackEntry)
@@ -104,14 +103,23 @@ fun NavigationHost(
                 }
             }
 
+            val onNavigateToCitySearchScreen = {
+                navController.navigate(NavigationRoute.CitySearch) {
+                    popUpTo(NavigationRoute.Forecast) {
+                        inclusive = true
+                    }
+                }
+            }
+
             ForecastContent(
                 viewModel = viewModel,
                 //precipitationCondition = precipitationCondition,
                 onAppearanceStateChange = onPrecipitationConditionChange,
+                onNavigateToCitySearchScreen = onNavigateToCitySearchScreen,
             )
         }
 
-        composable<NavigationRoute.CitiesManager> { backStackEntry ->
+        composable<NavigationRoute.CitiesManager> {
             val previousBackStackEntry = navController.previousBackStackEntry
 
             val viewModel = if (previousBackStackEntry != null) {
@@ -179,7 +187,12 @@ fun MainScreen() {
             }
 
             PrecipitationCondition.PRECIPITATION_NIGHT -> {
-                Color(ContextCompat.getColor(context, R.color.english_channel_45_percent_darker))
+                Color(
+                    ContextCompat.getColor(
+                        context,
+                        R.color.english_channel_45_percent_darker
+                    )
+                )
             }
 
         },
@@ -201,7 +214,12 @@ fun MainScreen() {
             }
 
             PrecipitationCondition.PRECIPITATION_NIGHT -> {
-                Color(ContextCompat.getColor(context, R.color.english_channel_45_percent_darker))
+                Color(
+                    ContextCompat.getColor(
+                        context,
+                        R.color.english_channel_45_percent_darker
+                    )
+                )
             }
 
         },
@@ -273,7 +291,9 @@ private fun MainScreenTopAppBar(
                         closeMenu = onMenuDismiss,
                         navigateManageCitiesScreen = navigateManageCitiesScreen
                     )
-                } else -> {
+                }
+
+                else -> {
 
                 }
             }

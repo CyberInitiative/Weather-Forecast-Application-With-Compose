@@ -2,7 +2,6 @@ package com.example.weathercompose.ui.compose
 
 import androidx.annotation.ColorRes
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -245,10 +244,11 @@ private fun CityListItem(
             width = Dimension.fillToConstraints
         }
 
-        Image(
+        Icon(
             painter = painterResource(id = cityItem.currentHourWeatherIconRes),
             contentDescription = "Current hour weather icon",
-            modifier = weatherIconModifier.size(45.dp)
+            modifier = weatherIconModifier.size(45.dp),
+            tint = Color.White,
         )
 
         Text(

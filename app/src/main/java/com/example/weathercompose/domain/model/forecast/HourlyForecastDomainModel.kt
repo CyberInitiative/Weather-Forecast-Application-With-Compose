@@ -14,6 +14,7 @@ data class HourlyForecastDomainModel(
     //TODO change name later
     fun isWeatherWithPrecipitations(): Boolean {
         return when (weatherDescription) {
+            WeatherDescription.FOG,
             WeatherDescription.OVERCAST,
             WeatherDescription.LIGHT_DRIZZLE,
             WeatherDescription.MODERATE_DRIZZLE,

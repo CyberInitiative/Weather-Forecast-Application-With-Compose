@@ -1,9 +1,12 @@
 package com.example.weathercompose.ui.compose.forecast_screen
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,12 +39,19 @@ private const val UI_ELEMENTS_COLOR = "UI elements color"
 fun ForecastContent(
     viewModel: ForecastViewModel,
     //precipitationCondition: PrecipitationCondition,
-    onAppearanceStateChange: (PrecipitationCondition) -> Unit
-    //TODO add navigate function as parameter for search city screen navigation;
+    onAppearanceStateChange: (PrecipitationCondition) -> Unit,
+    onNavigateToCitySearchScreen: () -> Unit,
 ) {
 
     val cityForecastUIState by viewModel.cityForecastUIState.collectAsState()
     val precipitationCondition by viewModel.precipitationCondition.collectAsState()
+    val isCitiesEmptyState by viewModel.isCitiesEmpty.collectAsState()
+
+    LaunchedEffect(isCitiesEmptyState) {
+        if (isCitiesEmptyState == true) {
+            onNavigateToCitySearchScreen()
+        }
+    }
 
     LaunchedEffect(precipitationCondition) {
         precipitationCondition?.let { onAppearanceStateChange(it) }
@@ -60,33 +70,46 @@ fun ForecastContent(
         label = UI_ELEMENTS_COLOR,
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 10.dp)
-            .padding(horizontal = 15.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        when (cityForecastUIState) {
-            is CityDataUIState -> {
-                val cityDataUIState = cityForecastUIState as CityDataUIState
+    when (cityForecastUIState) {
+        is CityDataUIState -> {
+            val cityDataUIState = cityForecastUIState as CityDataUIState
 
-                if (!cityDataUIState.isDataLoading) {
+            if (!cityDataUIState.isDataLoading) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
+                        .padding(horizontal = 15.dp)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     DataLoaded(
                         cityDataUIState = cityDataUIState,
                         uiElementsBackgroundColor = animatedRowColor
                     )
-                } else {
-                    LoadingProcessIndicator()
                 }
 
+            } else {
+                LoadingProcessIndicator()
             }
+        }
 
-            is CityForecastUIState.ErrorForecastUIState -> TODO()
-            CityForecastUIState.NoCityDataForecastUIState -> TODO()
+        is CityForecastUIState.ErrorForecastUIState -> TODO()
+        CityForecastUIState.NoCityDataForecastUIState -> TODO()
+        is CityForecastUIState.InitialUIState -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {}
+        }
+
+        is CityForecastUIState.LoadingUIState -> {
+            Log.d(TAG, "current state is CityForecastUIState.LoadingUIState")
+            LoadingProcessIndicator()
         }
     }
+
+
 }
 
 @Composable

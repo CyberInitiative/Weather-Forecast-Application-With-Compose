@@ -5,6 +5,10 @@ import com.example.weathercompose.R
 
 sealed class CityForecastUIState {
 
+    data object InitialUIState : CityForecastUIState()
+
+    data object LoadingUIState : CityForecastUIState()
+
     data class ErrorForecastUIState(val errorMessage: String = "") : CityForecastUIState()
 
     data object NoCityDataForecastUIState : CityForecastUIState()
