@@ -12,12 +12,8 @@ val uiModule = module {
     viewModel {
         ForecastViewModel(
             loadLocationUseCase = get(),
-            loadAllCitiesUseCase = get(),
+            loadAllLocationsUseCase = get(),
             deleteLocationUseCase = get(),
-            loadForecastUseCase = get(),
-            saveForecastUseCase = get(),
-            deleteForecastUseCase = get(),
-            networkManager = get(),
             forecastUIStateMapper = get(),
             locationItemsMapper = get(),
         )
@@ -27,6 +23,9 @@ val uiModule = module {
         LocationSearchViewModel(
             searchLocationUseCase = get(),
             saveLocationUseCase = get(),
+            loadForecastUseCase = get(),
+            saveForecastUseCase = get(),
+            deleteForecastUseCase = get(),
         )
     }
 

@@ -28,7 +28,7 @@ class DeleteForecastsTest {
             WeatherForecastDatabase::class.java
         ).allowMainThreadQueries().build()
 
-        locationDao = database.cities()
+        locationDao = database.locations()
     }
 
     @Test

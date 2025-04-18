@@ -3,7 +3,7 @@ package com.example.weathercompose.domain.usecase.location
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.LocationRepository
 
-class LoadAllCitiesUseCase(
+class LoadAllLocationsUseCase(
     private val locationRepository: LocationRepository,
 ) {
 

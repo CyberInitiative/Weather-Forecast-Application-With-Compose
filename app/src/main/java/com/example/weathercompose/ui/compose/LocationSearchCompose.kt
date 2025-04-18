@@ -1,6 +1,5 @@
 package com.example.weathercompose.ui.compose
 
-import android.util.Log
 import androidx.annotation.ColorRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,7 +42,7 @@ import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-private const val TAG = "CitiesManagerCompose"
+private const val TAG = "LocationsManagerCompose"
 
 @Composable
 fun LocationSearchContent(
@@ -56,8 +55,9 @@ fun LocationSearchContent(
     val locationSearchResult by viewModel.locationSearchResult.collectAsState(initial = UIState.Loading())
     val onLocationItemClick = { location: LocationDomainModel ->
         coroutineScope.launch {
-            Log.d(TAG, "onLocationItemClick!")
             viewModel.saveLocation(location).join()
+            viewModel.loadForecastForLocation(location).join()
+
             onNavigateToForecastScreen(location)
         }
     }

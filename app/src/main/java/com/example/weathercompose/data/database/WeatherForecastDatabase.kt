@@ -13,7 +13,7 @@ import com.example.weathercompose.data.database.entity.location.LocationEntity
     exportSchema = false
 )
 abstract class WeatherForecastDatabase : RoomDatabase() {
-    abstract fun cities(): LocationDao
+    abstract fun locations(): LocationDao
 
     companion object {
         const val DATABASE_NAME = "weather_forecast.db"

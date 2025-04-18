@@ -7,6 +7,6 @@ class LoadLocationUseCase(
     private val locationRepository: LocationRepository,
 ) {
 
-    suspend operator fun invoke(locationId: Long): LocationDomainModel =
+    suspend operator fun invoke(locationId: Long): LocationDomainModel? =
         locationRepository.load(locationId)
 }

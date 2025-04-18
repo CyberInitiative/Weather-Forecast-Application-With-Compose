@@ -314,7 +314,7 @@ private fun TopAppBarOptionsMenu(
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = "Manage cities",
+                        text = "Manage locations",
                         fontSize = 16.sp,
                     )
                 },

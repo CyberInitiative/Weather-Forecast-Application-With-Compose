@@ -37,9 +37,9 @@ class LocationRepositoryImpl(
         }
     }
 
-    override suspend fun load(locationId: Long): LocationDomainModel {
+    override suspend fun load(locationId: Long): LocationDomainModel? {
         return withContext(dispatcher) {
-            locationDao.load(locationId = locationId).mapToLocationDomainModel()
+            locationDao.load(locationId = locationId)?.mapToLocationDomainModel()
         }
     }
 

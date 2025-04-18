@@ -12,7 +12,7 @@ interface LocationRepository {
 
     suspend fun loadAll(): List<LocationDomainModel>
 
-    suspend fun load(locationId: Long): LocationDomainModel
+    suspend fun load(locationId: Long): LocationDomainModel?
 
     suspend fun insert(location: LocationDomainModel): Long
 

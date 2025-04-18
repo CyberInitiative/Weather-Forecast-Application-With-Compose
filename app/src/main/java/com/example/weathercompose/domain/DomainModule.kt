@@ -3,9 +3,8 @@ package com.example.weathercompose.domain
 import com.example.weathercompose.domain.usecase.forecast.DeleteForecastUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
 import com.example.weathercompose.domain.usecase.forecast.SaveForecastUseCase
-import com.example.weathercompose.domain.usecase.forecast.SaveHourlyForecastsUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
-import com.example.weathercompose.domain.usecase.location.LoadAllCitiesUseCase
+import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
@@ -32,7 +31,7 @@ val domainModule = module {
     }
 
     factory {
-        LoadAllCitiesUseCase(
+        LoadAllLocationsUseCase(
             locationRepository = get { parametersOf(Dispatchers.IO) },
         )
     }
@@ -40,12 +39,6 @@ val domainModule = module {
     factory {
         DeleteLocationUseCase(
             locationRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
-
-    factory {
-        SaveHourlyForecastsUseCase(
-            forecastRepository = get { parametersOf(Dispatchers.IO) }
         )
     }
 

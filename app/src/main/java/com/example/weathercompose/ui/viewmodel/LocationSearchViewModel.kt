@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.ResponseResult
 import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.domain.usecase.forecast.DeleteForecastUseCase
+import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
+import com.example.weathercompose.domain.usecase.forecast.SaveForecastUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.UIState
@@ -16,6 +19,9 @@ import kotlinx.coroutines.launch
 class LocationSearchViewModel(
     private val searchLocationUseCase: SearchLocationUseCase,
     private val saveLocationUseCase: SaveLocationUseCase,
+    private val loadForecastUseCase: LoadForecastUseCase,
+    private val saveForecastUseCase: SaveForecastUseCase,
+    private val deleteForecastUseCase: DeleteForecastUseCase,
 ) : ViewModel() {
     private val _locationSearchUIResult: MutableStateFlow<UIState<List<LocationDomainModel>>> =
         MutableStateFlow(UIState.Empty())
@@ -59,8 +65,50 @@ class LocationSearchViewModel(
 
     fun saveLocation(location: LocationDomainModel): Job {
         return viewModelScope.launch {
-            val id = saveLocationUseCase.execute(location = location)
-            Log.d(TAG, "saveLocation() called; id: $id")
+            val locationId = saveLocationUseCase.execute(location = location)
+            Log.d(TAG, "saveLocation() called; id: $locationId")
+        }
+    }
+
+    fun loadForecastForLocation(location: LocationDomainModel): Job {
+        return viewModelScope.launch {
+            with(location) {
+                val forecastLoadingResponseResult = loadForecastUseCase.execute(
+                    latitude = latitude,
+                    longitude = longitude,
+                    timeZone = timeZone,
+                )
+
+                when (forecastLoadingResponseResult) {
+                    is ResponseResult.Success -> {
+                        val dailyForecasts = forecastLoadingResponseResult.data
+
+                        deleteForecastUseCase.invoke(locationId = location.id)
+                        saveForecastUseCase(
+                            locationId = location.id,
+                            dailyForecast = dailyForecasts,
+                        )
+                    }
+
+                    is ResponseResult.Error -> {
+                        Log.d(
+                            TAG,
+                            "loadForecastForLocation() called; ResponseResult.Error: ${
+                                forecastLoadingResponseResult.buildErrorMessage()
+                            }"
+                        )
+                    }
+
+                    is ResponseResult.Exception -> {
+                        Log.d(
+                            TAG,
+                            "loadForecastForLocation() called; ResponseResult.Exception: ${
+                                forecastLoadingResponseResult.buildExceptionMessage()
+                            }"
+                        )
+                    }
+                }
+            }
         }
     }
 

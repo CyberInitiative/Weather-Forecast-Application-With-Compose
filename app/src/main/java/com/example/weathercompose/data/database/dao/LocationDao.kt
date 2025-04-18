@@ -23,7 +23,7 @@ abstract class LocationDao {
 
     @Transaction
     @Query("SELECT * FROM locations WHERE locationId = :locationId")
-    abstract suspend fun load(locationId: Long): LocationWithDailyForecasts
+    abstract suspend fun load(locationId: Long): LocationWithDailyForecasts?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(location: LocationEntity): Long
@@ -57,12 +57,6 @@ abstract class LocationDao {
 
     @Query("DELETE FROM daily_forecasts WHERE locationId = :locationId")
     abstract suspend fun deleteDailyForecastsByLocationId(locationId: Long)
-
-    @Query("DELETE FROM hourly_forecasts WHERE dailyForecastId = :dailyForecasts")
-    abstract suspend fun deleteHourlyForecastsByDailyForecastId(dailyForecasts: Long)
-
-    @Query("SELECT * FROM daily_forecasts WHERE locationId = :locationId")
-    abstract suspend fun findDailyForecastsByLocationId(locationId: Long): List<DailyForecastEntity>
 
     @Transaction
     open suspend fun saveForecasts(dailyForecasts: List<DailyForecastEntity>) = coroutineScope {

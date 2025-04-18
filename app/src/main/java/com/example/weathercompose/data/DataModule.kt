@@ -44,7 +44,7 @@ val dataModule = module {
 
     single<LocationDao> {
         val database = get<WeatherForecastDatabase>()
-        database.cities()
+        database.locations()
     }
 
     factory {

@@ -45,10 +45,10 @@ fun ForecastContent(
 
     val locationForecastUIState by viewModel.locationForecastUIState.collectAsState()
     val precipitationCondition by viewModel.precipitationCondition.collectAsState()
-    val isCitiesEmptyState by viewModel.isCitiesEmpty.collectAsState()
+    val isLocationsEmptyState by viewModel.isLocationsEmpty.collectAsState()
 
-    LaunchedEffect(isCitiesEmptyState) {
-        if (isCitiesEmptyState == true) {
+    LaunchedEffect(isLocationsEmptyState) {
+        if (isLocationsEmptyState == true) {
             onNavigateToLocationSearchScreen()
         }
     }
