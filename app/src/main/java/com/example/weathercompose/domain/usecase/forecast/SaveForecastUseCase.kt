@@ -8,11 +8,11 @@ class SaveForecastUseCase(
 ) {
 
     suspend operator fun invoke(
-        cityId: Long,
+        locationId: Long,
         dailyForecast: List<DailyForecastDomainModel>
     ) {
-        forecastRepository.saveForecastForCity(
-            cityId = cityId,
+        forecastRepository.saveForecastForLocation(
+            locationId = locationId,
             dailyForecasts = dailyForecast,
         )
     }

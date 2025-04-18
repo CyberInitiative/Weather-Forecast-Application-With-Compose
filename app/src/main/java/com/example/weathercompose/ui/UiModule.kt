@@ -1,11 +1,9 @@
 package com.example.weathercompose.ui
 
-import com.example.weathercompose.ui.mapper.CityItemMapper
-import com.example.weathercompose.ui.mapper.ForecastUIStateMapper
-import com.example.weathercompose.ui.viewmodel.CityManagerViewModel
-import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
+import com.example.weathercompose.domain.mapper.ForecastUIStateMapper
+import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
-import com.example.weathercompose.ui.viewmodel.SharedViewModel
+import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -13,47 +11,26 @@ import org.koin.dsl.module
 val uiModule = module {
     viewModel {
         ForecastViewModel(
-            loadCityUseCase = get(),
+            loadLocationUseCase = get(),
             loadAllCitiesUseCase = get(),
-            deleteCityUseCase = get(),
+            deleteLocationUseCase = get(),
             loadForecastUseCase = get(),
             saveForecastUseCase = get(),
             deleteForecastUseCase = get(),
             networkManager = get(),
             forecastUIStateMapper = get(),
-            cityItemsMapper = get(),
+            locationItemsMapper = get(),
         )
     }
 
     viewModel {
-        CitySearchViewModel(
-            searchCityUseCase = get(),
-            saveCityUseCase = get(),
+        LocationSearchViewModel(
+            searchLocationUseCase = get(),
+            saveLocationUseCase = get(),
         )
     }
-
-    viewModel {
-        CityManagerViewModel(
-            loadAllCitiesUseCase = get(),
-            deleteCityUseCase = get(),
-            cityItemMapper = get(),
-        )
-    }
-
-    viewModel {
-        SharedViewModel(
-            loadCityUseCase = get(),
-            loadAllCitiesUseCase = get(),
-            loadForecastUseCase = get(),
-            saveForecastUseCase = get(),
-            deleteForecastUseCase = get(),
-            networkManager = get(),
-        )
-    }
-
-    // factory { ForecastMapper(context = androidApplication()) }
 
     factory { ForecastUIStateMapper(context = androidApplication()) }
 
-    factory { CityItemMapper(context = androidApplication()) }
+    factory { LocationItemMapper(context = androidApplication()) }
 }

@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.dp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.compose.LoadingProcessIndicator
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.ui_state.CityForecastUIState
-import com.example.weathercompose.ui.ui_state.CityForecastUIState.CityDataUIState
 import com.example.weathercompose.ui.ui_state.DailyForecastDataUIState
 import com.example.weathercompose.ui.ui_state.HourlyForecastDataUIState
+import com.example.weathercompose.ui.ui_state.LocationForecastUIState
+import com.example.weathercompose.ui.ui_state.LocationForecastUIState.LocationDataUIState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 private const val TAG = "ForecastCompose"
@@ -40,16 +40,16 @@ fun ForecastContent(
     viewModel: ForecastViewModel,
     //precipitationCondition: PrecipitationCondition,
     onAppearanceStateChange: (PrecipitationCondition) -> Unit,
-    onNavigateToCitySearchScreen: () -> Unit,
+    onNavigateToLocationSearchScreen: () -> Unit,
 ) {
 
-    val cityForecastUIState by viewModel.cityForecastUIState.collectAsState()
+    val locationForecastUIState by viewModel.locationForecastUIState.collectAsState()
     val precipitationCondition by viewModel.precipitationCondition.collectAsState()
     val isCitiesEmptyState by viewModel.isCitiesEmpty.collectAsState()
 
     LaunchedEffect(isCitiesEmptyState) {
         if (isCitiesEmptyState == true) {
-            onNavigateToCitySearchScreen()
+            onNavigateToLocationSearchScreen()
         }
     }
 
@@ -70,11 +70,11 @@ fun ForecastContent(
         label = UI_ELEMENTS_COLOR,
     )
 
-    when (cityForecastUIState) {
-        is CityDataUIState -> {
-            val cityDataUIState = cityForecastUIState as CityDataUIState
+    when (locationForecastUIState) {
+        is LocationDataUIState -> {
+            val locationDataUIState = locationForecastUIState as LocationDataUIState
 
-            if (!cityDataUIState.isDataLoading) {
+            if (!locationDataUIState.isDataLoading) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -84,7 +84,7 @@ fun ForecastContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     DataLoaded(
-                        cityDataUIState = cityDataUIState,
+                        locationDataUIState = locationDataUIState,
                         uiElementsBackgroundColor = animatedRowColor
                     )
                 }
@@ -94,17 +94,17 @@ fun ForecastContent(
             }
         }
 
-        is CityForecastUIState.ErrorForecastUIState -> TODO()
-        CityForecastUIState.NoCityDataForecastUIState -> TODO()
-        is CityForecastUIState.InitialUIState -> {
+        is LocationForecastUIState.ErrorForecastUIState -> TODO()
+        LocationForecastUIState.NoLocationDataForecastUIState -> TODO()
+        is LocationForecastUIState.InitialUIState -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {}
         }
 
-        is CityForecastUIState.LoadingUIState -> {
-            Log.d(TAG, "current state is CityForecastUIState.LoadingUIState")
+        is LocationForecastUIState.LoadingUIState -> {
+            Log.d(TAG, "current state is LocationForecastUIState.LoadingUIState")
             LoadingProcessIndicator()
         }
     }
@@ -114,11 +114,11 @@ fun ForecastContent(
 
 @Composable
 fun DataLoaded(
-    cityDataUIState: CityDataUIState,
+    locationDataUIState: LocationDataUIState,
     uiElementsBackgroundColor: Color
 ) {
-    CityAndWeatherInfoSection(
-        cityDataUIState = cityDataUIState
+    LocationAndWeatherInfoSection(
+        locationDataUIState = locationDataUIState
     )
     Spacer(
         modifier = Modifier
@@ -126,10 +126,10 @@ fun DataLoaded(
             .height(15.dp)
     )
 
-    when (cityDataUIState.hourlyForecastsUIState) {
+    when (locationDataUIState.hourlyForecastsUIState) {
         is HourlyForecastDataUIState.HourlyForecastDataPresentUIState -> {
             HourlyForecastSection(
-                hourlyForecasts = cityDataUIState.hourlyForecastsUIState.hourlyForecastItems,
+                hourlyForecasts = locationDataUIState.hourlyForecastsUIState.hourlyForecastItems,
                 backgroundColor = uiElementsBackgroundColor
             )
         }
@@ -145,10 +145,10 @@ fun DataLoaded(
             .height(20.dp)
     )
 
-    when (cityDataUIState.dailyForecastsUIState) {
+    when (locationDataUIState.dailyForecastsUIState) {
         is DailyForecastDataUIState.DailyForecastDataPresentUIState -> {
             DailyForecastSection(
-                dailyForecasts = cityDataUIState.dailyForecastsUIState.dailyForecastItems,
+                dailyForecasts = locationDataUIState.dailyForecastsUIState.dailyForecastItems,
                 backgroundColor = uiElementsBackgroundColor
             )
         }

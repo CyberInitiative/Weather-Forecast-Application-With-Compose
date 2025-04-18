@@ -8,8 +8,8 @@ sealed class NavigationRoute() {
     data object Forecast : NavigationRoute()
 
     @Serializable
-    data object CitiesManager : NavigationRoute()
+    data object LocationsManager : NavigationRoute()
 
     @Serializable
-    data object CitySearch : NavigationRoute()
+    data object LocationSearch : NavigationRoute()
 }

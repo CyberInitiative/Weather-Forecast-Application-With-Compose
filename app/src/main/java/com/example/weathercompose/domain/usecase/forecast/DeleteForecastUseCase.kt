@@ -6,7 +6,7 @@ class DeleteForecastUseCase(
     private val forecastRepository: ForecastRepository,
 ) {
 
-    suspend operator fun invoke(cityId: Long) {
-        forecastRepository.deleteForecastForCity(cityId = cityId)
+    suspend operator fun invoke(locationId: Long) {
+        forecastRepository.deleteForecastForLocation(locationId = locationId)
     }
 }

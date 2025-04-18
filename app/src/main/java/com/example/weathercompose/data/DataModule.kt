@@ -1,16 +1,16 @@
 package com.example.weathercompose.data
 
 import androidx.room.Room
-import com.example.weathercompose.data.api.CityService
-import com.example.weathercompose.data.api.ForecastService
+import com.example.weathercompose.data.api.ForecastAPI
+import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.database.WeatherForecastDatabase
-import com.example.weathercompose.data.database.dao.CityDao
-import com.example.weathercompose.data.repository.city.CityRepositoryImpl
+import com.example.weathercompose.data.database.dao.LocationDao
+import com.example.weathercompose.data.mapper.DailyForecastMapper
 import com.example.weathercompose.data.repository.forecast.ForecastRepositoryImpl
-import com.example.weathercompose.domain.mapper.DailyForecastMapper
-import com.example.weathercompose.domain.mapper.HourlyForecastMapper
-import com.example.weathercompose.domain.repository.CityRepository
+import com.example.weathercompose.data.repository.location.LocationRepositoryImpl
+import com.example.weathercompose.data.mapper.HourlyForecastMapper
 import com.example.weathercompose.domain.repository.ForecastRepository
+import com.example.weathercompose.domain.repository.LocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
@@ -21,16 +21,16 @@ val dataModule = module {
     single<ForecastRepository> { (dispatcher: CoroutineDispatcher) ->
         ForecastRepositoryImpl(
             dispatcher = dispatcher,
-            forecastService = getForecastService(),
-            cityDao = get(),
+            forecastAPI = get(),
+            locationDao = get(),
         )
     }
 
-    single<CityRepository> { (dispatcher: CoroutineDispatcher) ->
-        CityRepositoryImpl(
+    single<LocationRepository> { (dispatcher: CoroutineDispatcher) ->
+        LocationRepositoryImpl(
             dispatcher = dispatcher,
-            cityService = getCityService(),
-            cityDao = get()
+            geocodingAPI = get(),
+            locationDao = get()
         )
     }
 
@@ -42,13 +42,9 @@ val dataModule = module {
         ).build()
     }
 
-    single<CityDao> {
+    single<LocationDao> {
         val database = get<WeatherForecastDatabase>()
         database.cities()
-    }
-
-    single {
-        CityCacheManager()
     }
 
     factory {
@@ -60,20 +56,20 @@ val dataModule = module {
             hourlyForecastMapper = get(),
         )
     }
-}
 
-private fun getForecastService(): ForecastService {
-    return Retrofit.Builder()
-        .baseUrl("https://api.open-meteo.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(ForecastService::class.java)
-}
+    single {
+        Retrofit.Builder()
+            .baseUrl("https://api.open-meteo.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ForecastAPI::class.java)
+    }
 
-private fun getCityService(): CityService {
-    return Retrofit.Builder()
-        .baseUrl("https://geocoding-api.open-meteo.com//")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(CityService::class.java)
+    single {
+        Retrofit.Builder()
+            .baseUrl("https://geocoding-api.open-meteo.com//")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GeocodingAPI::class.java)
+    }
 }

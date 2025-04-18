@@ -41,18 +41,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.weathercompose.R
-import com.example.weathercompose.domain.model.city.CityDomainModel
+import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastContent
-import com.example.weathercompose.ui.model.CityItem
+import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoute
-import com.example.weathercompose.ui.viewmodel.CitySearchViewModel
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
+import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "MainScreenCompose"
 
-const val SAVED_CITY_ID_KEY = "saved_city_id_key"
+const val SAVED_LOCATION_ID_KEY = "SAVED_LOCATION_ID_KEY"
 
 private const val SCREEN_TRANSITION_ANIMATION_DURATION: Int = 500
 private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
@@ -63,6 +63,8 @@ fun NavigationHost(
     precipitationCondition: PrecipitationCondition,
     onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
 ) {
+    val forecastViewModel: ForecastViewModel = koinViewModel()
+
     NavHost(
         navController = navController,
         startDestination = NavigationRoute.Forecast,
@@ -93,18 +95,16 @@ fun NavigationHost(
 //        }
     ) {
         composable<NavigationRoute.Forecast> { backStackEntry ->
-            val viewModel = koinViewModel<ForecastViewModel>(viewModelStoreOwner = backStackEntry)
+            val savedLocationId = backStackEntry.savedStateHandle.get<Long>(SAVED_LOCATION_ID_KEY)
 
-            val savedCityId = backStackEntry.savedStateHandle.get<Long>(SAVED_CITY_ID_KEY)
-
-            LaunchedEffect(savedCityId) {
-                if (savedCityId != null) {
-                    viewModel.setCurrentCityForecast(cityId = savedCityId)
+            LaunchedEffect(savedLocationId) {
+                if (savedLocationId != null) {
+                    forecastViewModel.setCurrentLocationForecast(locationId = savedLocationId)
                 }
             }
 
-            val onNavigateToCitySearchScreen = {
-                navController.navigate(NavigationRoute.CitySearch) {
+            val onNavigateToLocationSearchScreen = {
+                navController.navigate(NavigationRoute.LocationSearch) {
                     popUpTo(NavigationRoute.Forecast) {
                         inclusive = true
                     }
@@ -112,46 +112,38 @@ fun NavigationHost(
             }
 
             ForecastContent(
-                viewModel = viewModel,
+                viewModel = forecastViewModel,
                 //precipitationCondition = precipitationCondition,
                 onAppearanceStateChange = onPrecipitationConditionChange,
-                onNavigateToCitySearchScreen = onNavigateToCitySearchScreen,
+                onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
             )
         }
 
-        composable<NavigationRoute.CitiesManager> {
-            val previousBackStackEntry = navController.previousBackStackEntry
-
-            val viewModel = if (previousBackStackEntry != null) {
-                koinViewModel<ForecastViewModel>(viewModelStoreOwner = previousBackStackEntry)
-            } else {
-                koinViewModel<ForecastViewModel>()
-            }
-
-            CityManagerContent(
-                viewModel = viewModel,
+        composable<NavigationRoute.LocationsManager> {
+            LocationManagerContent(
+                viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
-                onNavigateToSearchScreen = { navController.navigate(NavigationRoute.CitySearch) },
-                onNavigateToForecastScreen = { cityItem: CityItem ->
+                onNavigateToSearchScreen = { navController.navigate(NavigationRoute.LocationSearch) },
+                onNavigateToForecastScreen = { locationItem: LocationItem ->
                     val previousBackStackEntry = navController.previousBackStackEntry
                     val savedStateHandle = previousBackStackEntry?.savedStateHandle
-                    savedStateHandle?.set(SAVED_CITY_ID_KEY, cityItem.id)
+                    savedStateHandle?.set(SAVED_LOCATION_ID_KEY, locationItem.id)
                     navController.popBackStack()
                 }
             )
         }
 
-        composable<NavigationRoute.CitySearch> {
-            val viewModel = koinViewModel<CitySearchViewModel>()
+        composable<NavigationRoute.LocationSearch> {
+            val viewModel = koinViewModel<LocationSearchViewModel>()
 
-            val onNavigateToForecastScreen = { city: CityDomainModel ->
+            val onNavigateToForecastScreen = { location: LocationDomainModel ->
                 val savedStateHandle =
                     navController.getBackStackEntry<NavigationRoute.Forecast>().savedStateHandle
-                savedStateHandle[SAVED_CITY_ID_KEY] = city.id
+                savedStateHandle[SAVED_LOCATION_ID_KEY] = location.id
                 navController.popBackStack<NavigationRoute.Forecast>(inclusive = false)
             }
 
-            CitiesSearchContent(
+            LocationSearchContent(
                 viewModel = viewModel,
                 precipitationCondition = precipitationCondition,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
@@ -199,10 +191,10 @@ fun MainScreen() {
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
 
-    val backgroundColor by animateColorAsState(
+    val backgroundColorBottom by animateColorAsState(
         targetValue = when (precipitationCondition) {
             PrecipitationCondition.NO_PRECIPITATION_DAY -> {
-                Color(ContextCompat.getColor(context, R.color.castle_moat))
+                Color(143, 208, 252)
             }
 
             PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
@@ -226,14 +218,15 @@ fun MainScreen() {
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
 
-    val gradient = Brush.linearGradient(
-        colors = listOf(backgroundColorTop, backgroundColor),
+    val colorStops = arrayOf(
+        0.5f to backgroundColorTop,
+        0.9f to backgroundColorBottom,
     )
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(gradient)
+            .background(Brush.linearGradient(colorStops = colorStops))
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -270,7 +263,7 @@ private fun MainScreenTopAppBar(
     val onMenuClick = { menuExpanded = !menuExpanded }
     val onMenuDismiss = { menuExpanded = false }
 
-    val navigateManageCitiesScreen = { navController.navigate(NavigationRoute.CitiesManager) }
+    val navigateLocationsManagerScreen = { navController.navigate(NavigationRoute.LocationsManager) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -289,7 +282,7 @@ private fun MainScreenTopAppBar(
                         menuExpanded = menuExpanded,
                         onMenuClick = onMenuClick,
                         closeMenu = onMenuDismiss,
-                        navigateManageCitiesScreen = navigateManageCitiesScreen
+                        navigateLocationsManagerScreen = navigateLocationsManagerScreen
                     )
                 }
 
@@ -306,7 +299,7 @@ private fun TopAppBarOptionsMenu(
     menuExpanded: Boolean,
     onMenuClick: () -> Unit,
     closeMenu: () -> Unit,
-    navigateManageCitiesScreen: () -> Unit,
+    navigateLocationsManagerScreen: () -> Unit,
 ) {
     IconButton(onClick = onMenuClick) {
         Icon(
@@ -326,7 +319,7 @@ private fun TopAppBarOptionsMenu(
                     )
                 },
                 onClick = {
-                    navigateManageCitiesScreen()
+                    navigateLocationsManagerScreen()
                     closeMenu()
                 }
             )

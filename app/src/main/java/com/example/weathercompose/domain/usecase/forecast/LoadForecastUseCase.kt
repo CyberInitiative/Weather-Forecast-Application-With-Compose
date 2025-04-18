@@ -1,8 +1,8 @@
 package com.example.weathercompose.domain.usecase.forecast
 
-import com.example.weathercompose.data.api.ForecastService
+import com.example.weathercompose.data.api.ForecastAPI
 import com.example.weathercompose.data.api.ResponseResult
-import com.example.weathercompose.domain.mapper.DailyForecastMapper
+import com.example.weathercompose.data.mapper.DailyForecastMapper
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 import retrofit2.HttpException
@@ -16,13 +16,13 @@ class LoadForecastUseCase(
     suspend fun execute(
         latitude: Double,
         longitude: Double,
-        timeZone: String = ForecastService.DEFAULT_TIME_ZONE,
-        dailyOptions: List<String> = ForecastService.dailyOptions,
-        hourlyOptions: List<String> = ForecastService.hourlyOptions,
-        forecastDays: Int = ForecastService.DEFAULT_FORECAST_DAYS,
+        timeZone: String = ForecastAPI.DEFAULT_TIME_ZONE,
+        dailyOptions: List<String> = ForecastAPI.dailyOptions,
+        hourlyOptions: List<String> = ForecastAPI.hourlyOptions,
+        forecastDays: Int = ForecastAPI.DEFAULT_FORECAST_DAYS,
     ): ResponseResult<List<DailyForecastDomainModel>> {
         return try {
-            val response = forecastRepository.loadForecastForCity(
+            val response = forecastRepository.loadForecastForLocation(
                 latitude = latitude,
                 longitude = longitude,
                 timeZone = timeZone,
