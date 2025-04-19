@@ -17,7 +17,7 @@ interface ForecastAPI {
     ): FullForecast
 
     companion object {
-        const val DEFAULT_TIME_ZONE = "auto"
+        const val AUTOMATICALLY_DETECT_TIME_ZONE = "auto"
         const val DEFAULT_FORECAST_DAYS = 7
 
         val dailyOptions =

@@ -1,5 +1,6 @@
 package com.example.weathercompose.domain.usecase.location
 
+import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.api.ResponseResult
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.LocationRepository
@@ -8,11 +9,11 @@ import java.io.IOException
 
 class SearchLocationUseCase(private val locationRepository: LocationRepository) {
 
-    suspend fun execute(
+    suspend operator fun invoke(
         name: String,
-        count: Int,
-        language: String,
-        format: String,
+        count: Int = GeocodingAPI.DEFAULT_NUMBER_OF_RESULTS,
+        language: String = GeocodingAPI.DEFAULT_LANGUAGE,
+        format: String = GeocodingAPI.DEFAULT_FORMAT,
     ): ResponseResult<List<LocationDomainModel>> {
         return try {
             val response = locationRepository.search(

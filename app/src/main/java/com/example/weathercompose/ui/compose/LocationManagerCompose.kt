@@ -61,7 +61,7 @@ fun LocationManagerContent(
     viewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
     onNavigateToSearchScreen: () -> Unit,
-    onNavigateToForecastScreen: (LocationItem) -> Unit,
+    onNavigateToForecastScreen: (Long) -> Unit,
 ) {
     val locationItems by viewModel.locationItems.collectAsState()
 
@@ -121,7 +121,7 @@ fun LocationManagerContent(
 private fun LocationList(
     locationItems: List<LocationItem>,
     modifier: Modifier = Modifier,
-    onLocationItemClick: (LocationItem) -> Unit,
+    onLocationItemClick: (Long) -> Unit,
     onLocationItemDelete: (Long) -> Unit,
     @ColorRes
     itemBackgroundColor: Int,
@@ -156,7 +156,7 @@ private fun LocationList(
 private fun SwipeToDeleteLocationItem(
     modifier: Modifier = Modifier,
     locationItem: LocationItem,
-    onLocationItemClick: (LocationItem) -> Unit,
+    onLocationItemClick: (Long) -> Unit,
     onLocationItemDelete: (Long) -> Unit,
     @ColorRes
     itemBackgroundColor: Int,
@@ -201,7 +201,7 @@ private fun SwipeToDeleteLocationItem(
 @Composable
 private fun LocationListItem(
     locationItem: LocationItem,
-    onLocationItemClick: (LocationItem) -> Unit,
+    onLocationItemClick: (Long) -> Unit,
     @ColorRes
     itemBackgroundColor: Int,
 ) {
@@ -214,7 +214,7 @@ private fun LocationListItem(
                 color = colorResource(itemBackgroundColor),
             )
             .clickable {
-                onLocationItemClick(locationItem)
+                onLocationItemClick(locationItem.id)
             }
     ) {
         val (weatherIcon, weatherDescriptionLabel, temperatureLabel, locationNameLabel) = createRefs()

@@ -13,10 +13,10 @@ class LoadForecastUseCase(
     private val forecastMapper: DailyForecastMapper,
 ) {
 
-    suspend fun execute(
+    suspend operator fun invoke(
         latitude: Double,
         longitude: Double,
-        timeZone: String = ForecastAPI.DEFAULT_TIME_ZONE,
+        timeZone: String = ForecastAPI.AUTOMATICALLY_DETECT_TIME_ZONE,
         dailyOptions: List<String> = ForecastAPI.dailyOptions,
         hourlyOptions: List<String> = ForecastAPI.hourlyOptions,
         forecastDays: Int = ForecastAPI.DEFAULT_FORECAST_DAYS,

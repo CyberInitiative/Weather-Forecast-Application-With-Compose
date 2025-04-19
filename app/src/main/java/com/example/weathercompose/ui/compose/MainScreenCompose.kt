@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,20 +40,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.weathercompose.R
-import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastContent
-import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
-import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "MainScreenCompose"
 
-const val SAVED_LOCATION_ID_KEY = "SAVED_LOCATION_ID_KEY"
-
-private const val SCREEN_TRANSITION_ANIMATION_DURATION: Int = 500
 private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
 @Composable
@@ -65,47 +58,24 @@ fun NavigationHost(
 ) {
     val forecastViewModel: ForecastViewModel = koinViewModel()
 
+    val onNavigateToForecastScreen = { locationId: Long ->
+        forecastViewModel.setCurrentLocationForecast(locationId = locationId)
+        navController.navigate(NavigationRoute.Forecast) {
+            popUpTo<NavigationRoute.Forecast> {
+                inclusive = true
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = NavigationRoute.Forecast,
         modifier = Modifier.fillMaxSize(),
-//        enterTransition = {
-//            slideIntoContainer(
-//                AnimatedContentTransitionScope.SlideDirection.Start,
-//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-//            )
-//        },
-//        exitTransition = {
-//            slideOutOfContainer(
-//                AnimatedContentTransitionScope.SlideDirection.Start,
-//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-//            )
-//        },
-//        popEnterTransition = {
-//            slideIntoContainer(
-//                AnimatedContentTransitionScope.SlideDirection.End,
-//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-//            )
-//        },
-//        popExitTransition = {
-//            slideOutOfContainer(
-//                AnimatedContentTransitionScope.SlideDirection.End,
-//                tween(SCREEN_TRANSITION_ANIMATION_DURATION)
-//            )
-//        }
     ) {
-        composable<NavigationRoute.Forecast> { backStackEntry ->
-            val savedLocationId = backStackEntry.savedStateHandle.get<Long>(SAVED_LOCATION_ID_KEY)
-
-            LaunchedEffect(savedLocationId) {
-                if (savedLocationId != null) {
-                    forecastViewModel.setCurrentLocationForecast(locationId = savedLocationId)
-                }
-            }
-
+        composable<NavigationRoute.Forecast> {
             val onNavigateToLocationSearchScreen = {
                 navController.navigate(NavigationRoute.LocationSearch) {
-                    popUpTo(NavigationRoute.Forecast) {
+                    popUpTo<NavigationRoute.Forecast> {
                         inclusive = true
                     }
                 }
@@ -113,10 +83,10 @@ fun NavigationHost(
 
             ForecastContent(
                 viewModel = forecastViewModel,
-                //precipitationCondition = precipitationCondition,
                 onAppearanceStateChange = onPrecipitationConditionChange,
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
             )
+
         }
 
         composable<NavigationRoute.LocationsManager> {
@@ -124,27 +94,13 @@ fun NavigationHost(
                 viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
                 onNavigateToSearchScreen = { navController.navigate(NavigationRoute.LocationSearch) },
-                onNavigateToForecastScreen = { locationItem: LocationItem ->
-                    val previousBackStackEntry = navController.previousBackStackEntry
-                    val savedStateHandle = previousBackStackEntry?.savedStateHandle
-                    savedStateHandle?.set(SAVED_LOCATION_ID_KEY, locationItem.id)
-                    navController.popBackStack()
-                }
+                onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
 
         composable<NavigationRoute.LocationSearch> {
-            val viewModel = koinViewModel<LocationSearchViewModel>()
-
-            val onNavigateToForecastScreen = { location: LocationDomainModel ->
-                val savedStateHandle =
-                    navController.getBackStackEntry<NavigationRoute.Forecast>().savedStateHandle
-                savedStateHandle[SAVED_LOCATION_ID_KEY] = location.id
-                navController.popBackStack<NavigationRoute.Forecast>(inclusive = false)
-            }
-
             LocationSearchContent(
-                viewModel = viewModel,
+                viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
@@ -263,7 +219,8 @@ private fun MainScreenTopAppBar(
     val onMenuClick = { menuExpanded = !menuExpanded }
     val onMenuDismiss = { menuExpanded = false }
 
-    val navigateLocationsManagerScreen = { navController.navigate(NavigationRoute.LocationsManager) }
+    val navigateLocationsManagerScreen =
+        { navController.navigate(NavigationRoute.LocationsManager) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -276,20 +233,12 @@ private fun MainScreenTopAppBar(
             ),
         title = { },
         actions = {
-            when {
-                currentRoute == NavigationRoute.Forecast::class.qualifiedName -> {
-                    TopAppBarOptionsMenu(
-                        menuExpanded = menuExpanded,
-                        onMenuClick = onMenuClick,
-                        closeMenu = onMenuDismiss,
-                        navigateLocationsManagerScreen = navigateLocationsManagerScreen
-                    )
-                }
-
-                else -> {
-
-                }
-            }
+            TopAppBarOptionsMenu(
+                menuExpanded = menuExpanded,
+                onMenuClick = onMenuClick,
+                closeMenu = onMenuDismiss,
+                navigateLocationsManagerScreen = navigateLocationsManagerScreen
+            )
         }
     )
 }
@@ -362,4 +311,13 @@ private fun OptionsMenuItemDivider() {
                             1f to colorResource(id = R.color.skysail_blue)
                         )
                     )
+ */
+
+/*
+LaunchedEffect(savedLocationId) {
+                if (savedLocationId != null) {
+                    forecastViewModel.setCurrentLocationForecast(locationId = savedLocationId)
+                    backStackEntry.savedStateHandle.remove<Long>(SAVED_LOCATION_ID_KEY)
+                }
+            }
  */

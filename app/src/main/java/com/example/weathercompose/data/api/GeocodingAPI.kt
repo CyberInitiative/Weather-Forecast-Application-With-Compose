@@ -13,4 +13,10 @@ interface GeocodingAPI {
         @Query("language") language: String,
         @Query("format") format: String,
     ): LocationSearchResult
+
+    companion object{
+        const val DEFAULT_NUMBER_OF_RESULTS = 20
+        const val DEFAULT_LANGUAGE = "en"
+        const val DEFAULT_FORMAT = "json"
+    }
 }

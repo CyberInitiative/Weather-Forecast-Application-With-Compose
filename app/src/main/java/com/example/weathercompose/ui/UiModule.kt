@@ -3,7 +3,6 @@ package com.example.weathercompose.ui
 import com.example.weathercompose.domain.mapper.ForecastUIStateMapper
 import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
-import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -11,16 +10,10 @@ import org.koin.dsl.module
 val uiModule = module {
     viewModel {
         ForecastViewModel(
-            loadLocationUseCase = get(),
             loadAllLocationsUseCase = get(),
             deleteLocationUseCase = get(),
             forecastUIStateMapper = get(),
             locationItemsMapper = get(),
-        )
-    }
-
-    viewModel {
-        LocationSearchViewModel(
             searchLocationUseCase = get(),
             saveLocationUseCase = get(),
             loadForecastUseCase = get(),

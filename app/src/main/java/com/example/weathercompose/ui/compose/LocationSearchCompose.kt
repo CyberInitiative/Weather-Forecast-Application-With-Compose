@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -29,16 +31,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.location.LocationDomainModel
-import com.example.weathercompose.ui.UIState
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
+import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -46,19 +51,23 @@ private const val TAG = "LocationsManagerCompose"
 
 @Composable
 fun LocationSearchContent(
-    viewModel: LocationSearchViewModel,
+    viewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
-    onNavigateToForecastScreen: (LocationDomainModel) -> Any,
+    onNavigateToForecastScreen: (Long) -> Any,
 ) {
     var query by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
-    val locationSearchResult by viewModel.locationSearchResult.collectAsState(initial = UIState.Loading())
+    val locationSearchResult by viewModel.locationSearchUIState.collectAsState()
     val onLocationItemClick = { location: LocationDomainModel ->
         coroutineScope.launch {
-            viewModel.saveLocation(location).join()
-            viewModel.loadForecastForLocation(location).join()
+            viewModel.setLocationSearchUIStateLoading()
+            viewModel.saveLocation(location = location)
+            val locationWithLoadedForecast = viewModel.loadForecastForLocation(location)
+            viewModel.addLocation(locationWithLoadedForecast)
+            viewModel.setCurrentLocationForecast(locationWithLoadedForecast.id)
 
-            onNavigateToForecastScreen(location)
+            onNavigateToForecastScreen(location.id)
         }
     }
 
@@ -92,24 +101,17 @@ fun LocationSearchContent(
                     viewModel.searchLocation(name = newQuery)
                 }
             },
-            itemBackgroundColor = listItemsColor
+            itemBackgroundColor = listItemsColor,
+            focusManager = focusManager,
         )
 
-        when (locationSearchResult) {
-            is UIState.Content -> {
+        when {
+            locationSearchResult.isLoading -> LoadingProcessIndicator()
+            locationSearchResult.locations.isNotEmpty() ->
                 LocationList(
-                    locations = (locationSearchResult as UIState.Content<List<LocationDomainModel>>).data,
+                    locations = locationSearchResult.locations,
                     onLocationItemClick = onLocationItemClick,
                 )
-            }
-
-            is UIState.Empty -> {}
-
-            is UIState.Error -> {}
-
-            is UIState.Loading -> {
-                LoadingProcessIndicator()
-            }
         }
     }
 }
@@ -120,6 +122,7 @@ fun SearchBox(
     onQueryChanged: (String) -> Unit,
     @ColorRes
     itemBackgroundColor: Int,
+    focusManager: FocusManager,
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -140,6 +143,11 @@ fun SearchBox(
                 fontSize = 18.sp
             ),
             singleLine = true,
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password
+            ),
         )
     }
 }

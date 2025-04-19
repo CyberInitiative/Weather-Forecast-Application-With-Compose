@@ -38,17 +38,16 @@ private const val UI_ELEMENTS_COLOR = "UI elements color"
 @Composable
 fun ForecastContent(
     viewModel: ForecastViewModel,
-    //precipitationCondition: PrecipitationCondition,
     onAppearanceStateChange: (PrecipitationCondition) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
 ) {
 
     val locationForecastUIState by viewModel.locationForecastUIState.collectAsState()
     val precipitationCondition by viewModel.precipitationCondition.collectAsState()
-    val isLocationsEmptyState by viewModel.isLocationsEmpty.collectAsState()
+    val areLocationsEmptyState by viewModel.areLocationsEmpty.collectAsState()
 
-    LaunchedEffect(isLocationsEmptyState) {
-        if (isLocationsEmptyState == true) {
+    LaunchedEffect(areLocationsEmptyState) {
+        if (areLocationsEmptyState == true) {
             onNavigateToLocationSearchScreen()
         }
     }
