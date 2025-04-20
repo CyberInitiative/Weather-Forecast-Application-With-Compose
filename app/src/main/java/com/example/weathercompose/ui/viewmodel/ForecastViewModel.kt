@@ -16,12 +16,11 @@ import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.ui_state.LocationForecastUIState
+import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.ui.ui_state.LocationSearchState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ForecastViewModel(
@@ -38,15 +37,12 @@ class ForecastViewModel(
     private val _currentLocation = MutableStateFlow<LocationDomainModel?>(value = null)
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
-    private val _locationForecastUIState =
-        MutableStateFlow<LocationForecastUIState>(LocationForecastUIState.InitialUIState)
-    val locationForecastUIState: StateFlow<LocationForecastUIState> = _locationForecastUIState
+    private val _locationForecastState =
+        MutableStateFlow<LocationForecastState>(LocationForecastState.LoadingState)
+    val locationForecastState: StateFlow<LocationForecastState> = _locationForecastState
 
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
-
-    private val _areLocationsEmpty = MutableStateFlow<Boolean?>(null)
-    val areLocationsEmpty: StateFlow<Boolean?> = _areLocationsEmpty.asStateFlow()
 
     private val _locationSearchState = MutableStateFlow(LocationSearchState())
     val locationSearchState: StateFlow<LocationSearchState> = _locationSearchState
@@ -66,20 +62,18 @@ class ForecastViewModel(
         }
     }
 
-    private suspend fun loadLocations() {
-        _locationsState.value = loadAllLocationsUseCase()
-    }
-
     suspend fun saveLocation(location: LocationDomainModel) {
-        _locationForecastUIState.value = LocationForecastUIState.LoadingUIState
+        _locationForecastState.value = LocationForecastState.LoadingState
         _locationsState.value?.let { currentLocations ->
             if (currentLocations.firstOrNull { it.id == location.id } == null) {
                 saveLocationUseCase.invoke(location = location)
                 val result = loadForecastForLocation(location)
                 addLoadedLocation(location = result)
+                _currentLocation.value = result
+            } else {
+                _currentLocation.value = location
             }
         }
-        setCurrentLocationForecast(locationId = location.id)
     }
 
     private fun addLoadedLocation(location: LocationDomainModel) {
@@ -93,21 +87,31 @@ class ForecastViewModel(
         }
     }
 
+    private suspend fun loadLocations() {
+        val loadedLocations = loadAllLocationsUseCase()
+        _locationsState.value = loadedLocations
+    }
+
     private fun observeLocations() {
         viewModelScope.launch {
             _locationsState.collect { state ->
-                when {
-                    state == null -> {}
-                    state.isNotEmpty() -> {
-                        val currentLocationValue = _currentLocation.value
-                        if (currentLocationValue == null) {
-                            _currentLocation.value = state[0]
-                        }
-                        _locationItems.value =
-                            state.map { locationItemsMapper.mapToLocationItem(it) }
-                    }
+                if (state != null) {
 
-                    else -> {}
+                    _locationItems.value =
+                        state.map { locationItemsMapper.mapToLocationItem(it) }
+
+                    when {
+                        state.isNotEmpty() -> {
+                            if (_currentLocation.value == null) {
+                                _currentLocation.value = state[0]
+                            }
+                        }
+
+                        else -> {
+                            _locationForecastState.value =
+                                LocationForecastState.NoLocationDataForecastState
+                        }
+                    }
                 }
             }
         }
@@ -119,14 +123,10 @@ class ForecastViewModel(
                 if (location != null) {
                     _precipitationCondition.value =
                         location.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+
                     val locationForecastUIState =
                         forecastUIStateMapper.mapToUIState(location = location)
-                    _locationForecastUIState.update {
-                        (locationForecastUIState as LocationForecastUIState.LocationDataUIState)
-                            .copy(
-                                isDataLoading = false
-                            )
-                    }
+                    _locationForecastState.value = locationForecastUIState
                 }
             }
         }
@@ -134,6 +134,7 @@ class ForecastViewModel(
 
     fun deleteLocation(locationId: Long) {
         viewModelScope.launch {
+            deleteLocationUseCase.invoke(locationId = locationId)
             val currentLocations = _locationsState.value
             if (currentLocations != null) {
                 val deletedLocation = currentLocations.firstOrNull { it.id == locationId }
@@ -245,11 +246,6 @@ class ForecastViewModel(
                 }
             }
         }
-    }
-
-    sealed class DataState {
-        data object Loading : DataState()
-        data object Ready : DataState()
     }
 
     companion object {

@@ -3,18 +3,15 @@ package com.example.weathercompose.ui.ui_state
 import androidx.annotation.DrawableRes
 import com.example.weathercompose.R
 
-sealed class LocationForecastUIState {
+sealed class LocationForecastState {
 
-    data object InitialUIState : LocationForecastUIState()
+    data object LoadingState : LocationForecastState()
 
-    data object LoadingUIState : LocationForecastUIState()
+    data class ErrorForecastState(val errorMessage: String = "") : LocationForecastState()
 
-    data class ErrorForecastUIState(val errorMessage: String = "") : LocationForecastUIState()
+    data object NoLocationDataForecastState : LocationForecastState()
 
-    data object NoLocationDataForecastUIState : LocationForecastUIState()
-
-    data class LocationDataUIState(
-        val isDataLoading: Boolean = true,
+    data class LocationDataState(
         val locationName: String = "",
         val currentHourTemperature: String = "",
         val currentDayOfWeekAndDate: String = "",
@@ -26,6 +23,6 @@ sealed class LocationForecastUIState {
             DailyForecastDataUIState.NoActualForecastDataUIState,
         val hourlyForecastsUIState: HourlyForecastDataUIState =
             HourlyForecastDataUIState.NoActualForecastDataUIState,
-    ) : LocationForecastUIState()
+    ) : LocationForecastState()
 
 }

@@ -58,15 +58,6 @@ fun NavigationHost(
 ) {
     val forecastViewModel: ForecastViewModel = koinViewModel()
 
-    val onNavigateToForecastScreen = { locationId: Long ->
-        forecastViewModel.setCurrentLocationForecast(locationId = locationId)
-        navController.navigate(NavigationRoute.Forecast) {
-            popUpTo<NavigationRoute.Forecast> {
-                inclusive = true
-            }
-        }
-    }
-
     NavHost(
         navController = navController,
         startDestination = NavigationRoute.Forecast,
@@ -74,11 +65,7 @@ fun NavigationHost(
     ) {
         composable<NavigationRoute.Forecast> {
             val onNavigateToLocationSearchScreen = {
-                navController.navigate(NavigationRoute.LocationSearch) {
-                    popUpTo<NavigationRoute.Forecast> {
-                        inclusive = true
-                    }
-                }
+                navController.navigate(NavigationRoute.LocationSearch)
             }
 
             ForecastContent(
@@ -90,6 +77,15 @@ fun NavigationHost(
         }
 
         composable<NavigationRoute.LocationsManager> {
+            val onNavigateToForecastScreen = { locationId: Long ->
+                forecastViewModel.setCurrentLocationForecast(locationId = locationId)
+                navController.navigate(NavigationRoute.Forecast) {
+                    popUpTo<NavigationRoute.Forecast> {
+                        inclusive = true
+                    }
+                }
+            }
+
             LocationManagerContent(
                 viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
@@ -99,6 +95,14 @@ fun NavigationHost(
         }
 
         composable<NavigationRoute.LocationSearch> {
+            val onNavigateToForecastScreen = {
+                navController.navigate(NavigationRoute.Forecast) {
+                    popUpTo<NavigationRoute.Forecast> {
+                        inclusive = true
+                    }
+                }
+            }
+
             LocationSearchContent(
                 viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,

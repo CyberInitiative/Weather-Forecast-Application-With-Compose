@@ -3,10 +3,8 @@ package com.example.weathercompose.ui.compose.forecast_screen
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,8 +24,8 @@ import com.example.weathercompose.ui.compose.LoadingProcessIndicator
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.DailyForecastDataUIState
 import com.example.weathercompose.ui.ui_state.HourlyForecastDataUIState
-import com.example.weathercompose.ui.ui_state.LocationForecastUIState
-import com.example.weathercompose.ui.ui_state.LocationForecastUIState.LocationDataUIState
+import com.example.weathercompose.ui.ui_state.LocationForecastState
+import com.example.weathercompose.ui.ui_state.LocationForecastState.LocationDataState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 private const val TAG = "ForecastCompose"
@@ -41,16 +39,8 @@ fun ForecastContent(
     onAppearanceStateChange: (PrecipitationCondition) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
 ) {
-
-    val locationForecastUIState by viewModel.locationForecastUIState.collectAsState()
+    val locationForecastUIState by viewModel.locationForecastState.collectAsState()
     val precipitationCondition by viewModel.precipitationCondition.collectAsState()
-    val areLocationsEmptyState by viewModel.areLocationsEmpty.collectAsState()
-
-    LaunchedEffect(areLocationsEmptyState) {
-        if (areLocationsEmptyState == true) {
-            onNavigateToLocationSearchScreen()
-        }
-    }
 
     LaunchedEffect(precipitationCondition) {
         precipitationCondition?.let { onAppearanceStateChange(it) }
@@ -70,40 +60,33 @@ fun ForecastContent(
     )
 
     when (locationForecastUIState) {
-        is LocationDataUIState -> {
-            val locationDataUIState = locationForecastUIState as LocationDataUIState
-
-            if (!locationDataUIState.isDataLoading) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp)
-                        .padding(horizontal = 15.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    DataLoaded(
-                        locationDataUIState = locationDataUIState,
-                        uiElementsBackgroundColor = animatedRowColor
-                    )
-                }
-
-            } else {
-                LoadingProcessIndicator()
+        is LocationDataState -> {
+            val locationDataUIState = locationForecastUIState as LocationDataState
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+                    .padding(horizontal = 15.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                DataLoaded(
+                    locationDataUIState = locationDataUIState,
+                    uiElementsBackgroundColor = animatedRowColor
+                )
             }
         }
 
-        is LocationForecastUIState.ErrorForecastUIState -> TODO()
-        LocationForecastUIState.NoLocationDataForecastUIState -> TODO()
-        is LocationForecastUIState.InitialUIState -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {}
+        is LocationForecastState.ErrorForecastState -> {}
+
+        LocationForecastState.NoLocationDataForecastState -> {
+            LaunchedEffect(locationForecastUIState) {
+                onNavigateToLocationSearchScreen()
+            }
         }
 
-        is LocationForecastUIState.LoadingUIState -> {
-            Log.d(TAG, "current state is LocationForecastUIState.LoadingUIState")
+        LocationForecastState.LoadingState -> {
+            Log.d(TAG, "current state is LocationForecastUIState.LoadingState")
             LoadingProcessIndicator()
         }
     }
@@ -113,7 +96,7 @@ fun ForecastContent(
 
 @Composable
 fun DataLoaded(
-    locationDataUIState: LocationDataUIState,
+    locationDataUIState: LocationDataState,
     uiElementsBackgroundColor: Color
 ) {
     LocationAndWeatherInfoSection(

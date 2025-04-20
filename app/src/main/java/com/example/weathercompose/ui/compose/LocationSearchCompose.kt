@@ -1,14 +1,17 @@
 package com.example.weathercompose.ui.compose
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.annotation.ColorRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -53,17 +58,24 @@ private const val TAG = "LocationsManagerCompose"
 fun LocationSearchContent(
     viewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
-    onNavigateToForecastScreen: (Long) -> Any,
+    onNavigateToForecastScreen: () -> Any,
 ) {
+    val activity = LocalContext.current as? Activity
+    val locationForecastUIState by viewModel.locationForecastState.collectAsState()
+    if(locationForecastUIState == LocationForecastState.NoLocationDataForecastState){
+        BackHandler {
+            activity?.finish()
+        }
+    }
+
     var query by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val locationSearchResult by viewModel.locationSearchState.collectAsState()
     val onLocationItemClick = { location: LocationDomainModel ->
         coroutineScope.launch {
-            onNavigateToForecastScreen(location.id)
+            onNavigateToForecastScreen()
             viewModel.saveLocation(location = location)
-            //viewModel.setCurrentLocationForecast(locationId = location.id)
         }
     }
 
@@ -198,13 +210,20 @@ fun LocationListItem(
 
 @Composable
 fun LoadingProcessIndicator() {
-    Box(
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         CircularProgressIndicator(
             color = Color.White,
             modifier = Modifier.size(50.dp)
+        )
+        Spacer(modifier = Modifier.height(15.dp))
+        Text(
+            color = Color.White,
+            text = "Loading...",
+            fontSize = 16.sp,
         )
     }
 }
