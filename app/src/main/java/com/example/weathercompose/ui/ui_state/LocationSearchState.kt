@@ -2,7 +2,7 @@ package com.example.weathercompose.ui.ui_state
 
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 
-data class LocationSearchUIState(
+data class LocationSearchState(
     val isLoading: Boolean = false,
     val locations: List<LocationDomainModel> = emptyList(),
     val errorMessage: String = ""

@@ -58,16 +58,12 @@ fun LocationSearchContent(
     var query by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
-    val locationSearchResult by viewModel.locationSearchUIState.collectAsState()
+    val locationSearchResult by viewModel.locationSearchState.collectAsState()
     val onLocationItemClick = { location: LocationDomainModel ->
         coroutineScope.launch {
-            viewModel.setLocationSearchUIStateLoading()
-            viewModel.saveLocation(location = location)
-            val locationWithLoadedForecast = viewModel.loadForecastForLocation(location)
-            viewModel.addLocation(locationWithLoadedForecast)
-            viewModel.setCurrentLocationForecast(locationWithLoadedForecast.id)
-
             onNavigateToForecastScreen(location.id)
+            viewModel.saveLocation(location = location)
+            //viewModel.setCurrentLocationForecast(locationId = location.id)
         }
     }
 
@@ -212,3 +208,12 @@ fun LoadingProcessIndicator() {
         )
     }
 }
+
+/*
+            viewModel.setLocationSearchUIStateLoading()
+
+            val locationWithLoadedForecast = viewModel.loadForecastForLocation(location)
+            viewModel.addLocation(locationWithLoadedForecast)
+
+
+ */

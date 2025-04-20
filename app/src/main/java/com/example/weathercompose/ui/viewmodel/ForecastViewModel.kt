@@ -17,7 +17,7 @@ import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.LocationForecastUIState
-import com.example.weathercompose.ui.ui_state.LocationSearchUIState
+import com.example.weathercompose.ui.ui_state.LocationSearchState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,8 +35,8 @@ class ForecastViewModel(
     private val saveForecastUseCase: SaveForecastUseCase,
     private val deleteForecastUseCase: DeleteForecastUseCase,
 ) : ViewModel() {
-    private val _currentLocation = MutableStateFlow<LocationDomainModel?>(null)
-    private val _loadedLocations = MutableStateFlow<List<LocationDomainModel>>(value = emptyList())
+    private val _currentLocation = MutableStateFlow<LocationDomainModel?>(value = null)
+    private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
     private val _locationForecastUIState =
         MutableStateFlow<LocationForecastUIState>(LocationForecastUIState.InitialUIState)
@@ -48,8 +48,8 @@ class ForecastViewModel(
     private val _areLocationsEmpty = MutableStateFlow<Boolean?>(null)
     val areLocationsEmpty: StateFlow<Boolean?> = _areLocationsEmpty.asStateFlow()
 
-    private val _locationSearchUIState = MutableStateFlow(LocationSearchUIState())
-    val locationSearchUIState: StateFlow<LocationSearchUIState> = _locationSearchUIState
+    private val _locationSearchState = MutableStateFlow(LocationSearchState())
+    val locationSearchState: StateFlow<LocationSearchState> = _locationSearchState
 
     private val _precipitationCondition = MutableStateFlow(
         value = PrecipitationCondition.NO_PRECIPITATION_DAY
@@ -67,29 +67,47 @@ class ForecastViewModel(
     }
 
     private suspend fun loadLocations() {
-        val loadedLocations = loadAllLocationsUseCase()
-        _loadedLocations.value = loadedLocations
-        if (loadedLocations.isEmpty()) {
-            _areLocationsEmpty.value = true
+        _locationsState.value = loadAllLocationsUseCase()
+    }
+
+    suspend fun saveLocation(location: LocationDomainModel) {
+        _locationForecastUIState.value = LocationForecastUIState.LoadingUIState
+        _locationsState.value?.let { currentLocations ->
+            if (currentLocations.firstOrNull { it.id == location.id } == null) {
+                saveLocationUseCase.invoke(location = location)
+                val result = loadForecastForLocation(location)
+                addLoadedLocation(location = result)
+            }
+        }
+        setCurrentLocationForecast(locationId = location.id)
+    }
+
+    private fun addLoadedLocation(location: LocationDomainModel) {
+        val currentLocations = _locationsState.value
+        if (currentLocations == null) {
+            _locationsState.value = listOf(location)
+        } else {
+            if (currentLocations.firstOrNull { it.id == location.id } == null) {
+                _locationsState.value = currentLocations + location
+            }
         }
     }
 
     private fun observeLocations() {
         viewModelScope.launch {
-            _loadedLocations.collect { locations ->
-                Log.d(TAG, "locations: \n${locations.joinToString("\n")}")
-                val currentLocationValue = _currentLocation.value
-                if (currentLocationValue != null) {
-                    val updatedLocation = locations.find { it.id == currentLocationValue.id }
-                    if (updatedLocation != null && updatedLocation != currentLocationValue) {
-                        _currentLocation.update { updatedLocation }
+            _locationsState.collect { state ->
+                when {
+                    state == null -> {}
+                    state.isNotEmpty() -> {
+                        val currentLocationValue = _currentLocation.value
+                        if (currentLocationValue == null) {
+                            _currentLocation.value = state[0]
+                        }
+                        _locationItems.value =
+                            state.map { locationItemsMapper.mapToLocationItem(it) }
                     }
-                } else if (_currentLocation.value == null && locations.isNotEmpty()) {
-                    _currentLocation.update { locations[0] }
-                }
 
-                _locationItems.update {
-                    locations.map { locationItemsMapper.mapToLocationItem(it) }
+                    else -> {}
                 }
             }
         }
@@ -116,58 +134,48 @@ class ForecastViewModel(
 
     fun deleteLocation(locationId: Long) {
         viewModelScope.launch {
-            deleteLocationUseCase.invoke(locationId = locationId)
+            val currentLocations = _locationsState.value
+            if (currentLocations != null) {
+                val deletedLocation = currentLocations.firstOrNull { it.id == locationId }
+                if (deletedLocation != null) {
+                    val updatedLocations = currentLocations.toMutableList()
+                    updatedLocations.remove(deletedLocation)
+                    _locationsState.value = updatedLocations
 
-            val updatedLocations = _loadedLocations.value.toMutableList()
-            updatedLocations
-                .firstOrNull { it.id == locationId }
-                ?.let {
-                    updatedLocations.remove(it)
-
-                    if (updatedLocations.isEmpty()) {
-                        _areLocationsEmpty.value = true
-                    }
-
-                    _loadedLocations.update { updatedLocations }
-                    if (_currentLocation.value?.id == locationId && updatedLocations.isNotEmpty()) {
-                        _currentLocation.update { updatedLocations[0] }
+                    if (_currentLocation.value?.id == deletedLocation.id
+                        && updatedLocations.isNotEmpty()
+                    ) {
+                        _currentLocation.value = updatedLocations[0]
                     }
                 }
+            }
         }
     }
 
     fun setCurrentLocationForecast(locationId: Long) {
-        val currentLocations = _loadedLocations.value
-
-        val loadedLocation = currentLocations.firstOrNull { it.id == locationId }
-        _currentLocation.update { loadedLocation }
-    }
-
-    fun setLocationSearchUIStateLoading() {
-        _locationSearchUIState.value = _locationSearchUIState.value.copy(isLoading = true)
-    }
-
-    suspend fun saveLocation(location: LocationDomainModel) {
-        saveLocationUseCase.invoke(location = location)
-
-    }
-
-    fun addLocation(location: LocationDomainModel){
-        _loadedLocations.update { _loadedLocations.value + location }
+        viewModelScope.launch {
+            val currentLocations = _locationsState.value
+            if (!currentLocations.isNullOrEmpty()) {
+                val currentLocation = currentLocations.firstOrNull { it.id == locationId }
+                if (currentLocation != null) {
+                    _currentLocation.value = currentLocation
+                }
+            }
+        }
     }
 
     fun searchLocation(
         name: String,
     ) {
         viewModelScope.launch {
-            _locationSearchUIState.value = _locationSearchUIState.value.copy(isLoading = true)
+            _locationSearchState.value = _locationSearchState.value.copy(isLoading = true)
             val locationSearchResult = searchLocationUseCase.invoke(
                 name = name,
             )
 
             when (locationSearchResult) {
                 is ResponseResult.Success -> {
-                    _locationSearchUIState.value = _locationSearchUIState.value.copy(
+                    _locationSearchState.value = _locationSearchState.value.copy(
                         isLoading = false,
                         locations = locationSearchResult.data
                     )
@@ -177,7 +185,7 @@ class ForecastViewModel(
                     val code = locationSearchResult.code
                     val message = locationSearchResult.message.orEmpty()
                     val errorMessage = "Request error; Code: $code; Message: $message"
-                    _locationSearchUIState.value = _locationSearchUIState.value.copy(
+                    _locationSearchState.value = _locationSearchState.value.copy(
                         isLoading = false,
                         locations = emptyList(),
                         errorMessage = errorMessage,
@@ -185,7 +193,7 @@ class ForecastViewModel(
                 }
 
                 is ResponseResult.Exception -> {
-                    _locationSearchUIState.value = _locationSearchUIState.value.copy(
+                    _locationSearchState.value = _locationSearchState.value.copy(
                         isLoading = false,
                         locations = emptyList(),
                         errorMessage = locationSearchResult.throwable.message.orEmpty(),
@@ -195,7 +203,7 @@ class ForecastViewModel(
         }
     }
 
-    suspend fun loadForecastForLocation(
+    private suspend fun loadForecastForLocation(
         location: LocationDomainModel
     ): LocationDomainModel {
         with(location) {
@@ -237,6 +245,11 @@ class ForecastViewModel(
                 }
             }
         }
+    }
+
+    sealed class DataState {
+        data object Loading : DataState()
+        data object Ready : DataState()
     }
 
     companion object {
