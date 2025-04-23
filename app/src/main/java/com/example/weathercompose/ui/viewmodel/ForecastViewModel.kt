@@ -248,6 +248,10 @@ class ForecastViewModel(
         }
     }
 
+    public fun clearLocationSearch() {
+        _locationSearchState.value = _locationSearchState.value.copy(locations = emptyList())
+    }
+
     companion object {
         private const val TAG = "ForecastViewModel"
     }

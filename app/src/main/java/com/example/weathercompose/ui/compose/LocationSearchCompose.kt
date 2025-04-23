@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -62,9 +63,15 @@ fun LocationSearchContent(
 ) {
     val activity = LocalContext.current as? Activity
     val locationForecastUIState by viewModel.locationForecastState.collectAsState()
-    if(locationForecastUIState == LocationForecastState.NoLocationDataForecastState){
+    if (locationForecastUIState == LocationForecastState.NoLocationDataForecastState) {
         BackHandler {
             activity?.finish()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearLocationSearch()
         }
     }
 
@@ -227,12 +234,3 @@ fun LoadingProcessIndicator() {
         )
     }
 }
-
-/*
-            viewModel.setLocationSearchUIStateLoading()
-
-            val locationWithLoadedForecast = viewModel.loadForecastForLocation(location)
-            viewModel.addLocation(locationWithLoadedForecast)
-
-
- */

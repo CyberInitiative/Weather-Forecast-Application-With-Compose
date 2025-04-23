@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -96,6 +97,7 @@ fun NavigationHost(
 
         composable<NavigationRoute.LocationSearch> {
             val onNavigateToForecastScreen = {
+                forecastViewModel.clearLocationSearch()
                 navController.navigate(NavigationRoute.Forecast) {
                     popUpTo<NavigationRoute.Forecast> {
                         inclusive = true
@@ -226,8 +228,8 @@ private fun MainScreenTopAppBar(
     val navigateLocationsManagerScreen =
         { navController.navigate(NavigationRoute.LocationsManager) }
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val destination = currentBackStackEntry?.destination
 
     TopAppBar(
         colors = TopAppBarDefaults
@@ -237,12 +239,18 @@ private fun MainScreenTopAppBar(
             ),
         title = { },
         actions = {
-            TopAppBarOptionsMenu(
-                menuExpanded = menuExpanded,
-                onMenuClick = onMenuClick,
-                closeMenu = onMenuDismiss,
-                navigateLocationsManagerScreen = navigateLocationsManagerScreen
-            )
+            when {
+                destination?.hasRoute<NavigationRoute.Forecast>() == true -> {
+                    TopAppBarOptionsMenu(
+                        menuExpanded = menuExpanded,
+                        onMenuClick = onMenuClick,
+                        closeMenu = onMenuDismiss,
+                        navigateLocationsManagerScreen = navigateLocationsManagerScreen
+                    )
+                }
+
+                else -> {}
+            }
         }
     )
 }
