@@ -81,12 +81,15 @@ fun ForecastContent(
 
         LocationForecastState.NoLocationData -> {
             LaunchedEffect(locationForecastUIState) {
+                Log.d(TAG, "current state is LocationForecastUIState.NoLocationData")
                 onNavigateToLocationSearchScreen()
             }
         }
 
         LocationForecastState.Loading -> {
-            Log.d(TAG, "current state is LocationForecastUIState.LoadingState")
+            LaunchedEffect(locationForecastUIState) {
+                Log.d(TAG, "current state is LocationForecastUIState.LoadingState")
+            }
             LoadingProcessIndicator()
         }
     }

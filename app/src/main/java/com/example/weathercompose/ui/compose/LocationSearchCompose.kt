@@ -82,7 +82,7 @@ fun LocationSearchContent(
     val onLocationItemClick = { location: LocationEntity ->
         coroutineScope.launch {
             onNavigateToForecastScreen()
-            viewModel.saveLocation(location = location)
+            viewModel.saveLocation(locationEntity = location)
         }
     }
 
