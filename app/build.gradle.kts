@@ -77,6 +77,7 @@ dependencies {
     // https://mvnrepository.com/artifact/androidx.constraintlayout/constraintlayout-compose
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.junit.ktx)
 
     ksp(libs.androidx.room.compiler)
 

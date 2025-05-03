@@ -17,8 +17,7 @@ val uiModule = module {
             searchLocationUseCase = get(),
             saveLocationUseCase = get(),
             loadForecastUseCase = get(),
-            saveForecastUseCase = get(),
-            deleteForecastUseCase = get(),
+            loadLocationUseCase = get(),
         )
     }
 

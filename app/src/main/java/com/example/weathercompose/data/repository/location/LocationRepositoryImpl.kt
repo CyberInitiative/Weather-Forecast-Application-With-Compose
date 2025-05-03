@@ -1,9 +1,11 @@
 package com.example.weathercompose.data.repository.location
 
+import android.util.Log
 import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.database.dao.LocationDao
-import com.example.weathercompose.data.mapper.mapToEntity
+import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.mapper.mapToLocationDomainModel
+import com.example.weathercompose.data.mapper.mapToLocationEntity
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.LocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,14 +22,14 @@ class LocationRepositoryImpl(
         count: Int,
         language: String,
         format: String,
-    ): List<LocationDomainModel> {
+    ): List<LocationEntity> {
         return withContext(dispatcher) {
             geocodingAPI.searchLocation(
                 name = name,
                 count = count,
                 language = language,
                 format = format,
-            ).locationSearchItems?.map { it.mapToLocationDomainModel() } ?: emptyList()
+            ).locationSearchItems?.map { it.mapToLocationEntity() } ?: emptyList()
         }
     }
 
@@ -43,15 +45,15 @@ class LocationRepositoryImpl(
         }
     }
 
-    override suspend fun insert(location: LocationDomainModel): Long {
+    override suspend fun insert(location: LocationEntity): Long {
         return withContext(dispatcher) {
-            locationDao.insert(location.mapToEntity())
+            locationDao.insert(location)
         }
     }
 
-    override suspend fun delete(location: LocationDomainModel) {
+    override suspend fun delete(location: LocationEntity) {
         withContext(dispatcher) {
-            locationDao.delete(location.mapToEntity())
+            locationDao.delete(location)
         }
     }
 
@@ -61,10 +63,17 @@ class LocationRepositoryImpl(
         }
     }
 
-    override suspend fun update(location: LocationDomainModel) {
+    override suspend fun updateForecastLastUpdateTimestamp(locationId: Long, timestamp: Long) {
         withContext(dispatcher) {
-            locationDao.update(location.mapToEntity())
+            Log.d(TAG, "updateForecastLastUpdateTimestamp() called")
+            locationDao.updateForecastLastUpdateTimestamp(
+                locationId = locationId,
+                timestamp = timestamp,
+            )
         }
     }
 
+    companion object{
+        private const val TAG = "LocationRepositoryImpl"
+    }
 }

@@ -1,27 +1,31 @@
 package com.example.weathercompose.data.mapper
 
-import com.example.weathercompose.data.model.forecast.HourlyForecastDataModel
+import com.example.weathercompose.data.database.entity.forecast.HourlyForecastEntity
+import com.example.weathercompose.data.model.forecast.HourlyForecastResponse
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import java.time.LocalDateTime
 
 class HourlyForecastMapper {
 
-    fun mapToDateToHourlyForecasts(
-        hourlyForecastDataModel: HourlyForecastDataModel,
+    fun mapResponseToDateToHourlyForecastDomainModelMap(
+        hourlyForecastResponse: HourlyForecastResponse,
     ): MutableMap<String, MutableList<HourlyForecastDomainModel>> {
-        if (isDataConsistent(hourlyForecastDataModel)) {
-            return onDataConsistent(hourlyForecastDataModel = hourlyForecastDataModel)
+        if (isDataConsistent(hourlyForecastResponse)) {
+            return createDateToHourlyForecastDomainModelMap(
+                hourlyForecastResponse = hourlyForecastResponse
+            )
         } else {
-            throw IllegalStateException("DailyForecast object has inconsistent data!")
+            throw IllegalStateException("Hourly forecast response has inconsistent data!")
         }
     }
 
-    private fun onDataConsistent(hourlyForecastDataModel: HourlyForecastDataModel)
-            : MutableMap<String, MutableList<HourlyForecastDomainModel>> {
+    private fun createDateToHourlyForecastDomainModelMap(
+        hourlyForecastResponse: HourlyForecastResponse
+    ): MutableMap<String, MutableList<HourlyForecastDomainModel>> {
         val dateToForecasts = mutableMapOf<String, MutableList<HourlyForecastDomainModel>>()
 
-        with(hourlyForecastDataModel) {
+        with(hourlyForecastResponse) {
             for (index in dateAndTimeData!!.indices) {
                 val dateAndTime = LocalDateTime.parse(dateAndTimeData[index])
                 val date = dateAndTime.toLocalDate()
@@ -31,10 +35,10 @@ class HourlyForecastMapper {
                     date = date,
                     time = time,
                     weatherDescription = WeatherDescription.weatherCodeToDescription(
-                        code = hourlyForecastDataModel.weatherCodes!![index]
+                        code = hourlyForecastResponse.weatherCodes!![index]
                     ),
-                    temperature = hourlyForecastDataModel.temperatureData!![index],
-                    isDay = isDayTime(hourlyForecastDataModel.isDayData!![index]),
+                    temperature = hourlyForecastResponse.temperatureData!![index],
+                    isDay = isDayTime(hourlyForecastResponse.isDayData!![index]),
                 )
 
                 if (dateToForecasts.contains(date.toString())) {
@@ -50,8 +54,55 @@ class HourlyForecastMapper {
         return dateToForecasts
     }
 
-    private fun isDataConsistent(hourlyForecastDataModel: HourlyForecastDataModel): Boolean {
-        with(hourlyForecastDataModel) {
+    fun mapResponseToDateToHourlyForecastEntityMap(
+        hourlyForecastResponse: HourlyForecastResponse
+    ): MutableMap<String, MutableList<HourlyForecastEntity>> {
+        if (isDataConsistent(hourlyForecastResponse)) {
+            return createDateToHourlyForecastEntityMap(
+                hourlyForecastResponse = hourlyForecastResponse
+            )
+        } else {
+            throw IllegalStateException("Hourly forecast response has inconsistent data!")
+        }
+    }
+
+    private fun createDateToHourlyForecastEntityMap(
+        hourlyForecastResponse: HourlyForecastResponse
+    ): MutableMap<String, MutableList<HourlyForecastEntity>> {
+        val dateToForecasts = mutableMapOf<String, MutableList<HourlyForecastEntity>>()
+
+        with(hourlyForecastResponse) {
+            for (index in dateAndTimeData!!.indices) {
+                val dateAndTime = LocalDateTime.parse(dateAndTimeData[index])
+                val date = dateAndTime.toLocalDate()
+                val time = dateAndTime.toLocalTime()
+
+                val hourlyForecastEntity = HourlyForecastEntity(
+                    dailyForecastId = NO_DAILY_FORECAST_ID_SET,
+                    date = date.toString(),
+                    time = time.toString(),
+                    weatherDescription = WeatherDescription.weatherCodeToDescription(
+                        code = hourlyForecastResponse.weatherCodes!![index]
+                    ),
+                    temperature = hourlyForecastResponse.temperatureData!![index],
+                    isDay = isDayTime(hourlyForecastResponse.isDayData!![index]),
+                )
+
+                if (dateToForecasts.contains(date.toString())) {
+                    dateToForecasts[date.toString()]?.add(
+                        hourlyForecastEntity
+                    )
+                } else {
+                    dateToForecasts[date.toString()] = mutableListOf(hourlyForecastEntity)
+                }
+            }
+        }
+
+        return dateToForecasts
+    }
+
+    private fun isDataConsistent(hourlyForecastResponse: HourlyForecastResponse): Boolean {
+        with(hourlyForecastResponse) {
             val lists = listOf(
                 dateAndTimeData,
                 weatherCodes,
@@ -76,8 +127,12 @@ class HourlyForecastMapper {
     }
 
     companion object {
+        private const val NO_DAILY_FORECAST_ID_SET = 0L
+
         private const val DAYLIGHT = 1
         private const val NIGHT = 0
+
+        private const val TAG = "hourlyForecastMapper"
     }
 }
 

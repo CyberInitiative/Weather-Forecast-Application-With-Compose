@@ -1,32 +1,45 @@
 package com.example.weathercompose.data.repository.forecast
 
 import com.example.weathercompose.data.api.ForecastAPI
-import com.example.weathercompose.data.database.dao.LocationDao
+import com.example.weathercompose.data.api.Result
+import com.example.weathercompose.data.database.dao.ForecastDao
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
-import com.example.weathercompose.data.mapper.mapToDailyForecastEntity
-import com.example.weathercompose.data.mapper.mapToHourlyForecastEntity
-import com.example.weathercompose.data.model.forecast.FullForecast
+import com.example.weathercompose.data.mapper.mapToDailyForecastDomainModel
+import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 
 class ForecastRepositoryImpl(
     private val dispatcher: CoroutineDispatcher,
     private val forecastAPI: ForecastAPI,
-    private val locationDao: LocationDao,
+    private val forecastDao: ForecastDao,
 ) : ForecastRepository {
 
-    override suspend fun loadForecastForLocation(
+    override suspend fun getForecastsByLocationID(
+        locationId: Long
+    ): List<DailyForecastDomainModel> {
+        return withContext(dispatcher) {
+            val dailyForecastWithHourlyForecast = forecastDao.getForecastsByLocationID(
+                locationId = locationId
+            )
+            dailyForecastWithHourlyForecast.map { it.mapToDailyForecastDomainModel() }
+        }
+    }
+
+    override suspend fun loadForecast(
         latitude: Double,
         longitude: Double,
         timeZone: String,
         dailyOptions: List<String>,
         hourlyOptions: List<String>,
         forecastDays: Int,
-    ): FullForecast {
-        return withContext(dispatcher) {
-            forecastAPI.getForecast(
+    ): Result<CompleteForecastResponse> {
+        return try {
+            val response = forecastAPI.getForecast(
                 latitude = latitude,
                 longitude = longitude,
                 timeZone = timeZone,
@@ -34,30 +47,38 @@ class ForecastRepositoryImpl(
                 hourlyOptions = hourlyOptions,
                 forecastDays = forecastDays,
             )
+
+            Result.Success(data = response)
+        } catch (e: Exception) {
+            when (e) {
+                is HttpException -> Result.Error(
+                    error = "Failed with code ${e.code()}, message: ${e.message()}"
+                )
+
+                is IOException -> Result.Error(
+                    error = "Failed with IOException; message: ${e.message}"
+                )
+
+                else -> Result.Error(error = "Failed with exception; message: ${e.message}")
+            }
         }
     }
 
-    override suspend fun saveForecastForLocation(
+    override suspend fun saveForecastsForLocation(
         locationId: Long,
-        dailyForecasts: List<DailyForecastDomainModel>
+        dailyForecastEntities: List<DailyForecastEntity>
     ) {
         withContext(dispatcher) {
-            val mappedDailyForecasts = mutableListOf<DailyForecastEntity>()
-            for (dailyForecast in dailyForecasts) {
-                val mappedDailyForecast = dailyForecast.mapToDailyForecastEntity(locationId = locationId)
-                val mappedHourlyForecasts =
-                    dailyForecast.hourlyForecasts.map { it.mapToHourlyForecastEntity() }
-                mappedDailyForecast.hourlyForecasts = mappedHourlyForecasts
-                mappedDailyForecasts.add(mappedDailyForecast)
-            }
-            locationDao.saveForecasts(dailyForecasts = mappedDailyForecasts)
+            forecastDao.saveForecasts(
+                locationId = locationId,
+                dailyForecasts = dailyForecastEntities,
+            )
         }
     }
 
     override suspend fun deleteForecastForLocation(locationId: Long) {
         withContext(dispatcher) {
-            locationDao.deleteDailyForecastsByLocationId(locationId = locationId)
+            forecastDao.deleteDailyForecastsByLocationId(locationId = locationId)
         }
     }
-
 }

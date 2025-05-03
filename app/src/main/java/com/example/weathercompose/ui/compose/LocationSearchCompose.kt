@@ -46,7 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
-import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
@@ -63,7 +63,7 @@ fun LocationSearchContent(
 ) {
     val activity = LocalContext.current as? Activity
     val locationForecastUIState by viewModel.locationForecastState.collectAsState()
-    if (locationForecastUIState == LocationForecastState.NoLocationDataForecastState) {
+    if (locationForecastUIState == LocationForecastState.NoLocationData) {
         BackHandler {
             activity?.finish()
         }
@@ -79,7 +79,7 @@ fun LocationSearchContent(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val locationSearchResult by viewModel.locationSearchState.collectAsState()
-    val onLocationItemClick = { location: LocationDomainModel ->
+    val onLocationItemClick = { location: LocationEntity ->
         coroutineScope.launch {
             onNavigateToForecastScreen()
             viewModel.saveLocation(location = location)
@@ -169,9 +169,9 @@ fun SearchBox(
 
 @Composable
 fun LocationList(
-    locations: List<LocationDomainModel>,
+    locations: List<LocationEntity>,
     modifier: Modifier = Modifier,
-    onLocationItemClick: (LocationDomainModel) -> Job,
+    onLocationItemClick: (LocationEntity) -> Job,
 ) {
     LazyColumn(
         modifier = modifier
@@ -195,8 +195,8 @@ fun LocationList(
 
 @Composable
 fun LocationListItem(
-    location: LocationDomainModel,
-    onLocationItemClick: (LocationDomainModel) -> Job,
+    location: LocationEntity,
+    onLocationItemClick: (LocationEntity) -> Job,
 ) {
     Row(
         modifier = Modifier

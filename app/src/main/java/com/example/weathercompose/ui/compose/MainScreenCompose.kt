@@ -97,7 +97,6 @@ fun NavigationHost(
 
         composable<NavigationRoute.LocationSearch> {
             val onNavigateToForecastScreen = {
-                forecastViewModel.clearLocationSearch()
                 navController.navigate(NavigationRoute.Forecast) {
                     popUpTo<NavigationRoute.Forecast> {
                         inclusive = true

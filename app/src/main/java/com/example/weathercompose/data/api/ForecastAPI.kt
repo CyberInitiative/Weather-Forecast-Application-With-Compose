@@ -1,6 +1,6 @@
 package com.example.weathercompose.data.api
 
-import com.example.weathercompose.data.model.forecast.FullForecast
+import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -14,7 +14,7 @@ interface ForecastAPI {
         @Query("daily") dailyOptions: List<String>,
         @Query("hourly") hourlyOptions: List<String>,
         @Query("forecast_days") forecastDays: Int,
-    ): FullForecast
+    ): CompleteForecastResponse
 
     companion object {
         const val AUTOMATICALLY_DETECT_TIME_ZONE = "auto"

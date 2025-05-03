@@ -3,9 +3,9 @@ package com.example.weathercompose.data.model.forecast
 import com.google.gson.annotations.SerializedName
 
 // https://open-meteo.com/en/docs
-data class FullForecast(
+data class CompleteForecastResponse(
     @SerializedName("daily")
-    val dailyForecastDataModel: DailyForecastDataModel,
+    val dailyForecastResponse: DailyForecastResponse,
     @SerializedName("daily_units")
     val dailyUnits: DailyUnits,
     @SerializedName("elevation")
@@ -13,7 +13,7 @@ data class FullForecast(
     @SerializedName("generationtime_ms")
     val generationTimeInMilliseconds: Double,
     @SerializedName("hourly")
-    val hourlyForecastDataModel: HourlyForecastDataModel,
+    val hourlyForecastResponse: HourlyForecastResponse,
     @SerializedName("hourly_units")
     val hourlyUnits: HourlyUnits,
     @SerializedName("latitude")

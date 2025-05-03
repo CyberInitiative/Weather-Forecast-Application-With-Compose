@@ -15,5 +15,18 @@ data class LocationEntity(
     val thirdAdministrativeLevel: String,
     val fourthAdministrativeLevel: String,
     val country: String,
-    val timezone: String,
-)
+    val timeZone: String,
+    val forecastLastUpdateTimestamp: Long = 0L
+){
+
+    fun getFullLocationName(): String {
+        return listOf(
+            name,
+            country,
+            firstAdministrativeLevel,
+            secondAdministrativeLevel,
+            thirdAdministrativeLevel,
+            fourthAdministrativeLevel,
+        ).filter { it.isNotEmpty() }.joinToString()
+    }
+}

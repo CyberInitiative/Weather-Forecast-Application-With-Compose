@@ -1,8 +1,8 @@
 package com.example.weathercompose.domain.usecase.location
 
 import com.example.weathercompose.data.api.GeocodingAPI
-import com.example.weathercompose.data.api.ResponseResult
-import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.data.api.Result
+import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.domain.repository.LocationRepository
 import retrofit2.HttpException
 import java.io.IOException
@@ -14,7 +14,7 @@ class SearchLocationUseCase(private val locationRepository: LocationRepository) 
         count: Int = GeocodingAPI.DEFAULT_NUMBER_OF_RESULTS,
         language: String = GeocodingAPI.DEFAULT_LANGUAGE,
         format: String = GeocodingAPI.DEFAULT_FORMAT,
-    ): ResponseResult<List<LocationDomainModel>> {
+    ): Result<List<LocationEntity>> {
         return try {
             val response = locationRepository.search(
                 name = name,
@@ -22,11 +22,13 @@ class SearchLocationUseCase(private val locationRepository: LocationRepository) 
                 language = language,
                 format = format,
             )
-            ResponseResult.Success(data = response)
-        } catch (error: HttpException) {
-            ResponseResult.Error(code = error.code(), message = error.message())
-        } catch (exception: IOException) {
-            ResponseResult.Exception(throwable = exception)
+            Result.Success(data = response)
+        } catch (e: Exception){
+            when (e) {
+                is HttpException -> Result.Error(error = "Failed with code ${e.code()}, message: ${e.message()}")
+                is IOException -> Result.Error(error = "Failed with IOException; message: ${e.message}")
+                else -> Result.Error(error = "Failed with exception; message: ${e.message}")
+            }
         }
     }
 }

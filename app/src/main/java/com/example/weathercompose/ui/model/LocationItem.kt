@@ -11,4 +11,5 @@ data class LocationItem(
     val currentHourWeatherDescription: Int,
     @DrawableRes
     val currentHourWeatherIconRes: Int,
+    //val uiState: LocationItemUIState = LocationItemUIState.Loading
 )

@@ -1,6 +1,6 @@
 package com.example.weathercompose.domain.model.location
 
-import android.util.Log
+import com.example.weathercompose.domain.model.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.ui.model.PrecipitationCondition
@@ -18,68 +18,88 @@ data class LocationDomainModel(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
-    val forecasts: List<DailyForecastDomainModel>,
-    val errorMessage: String = "",
+    val forecastLastUpdateTimestamp: Long = 0L,
+    var forecastDataState: DataState<List<DailyForecastDomainModel>> = DataState.Initial,
 ) {
 
+    fun isForecastLastUpdateTimestampExpired(): Boolean {
+        if (forecastLastUpdateTimestamp == 0L) return true
+        val currentTimeMillis = System.currentTimeMillis()
+        val oneHourInMillis = 60 * 60 * 1000
+        return currentTimeMillis - forecastLastUpdateTimestamp > oneHourInMillis
+    }
+
     fun getForecastForCurrentHour(): HourlyForecastDomainModel {
-        val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
-        Log.d(TAG, "currentDateAndHour: $currentDateAndHour")
-        Log.d(TAG, "forecasts size: ${forecasts.size}:\n ${forecasts.joinToString("\n")}")
+        if (forecastDataState is DataState.Ready) {
+            val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
 
-        val dailyForecast = forecasts.first { it.date == currentDateAndHour.toLocalDate() }
-
-        return dailyForecast.hourlyForecasts.first { it.time == currentDateAndHour.toLocalTime() }
-    }
-
-    fun getForecastFor24Hours(): List<HourlyForecastDomainModel> {
-        val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
-
-        return forecasts.asSequence().filter {
-            it.date == currentDateAndHour.toLocalDate() ||
-                    it.date == currentDateAndHour.toLocalDate().plusDays(1)
-        }.flatMap { it.hourlyForecasts }
-            .filter { LocalDateTime.of(it.date, it.time) > currentDateAndHour.toLocalDateTime() }
-            .take(24)
-            .toList()
-    }
-
-    fun getPrecipitationsAndTimeOfDayStateForCurrentHour(): PrecipitationCondition {
-        val hourlyForecast = getForecastForCurrentHour()
-        return when {
-            hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
-                -> {
-                PrecipitationCondition.NO_PRECIPITATION_DAY
-            }
-
-            !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
-                -> {
-                PrecipitationCondition.NO_PRECIPITATION_NIGHT
-            }
-
-            hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
-                -> {
-                PrecipitationCondition.PRECIPITATION_DAY
-            }
-
-            !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
-                -> {
-                PrecipitationCondition.PRECIPITATION_NIGHT
-            }
-
-            else -> PrecipitationCondition.NO_PRECIPITATION_DAY
+            val forecastReadyData =
+                forecastDataState as DataState.Ready<List<DailyForecastDomainModel>>
+            val dailyForecast = forecastReadyData.data.firstOrNull {
+                it.date == currentDateAndHour.toLocalDate()
+            } ?: throw IllegalStateException("No data available!")
+            return dailyForecast.hourlyForecasts.firstOrNull {
+                it.time == currentDateAndHour.toLocalTime()
+            } ?: throw IllegalStateException("No data available!")
+        } else {
+            throw IllegalStateException("Forecast data is not ready!")
         }
     }
 
-    fun getFullLocationName(): String {
-        return listOf(
-            name,
-            country,
-            firstAdministrativeLevel,
-            secondAdministrativeLevel,
-            thirdAdministrativeLevel,
-            fourthAdministrativeLevel,
-        ).filter { it.isNotEmpty() }.joinToString()
+    fun getForecastFor24Hours(): List<HourlyForecastDomainModel> {
+        if (forecastDataState is DataState.Ready) {
+            val currentDateAndHour = getCurrentDateAndHourInTimeZone(timeZone)
+            val forecastReadyData =
+                forecastDataState as DataState.Ready<List<DailyForecastDomainModel>>
+
+            return forecastReadyData.data.asSequence().filter {
+                it.date == currentDateAndHour.toLocalDate() ||
+                        it.date == currentDateAndHour.toLocalDate().plusDays(1)
+            }.flatMap { it.hourlyForecasts }
+                .filter {
+                    LocalDateTime.of(
+                        it.date,
+                        it.time
+                    ) > currentDateAndHour.toLocalDateTime()
+                }
+                .take(24)
+                .toList()
+
+        } else {
+            throw IllegalStateException("Forecast data is not ready!")
+        }
+    }
+
+    fun getPrecipitationsAndTimeOfDayStateForCurrentHour(): PrecipitationCondition {
+        try {
+            val hourlyForecast = getForecastForCurrentHour()
+
+            return when {
+                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    PrecipitationCondition.NO_PRECIPITATION_DAY
+                }
+
+                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    PrecipitationCondition.NO_PRECIPITATION_NIGHT
+                }
+
+                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    PrecipitationCondition.PRECIPITATION_DAY
+                }
+
+                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    PrecipitationCondition.PRECIPITATION_NIGHT
+                }
+
+                else -> PrecipitationCondition.NO_PRECIPITATION_DAY
+            }
+        } catch (e: IllegalStateException){
+            return PrecipitationCondition.NO_PRECIPITATION_DAY
+        }
     }
 
     companion object {

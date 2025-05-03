@@ -4,11 +4,12 @@ import androidx.room.Room
 import com.example.weathercompose.data.api.ForecastAPI
 import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.database.WeatherForecastDatabase
+import com.example.weathercompose.data.database.dao.ForecastDao
 import com.example.weathercompose.data.database.dao.LocationDao
 import com.example.weathercompose.data.mapper.DailyForecastMapper
+import com.example.weathercompose.data.mapper.HourlyForecastMapper
 import com.example.weathercompose.data.repository.forecast.ForecastRepositoryImpl
 import com.example.weathercompose.data.repository.location.LocationRepositoryImpl
-import com.example.weathercompose.data.mapper.HourlyForecastMapper
 import com.example.weathercompose.domain.repository.ForecastRepository
 import com.example.weathercompose.domain.repository.LocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,7 +23,7 @@ val dataModule = module {
         ForecastRepositoryImpl(
             dispatcher = dispatcher,
             forecastAPI = get(),
-            locationDao = get(),
+            forecastDao = get(),
         )
     }
 
@@ -44,17 +45,12 @@ val dataModule = module {
 
     single<LocationDao> {
         val database = get<WeatherForecastDatabase>()
-        database.locations()
+        database.locationDao()
     }
 
-    factory {
-        HourlyForecastMapper()
-    }
-
-    factory {
-        DailyForecastMapper(
-            hourlyForecastMapper = get(),
-        )
+    single<ForecastDao> {
+        val database = get<WeatherForecastDatabase>()
+        database.forecastDao()
     }
 
     single {
@@ -71,5 +67,15 @@ val dataModule = module {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(GeocodingAPI::class.java)
+    }
+
+    factory {
+        HourlyForecastMapper()
+    }
+
+    factory {
+        DailyForecastMapper(
+            hourlyForecastMapper = get(),
+        )
     }
 }

@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.example.weathercompose.ui.ui_state.LocationForecastState.LocationDataState
+import com.example.weathercompose.ui.ui_state.LocationForecastState.ReadyLocationData
 
 @Composable
 fun LocationAndWeatherInfoSection(
-    locationDataUIState: LocationDataState,
+    locationDataUIState: ReadyLocationData,
 ) {
     ConstraintLayout(
         modifier = Modifier

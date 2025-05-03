@@ -25,7 +25,7 @@ import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.DailyForecastDataUIState
 import com.example.weathercompose.ui.ui_state.HourlyForecastDataUIState
 import com.example.weathercompose.ui.ui_state.LocationForecastState
-import com.example.weathercompose.ui.ui_state.LocationForecastState.LocationDataState
+import com.example.weathercompose.ui.ui_state.LocationForecastState.ReadyLocationData
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 private const val TAG = "ForecastCompose"
@@ -60,8 +60,8 @@ fun ForecastContent(
     )
 
     when (locationForecastUIState) {
-        is LocationDataState -> {
-            val locationDataUIState = locationForecastUIState as LocationDataState
+        is ReadyLocationData -> {
+            val locationDataUIState = locationForecastUIState as ReadyLocationData
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,15 +77,15 @@ fun ForecastContent(
             }
         }
 
-        is LocationForecastState.ErrorForecastState -> {}
+        is LocationForecastState.LoadingForecastError -> {}
 
-        LocationForecastState.NoLocationDataForecastState -> {
+        LocationForecastState.NoLocationData -> {
             LaunchedEffect(locationForecastUIState) {
                 onNavigateToLocationSearchScreen()
             }
         }
 
-        LocationForecastState.LoadingState -> {
+        LocationForecastState.Loading -> {
             Log.d(TAG, "current state is LocationForecastUIState.LoadingState")
             LoadingProcessIndicator()
         }
@@ -96,7 +96,7 @@ fun ForecastContent(
 
 @Composable
 fun DataLoaded(
-    locationDataUIState: LocationDataState,
+    locationDataUIState: ReadyLocationData,
     uiElementsBackgroundColor: Color
 ) {
     LocationAndWeatherInfoSection(

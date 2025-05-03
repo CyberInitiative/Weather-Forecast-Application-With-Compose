@@ -16,7 +16,8 @@ val domainModule = module {
     factory {
         LoadForecastUseCase(
             forecastRepository = get { parametersOf(Dispatchers.IO) },
-            forecastMapper = get(),
+            saveForecastUseCase = get(),
+            dailyForecastMapper = get(),
         )
     }
 
@@ -50,7 +51,8 @@ val domainModule = module {
 
     factory {
         SaveForecastUseCase(
-            forecastRepository = get(),
+            forecastRepository = get { parametersOf(Dispatchers.IO) },
+            locationRepository = get { parametersOf(Dispatchers.IO) },
         )
     }
 }

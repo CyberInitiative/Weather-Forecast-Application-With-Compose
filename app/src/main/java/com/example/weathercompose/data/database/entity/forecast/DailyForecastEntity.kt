@@ -25,9 +25,35 @@ data class DailyForecastEntity(
     val minTemperature: Double,
     val sunrise: String,
     val sunset: String,
+    val timestamp: Long,
     @PrimaryKey(autoGenerate = true)
     val dailyForecastId: Long = 0,
 ) {
     @Ignore
     var hourlyForecasts: List<HourlyForecastEntity> = emptyList()
+
+    constructor(
+        locationId: Long,
+        date: String,
+        weatherDescription: WeatherDescription,
+        maxTemperature: Double,
+        minTemperature: Double,
+        sunrise: String,
+        sunset: String,
+        timestamp: Long,
+        hourlyForecasts: List<HourlyForecastEntity>,
+        dailyForecastId: Long = 0,
+    ) : this(
+        locationId,
+        date,
+        weatherDescription,
+        maxTemperature,
+        minTemperature,
+        sunrise,
+        sunset,
+        timestamp,
+        dailyForecastId
+    ) {
+        this.hourlyForecasts = hourlyForecasts
+    }
 }

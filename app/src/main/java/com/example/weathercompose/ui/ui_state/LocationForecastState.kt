@@ -5,13 +5,13 @@ import com.example.weathercompose.R
 
 sealed class LocationForecastState {
 
-    data object LoadingState : LocationForecastState()
+    data object Loading : LocationForecastState()
 
-    data class ErrorForecastState(val errorMessage: String = "") : LocationForecastState()
+    data class LoadingForecastError(val errorMessage: String = "") : LocationForecastState()
 
-    data object NoLocationDataForecastState : LocationForecastState()
+    data object NoLocationData : LocationForecastState()
 
-    data class LocationDataState(
+    data class ReadyLocationData(
         val locationName: String = "",
         val currentHourTemperature: String = "",
         val currentDayOfWeekAndDate: String = "",

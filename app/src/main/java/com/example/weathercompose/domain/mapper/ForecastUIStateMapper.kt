@@ -1,16 +1,38 @@
 package com.example.weathercompose.domain.mapper
 
 import android.content.Context
-import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.domain.model.DataState
+import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
+import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.utils.getCurrentDateInTimeZone
 import java.time.format.TextStyle
 import java.util.Locale
 
 class ForecastUIStateMapper(private val context: Context) {
+
     fun mapToUIState(location: LocationDomainModel): LocationForecastState {
+        return when (location.forecastDataState) {
+            DataState.Initial,
+            DataState.Loading -> LocationForecastState.Loading
+
+            is DataState.Ready -> mapReadyDataToUIState(location)
+            is DataState.Error -> LocationForecastState.LoadingForecastError(
+                errorMessage = (
+                        location.forecastDataState as DataState.Error).error.message
+                    ?: "Forecast loading failure"
+            )
+
+            DataState.NoData -> LocationForecastState.NoLocationData
+        }
+    }
+
+    private fun mapReadyDataToUIState(location: LocationDomainModel): LocationForecastState {
         with(location) {
+            val forecasts =
+                (forecastDataState as DataState.Ready<List<DailyForecastDomainModel>>).data
+
             val currentHourlyForecast = location.getForecastForCurrentHour()
             val currentDayForecast = forecasts[0]
             val weatherDescription =
@@ -18,7 +40,7 @@ class ForecastUIStateMapper(private val context: Context) {
             val currentDayMaxTemperature = Math.round(currentDayForecast.maxTemperature).toInt()
             val currentDayMinTemperature = Math.round(currentDayForecast.minTemperature).toInt()
 
-            return LocationForecastState.LocationDataState(
+            return LocationForecastState.ReadyLocationData(
                 locationName = name,
                 currentHourTemperature = "${
                     Math.round(currentHourlyForecast.temperature).toInt()
