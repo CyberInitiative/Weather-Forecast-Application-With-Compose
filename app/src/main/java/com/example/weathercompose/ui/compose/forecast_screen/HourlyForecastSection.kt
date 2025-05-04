@@ -46,7 +46,7 @@ fun HourlyForecastSection(
         )
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 10.dp),
-            thickness = 0.7.dp,
+            thickness = 1.3.dp,
             color = Color.White
         )
         HourlyForecastList(

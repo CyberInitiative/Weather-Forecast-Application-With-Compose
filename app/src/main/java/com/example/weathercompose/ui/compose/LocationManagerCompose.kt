@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -96,7 +97,7 @@ fun LocationManagerContent(
             height = Dimension.fillToConstraints
         }
         val addLocationButtonModifier = Modifier.constrainAs(addLocationButton) {
-            bottom.linkTo(parent.bottom)
+            bottom.linkTo(parent.bottom, margin = 5.dp)
             start.linkTo(parent.start)
             end.linkTo(parent.end)
         }
@@ -143,7 +144,7 @@ private fun LocationList(
             if (index != locationItems.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
-                    thickness = 7.dp,
+                    thickness = 8.dp,
                     color = Color.Transparent
                 )
             }
@@ -221,7 +222,7 @@ private fun LocationListItem(
 
         val weatherIconModifier = Modifier.constrainAs(weatherIcon) {
             top.linkTo(parent.top, margin = 10.dp)
-            bottom.linkTo(parent.bottom, margin = 10.dp)
+            bottom.linkTo(parent.bottom, margin = 12.dp)
             end.linkTo(parent.end, margin = 10.dp)
         }
 
@@ -237,7 +238,7 @@ private fun LocationListItem(
         }
 
         val locationNameLabelModifier = Modifier.constrainAs(locationNameLabel) {
-            start.linkTo(parent.start, margin = 10.dp)
+            start.linkTo(parent.start, margin = 12.dp)
             end.linkTo(weatherDescriptionLabel.start, margin = 30.dp)
             top.linkTo(parent.top)
             bottom.linkTo(parent.bottom)
@@ -255,7 +256,8 @@ private fun LocationListItem(
             text = locationItem.currentHourTemperature,
             modifier = temperatureModifier,
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
         )
 
         Text(
@@ -273,7 +275,7 @@ private fun LocationListItem(
             text = locationItem.name,
             modifier = locationNameLabelModifier.fillMaxWidth(),
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
@@ -322,6 +324,7 @@ private fun AddLocationButton(
         modifier = modifier
             .wrapContentWidth()
             .wrapContentHeight(),
+
         colors = ButtonColors(
             containerColor = colorResource(backgroundColor),
             contentColor = Color.White,
@@ -333,8 +336,8 @@ private fun AddLocationButton(
             text = "Add location",
             modifier = Modifier
                 .padding(
-                    vertical = 10.dp,
-                    horizontal = 25.dp
+                    vertical = 7.dp,
+                    horizontal = 12.dp
                 ),
             color = Color.White,
             fontSize = 18.sp,

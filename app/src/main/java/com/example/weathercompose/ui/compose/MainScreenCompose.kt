@@ -236,7 +236,28 @@ private fun MainScreenTopAppBar(
                 containerColor = Color.Transparent,
                 titleContentColor = Color.White,
             ),
-        title = { },
+        title = {
+            when {
+                destination?.hasRoute<NavigationRoute.LocationsManager>() == true -> {
+                    Text(
+                        text = "Manage locations",
+                        modifier = Modifier.padding(start = 10.dp),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                    )
+                }
+
+                destination?.hasRoute<NavigationRoute.LocationSearch>() == true -> {
+                    Text(
+                        text = "Add location",
+                        modifier = Modifier.padding(start = 10.dp),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                    )
+                }
+            }
+
+        },
         actions = {
             when {
                 destination?.hasRoute<NavigationRoute.Forecast>() == true -> {
