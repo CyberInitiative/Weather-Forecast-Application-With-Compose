@@ -41,7 +41,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.weathercompose.R
-import com.example.weathercompose.ui.compose.forecast_screen.ForecastContent
+import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
@@ -69,7 +69,7 @@ fun NavigationHost(
                 navController.navigate(NavigationRoute.LocationSearch)
             }
 
-            ForecastContent(
+            ForecastScreen(
                 viewModel = forecastViewModel,
                 onAppearanceStateChange = onPrecipitationConditionChange,
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,

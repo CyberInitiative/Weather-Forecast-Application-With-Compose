@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.example.weathercompose.ui.ui_state.LocationForecastState.ReadyLocationData
+import com.example.weathercompose.ui.ui_state.LocationUIState
 
 @Composable
 fun LocationAndWeatherInfoSection(
-    locationDataUIState: ReadyLocationData,
+    locationUIState: LocationUIState,
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -66,31 +66,31 @@ fun LocationAndWeatherInfoSection(
         }
 
         LocationName(
-            name = locationDataUIState.locationName,
+            name = locationUIState.locationName,
             modifier = locationNameModifier,
         )
 
         Text(
-            text = locationDataUIState.currentDayOfWeekAndDate,
+            text = locationUIState.currentDayOfWeekAndDate,
             modifier = dateOfWeekAndDateModifier.wrapContentWidth(),
             color = Color.White,
             fontSize = 16.sp,
         )
 
         Text(
-            text = "${locationDataUIState.currentDayMinTemperature} / ${locationDataUIState.currentDayMaxTemperature}",
+            text = "${locationUIState.currentDayMinTemperature} / ${locationUIState.currentDayMaxTemperature}",
             modifier = maxAndMinTemperatureModifier,
             color = Color.White,
             fontSize = 25.sp,
         )
 
         CurrentHourTemperature(
-            temperature = locationDataUIState.currentHourTemperature,
+            temperature = locationUIState.currentHourTemperature,
             modifier = currentTemperatureModifier,
         )
 
         Text(
-            text = locationDataUIState.currentHourWeatherStatus /*"Thunderstorm with slight hail"*/,
+            text = locationUIState.currentHourWeatherStatus /*"Thunderstorm with slight hail"*/,
             modifier = weatherStatusModifier.fillMaxWidth(),
             color = Color.White,
             fontSize = 20.sp,

@@ -1,13 +1,12 @@
 package com.example.weathercompose.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.mapper.mapToLocationDomainModel
-import com.example.weathercompose.domain.mapper.ForecastUIStateMapper
 import com.example.weathercompose.domain.mapper.LocationItemMapper
+import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.domain.model.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.location.LocationDomainModel
@@ -19,8 +18,8 @@ import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.ui.ui_state.LocationSearchState
+import com.example.weathercompose.ui.ui_state.LocationUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,19 +30,20 @@ import kotlinx.coroutines.launch
 class ForecastViewModel(
     private val loadAllLocationsUseCase: LoadAllLocationsUseCase,
     private val deleteLocationUseCase: DeleteLocationUseCase,
-    private val forecastUIStateMapper: ForecastUIStateMapper,
+    private val locationUIStateMapper: LocationUIStateMapper,
     private val locationItemsMapper: LocationItemMapper,
     private val searchLocationUseCase: SearchLocationUseCase,
     private val saveLocationUseCase: SaveLocationUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
     private val loadLocationUseCase: LoadLocationUseCase,
 ) : ViewModel() {
-    private val _currentLocation = MutableStateFlow<LocationDomainModel?>(value = null)
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
+    val locationsState: StateFlow<List<LocationDomainModel>?> get() = _locationsState.asStateFlow()
 
-    private val _locationForecastState =
-        MutableStateFlow<LocationForecastState>(LocationForecastState.Loading)
-    val locationForecastState: StateFlow<LocationForecastState> = _locationForecastState
+    private val _locationsUIStates = MutableStateFlow<List<LocationUIState>?>(value = null)
+    val locationsUIStates: StateFlow<List<LocationUIState>?>
+        get() =
+            _locationsUIStates.asStateFlow()
 
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
@@ -58,17 +58,12 @@ class ForecastViewModel(
         get() = _precipitationCondition
 
     init {
-        Log.d(TAG, "INIT CALLED")
         viewModelScope.launch {
             _locationsState
                 .filterNotNull()
                 .collect { locations ->
                     updateLocationItems(locations = locations)
-                    onLocationDeleted(locations = locations)
-
-                    if (locations.isNotEmpty() && _currentLocation.value == null) {
-                        setCurrentLocationForecast(locations.first().id)
-                    }
+                    updateLocationsUIStates(locations = locations)
 
                     locations.forEach { location ->
                         if (isNeedToLoadForecasts(location)) {
@@ -76,20 +71,14 @@ class ForecastViewModel(
                                 locationId = location.id,
                                 newForecastDataState = DataState.Loading,
                             )
-                            Log.d(
-                                TAG,
-                                "Location: $location, currentState: ${location.forecastDataState}, " +
-                                        "isTimestampExpired: ${location.isForecastLastUpdateTimestampExpired()}"
-                            )
                             launch {
                                 loadForecast(location = location)
-                                Log.d(TAG, "Location: $location}")
                             }
                         }
                     }
                 }
         }
-        observeCurrentLocation()
+
         loadLocations()
     }
 
@@ -114,11 +103,7 @@ class ForecastViewModel(
             }
 
             is Result.Error -> {
-                DataState.Error(
-                    IllegalStateException(
-                        forecastLoadResult.forecastLoadResult.error
-                    )
-                )
+                DataState.Error(forecastLoadResult.forecastLoadResult.error)
             }
         }
         updateForecastForLocation(
@@ -145,9 +130,7 @@ class ForecastViewModel(
                         forecastDataState = newForecastDataState,
                         forecastLastUpdateTimestamp = timestamp,
                     )
-                    if (_currentLocation.value?.id == updatedLocation.id) {
-                        _currentLocation.update { updatedLocation }
-                    }
+
                     updatedLocation
                 } else {
                     location
@@ -156,26 +139,12 @@ class ForecastViewModel(
         }
     }
 
-    private fun observeCurrentLocation() {
-        viewModelScope.launch {
-            _currentLocation.collect { location ->
-                Log.d(TAG, "observeCurrentLocation triggered; location: $location")
-                if (location != null) {
-                    _precipitationCondition.value =
-                        location.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+    private fun updateLocationItems(locations: List<LocationDomainModel>) {
+        _locationItems.update { locations.map { locationItemsMapper.mapToLocationItem(it) } }
+    }
 
-                    val locationForecastUIState =
-                        forecastUIStateMapper.mapToUIState(location = location)
-                    _locationForecastState.value = locationForecastUIState
-                } else {
-                    if (_locationsState.value?.isEmpty() == true){
-                        _locationForecastState.value = LocationForecastState.NoLocationData
-                    } else {
-                        _locationForecastState.value = LocationForecastState.Loading
-                    }
-                }
-            }
-        }
+    private fun updateLocationsUIStates(locations: List<LocationDomainModel>) {
+        _locationsUIStates.update { locations.map { locationUIStateMapper.mapToUIState(it) } }
     }
 
     fun deleteLocation(locationId: Long) {
@@ -187,33 +156,13 @@ class ForecastViewModel(
         }
     }
 
-    private fun onLocationDeleted(locations: List<LocationDomainModel>) {
-        Log.d(TAG, "onLocationDeleted() called;")
-        val currentLocation = _currentLocation.value
-        if (locations.isEmpty()) {
-            Log.d(TAG, "locations.isEmpty();")
-            _locationForecastState.update { LocationForecastState.NoLocationData }
-            _currentLocation.update { null }
-        }
-        else if (currentLocation != null && locations.none { it.id == currentLocation.id }) {
-            Log.d(TAG, "else")
-            _currentLocation.update { locations.firstOrNull() }
-        }
-    }
-
-    private fun updateLocationItems(locations: List<LocationDomainModel>) {
-        _locationItems.update { locations.map { locationItemsMapper.mapToLocationItem(it) } }
-    }
-
     fun setCurrentLocationForecast(locationId: Long) {
-        viewModelScope.launch {
-            val currentLocations = _locationsState.value
-            if (!currentLocations.isNullOrEmpty()) {
-                val currentLocation = currentLocations.firstOrNull { it.id == locationId }
-                if (currentLocation != null) {
-                    _currentLocation.value = currentLocation
-                }
-            }
+        //TODO add logic here
+    }
+
+    fun onPageSelected(page: Int) {
+        _locationsState.value?.get(page)?.let {
+            _precipitationCondition.value = it.getPrecipitationsAndTimeOfDayStateForCurrentHour()
         }
     }
 

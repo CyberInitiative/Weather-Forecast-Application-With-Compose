@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.ui_state.LocationForecastState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -67,8 +66,8 @@ fun LocationSearchContent(
     onNavigateToForecastScreen: () -> Any,
 ) {
     val activity = LocalContext.current as? Activity
-    val locationForecastUIState by viewModel.locationForecastState.collectAsState()
-    if (locationForecastUIState == LocationForecastState.NoLocationData) {
+    val locationForecastUIState by viewModel.locationsState.collectAsState()
+    if (locationForecastUIState != null && locationForecastUIState!!.isEmpty()) {
         BackHandler {
             activity?.finish()
         }
