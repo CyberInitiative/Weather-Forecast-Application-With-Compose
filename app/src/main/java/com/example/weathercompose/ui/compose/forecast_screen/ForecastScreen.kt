@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -31,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.compose.LoadingProcessIndicator
 import com.example.weathercompose.ui.model.PrecipitationCondition
@@ -43,6 +43,7 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 @Composable
 fun ForecastScreen(
     viewModel: ForecastViewModel,
+    locationId: Long?,
     onAppearanceStateChange: (PrecipitationCondition) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
 ) {
@@ -75,13 +76,27 @@ fun ForecastScreen(
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
 
-    Column {
-        ForecastContent(
-            locationsUIStates = locationsUIStates,
-            uiElementsBackgroundColor = uiElementsBackgroundColor,
-            onPageSelected = viewModel::onPageSelected
-        )
+    val pagerState = rememberPagerState(pageCount = { locationsUIStates?.size ?: 0 })
+
+    LaunchedEffect(locationId) {
+        if (locationId != null) {
+            val index = locationsUIStates?.indexOfFirst { it.id == locationId } ?: 0
+            pagerState.scrollToPage(if (index != -1) index else 0)
+        }
     }
+
+    LaunchedEffect(pagerState, locationsUIStates) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            viewModel.onPageSelected(page)
+        }
+    }
+
+    ForecastContent(
+        locationsUIStates = locationsUIStates,
+        uiElementsBackgroundColor = uiElementsBackgroundColor,
+        onPageSelected = viewModel::onPageSelected,
+        pagerState = pagerState,
+    )
 }
 
 @Composable
@@ -89,15 +104,14 @@ private fun ForecastContent(
     locationsUIStates: List<LocationUIState>?,
     uiElementsBackgroundColor: Color,
     onPageSelected: (Int) -> Unit,
+    pagerState: PagerState,
 ) {
     if (locationsUIStates != null) {
-        val pagerState = rememberPagerState(pageCount = { locationsUIStates.size })
 
         LoadedData(
             locationsUIStates = locationsUIStates,
             uiElementsBackgroundColor = uiElementsBackgroundColor,
             pagerState = pagerState,
-            onPageSelected = onPageSelected,
         )
     } else {
         LoadingProcessIndicator()
@@ -109,29 +123,41 @@ private fun LoadedData(
     locationsUIStates: List<LocationUIState>,
     uiElementsBackgroundColor: Color,
     pagerState: PagerState,
-    onPageSelected: (Int) -> Unit,
 ) {
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.wrapContentSize()
-    ) { page ->
-        val currentLocation = locationsUIStates[page]
+    ConstraintLayout {
+        val (pager, pageIndicator) = createRefs()
 
-        LaunchedEffect(pagerState, locationsUIStates) {
-            snapshotFlow { pagerState.currentPage }.collect { page ->
-                onPageSelected(page)
-            }
+        val pagerIndicatorModifier = Modifier.constrainAs(pageIndicator) {
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+            bottom.linkTo(parent.bottom)
         }
-        LocationPage(
-            currentLocation = currentLocation,
+
+        val pagerModifier = Modifier.constrainAs(pager) {
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+            bottom.linkTo(pageIndicator.top)
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = pagerModifier
+        ) { page ->
+            val currentLocation = locationsUIStates[page]
+
+            LocationPage(
+                currentLocation = currentLocation,
+                uiElementsBackgroundColor = uiElementsBackgroundColor,
+            )
+        }
+
+        PageIndicator(
+            modifier = pagerIndicatorModifier,
+            pagerState = pagerState,
             uiElementsBackgroundColor = uiElementsBackgroundColor,
         )
     }
-
-    PageIndicator(
-        pagerState = pagerState,
-        uiElementsBackgroundColor
-    )
 }
 
 @Composable
@@ -147,43 +173,48 @@ private fun LocationPage(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        LocationAndWeatherInfoSection(
-            locationUIState = currentLocation
-        )
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(15.dp)
-        )
+        if (currentLocation.isLoading) {
+            LoadingProcessIndicator()
+        } else {
+            LocationAndWeatherInfoSection(
+                locationUIState = currentLocation
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(15.dp)
+            )
 
-        HourlyForecastSection(
-            hourlyForecasts = currentLocation.hourlyForecasts,
-            backgroundColor = uiElementsBackgroundColor
-        )
+            HourlyForecastSection(
+                hourlyForecasts = currentLocation.hourlyForecasts,
+                backgroundColor = uiElementsBackgroundColor
+            )
 
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(20.dp)
-        )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+            )
 
-        DailyForecastSection(
-            dailyForecasts = currentLocation.dailyForecasts,
-            backgroundColor = uiElementsBackgroundColor
-        )
+            DailyForecastSection(
+                dailyForecasts = currentLocation.dailyForecasts,
+                backgroundColor = uiElementsBackgroundColor
+            )
+        }
     }
 }
 
 @Composable
 private fun PageIndicator(
+    modifier: Modifier = Modifier,
     pagerState: PagerState,
     uiElementsBackgroundColor: Color,
 ) {
     Row(
-        Modifier
+        modifier = modifier
             .wrapContentHeight()
             .fillMaxWidth()
-            .padding(bottom = 7.dp, top = 5.dp),
+            .padding(bottom = 10.dp, top = 5.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         repeat(pagerState.pageCount) { iteration ->

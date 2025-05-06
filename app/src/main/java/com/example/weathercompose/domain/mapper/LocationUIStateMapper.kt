@@ -27,8 +27,9 @@ class LocationUIStateMapper(private val context: Context) {
 
     private fun onInitialOrLoadingState(location: LocationDomainModel): LocationUIState {
         return LocationUIState(
+            id = location.id,
             locationName = location.name,
-            loading = true,
+            isLoading = true,
         )
     }
 
@@ -43,6 +44,7 @@ class LocationUIStateMapper(private val context: Context) {
         val currentDayMaxTemperature = Math.round(currentDayForecast.maxTemperature).toInt()
         val currentDayMinTemperature = Math.round(currentDayForecast.minTemperature).toInt()
         return LocationUIState(
+            id = location.id,
             locationName = location.name,
             currentHourTemperature = "${Math.round(currentHourlyForecast.temperature).toInt()}°",
             currentDayOfWeekAndDate = getCurrentDateAndDayOfWeek(location.timeZone),
@@ -57,6 +59,7 @@ class LocationUIStateMapper(private val context: Context) {
     private fun onError(location: LocationDomainModel): LocationUIState {
         val error = (location.forecastDataState as DataState.Error).error
         return LocationUIState(
+            id = location.id,
             locationName = location.name,
             errorMessage = error,
         )
@@ -64,6 +67,7 @@ class LocationUIStateMapper(private val context: Context) {
 
     private fun onNoData(location: LocationDomainModel): LocationUIState {
         return LocationUIState(
+            id = location.id,
             locationName = location.name,
         )
     }

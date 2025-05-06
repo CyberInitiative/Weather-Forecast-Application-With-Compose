@@ -40,6 +40,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.PrecipitationCondition
@@ -61,26 +62,32 @@ fun NavigationHost(
 
     NavHost(
         navController = navController,
-        startDestination = NavigationRoute.Forecast,
+        startDestination = NavigationRoute.Forecast(locationId = null),
         modifier = Modifier.fillMaxSize(),
     ) {
-        composable<NavigationRoute.Forecast> {
+        composable<NavigationRoute.Forecast> { backStackEntry ->
+            val forecast: NavigationRoute.Forecast = backStackEntry.toRoute()
+
             val onNavigateToLocationSearchScreen = {
-                navController.navigate(NavigationRoute.LocationSearch)
+                navController.navigate(
+                    NavigationRoute.LocationSearch(
+                        isLocationsEmpty = forecastViewModel.isLocationsEmpty()
+                    )
+                )
             }
 
             ForecastScreen(
                 viewModel = forecastViewModel,
                 onAppearanceStateChange = onPrecipitationConditionChange,
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
+                locationId = forecast.locationId,
             )
 
         }
 
         composable<NavigationRoute.LocationsManager> {
             val onNavigateToForecastScreen = { locationId: Long ->
-                forecastViewModel.setCurrentLocationForecast(locationId = locationId)
-                navController.navigate(NavigationRoute.Forecast) {
+                navController.navigate(NavigationRoute.Forecast(locationId = locationId)) {
                     popUpTo<NavigationRoute.Forecast> {
                         inclusive = true
                     }
@@ -90,23 +97,33 @@ fun NavigationHost(
             LocationManagerContent(
                 viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
-                onNavigateToSearchScreen = { navController.navigate(NavigationRoute.LocationSearch) },
+                onNavigateToSearchScreen = {
+                    navController.navigate(
+                        NavigationRoute.LocationSearch(
+                            isLocationsEmpty = false
+                        )
+                    )
+                },
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
 
-        composable<NavigationRoute.LocationSearch> {
-            val onNavigateToForecastScreen = {
-                navController.navigate(NavigationRoute.Forecast) {
+        composable<NavigationRoute.LocationSearch> { backStackEntry ->
+            val locationSearch: NavigationRoute.LocationSearch = backStackEntry.toRoute()
+
+            val onNavigateToForecastScreen = { locationId: Long ->
+                navController.navigate(NavigationRoute.Forecast(locationId = locationId)) {
                     popUpTo<NavigationRoute.Forecast> {
                         inclusive = true
                     }
                 }
             }
 
-            LocationSearchContent(
-                viewModel = forecastViewModel,
+            LocationSearchScreen(
+                forecastViewModel = forecastViewModel,
+                viewModel = koinViewModel(),
                 precipitationCondition = precipitationCondition,
+                isLocationsEmpty = locationSearch.isLocationsEmpty,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
@@ -335,21 +352,3 @@ private fun OptionsMenuItemDivider() {
         color = colorResource(R.color.intercoastal_gray)
     )
 }
-
-/*
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.4f to colorResource(id = R.color.castle_moat),
-                            1f to colorResource(id = R.color.skysail_blue)
-                        )
-                    )
- */
-
-/*
-LaunchedEffect(savedLocationId) {
-                if (savedLocationId != null) {
-                    forecastViewModel.setCurrentLocationForecast(locationId = savedLocationId)
-                    backStackEntry.savedStateHandle.remove<Long>(SAVED_LOCATION_ID_KEY)
-                }
-            }
- */

@@ -1,8 +1,9 @@
 package com.example.weathercompose.ui
 
-import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.domain.mapper.LocationItemMapper
+import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
+import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -14,10 +15,15 @@ val uiModule = module {
             deleteLocationUseCase = get(),
             locationUIStateMapper = get(),
             locationItemsMapper = get(),
-            searchLocationUseCase = get(),
             saveLocationUseCase = get(),
             loadForecastUseCase = get(),
             loadLocationUseCase = get(),
+        )
+    }
+
+    viewModel {
+        LocationSearchViewModel(
+            searchLocationUseCase = get(),
         )
     }
 

@@ -15,10 +15,8 @@ import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
-import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.PrecipitationCondition
-import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +30,6 @@ class ForecastViewModel(
     private val deleteLocationUseCase: DeleteLocationUseCase,
     private val locationUIStateMapper: LocationUIStateMapper,
     private val locationItemsMapper: LocationItemMapper,
-    private val searchLocationUseCase: SearchLocationUseCase,
     private val saveLocationUseCase: SaveLocationUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
     private val loadLocationUseCase: LoadLocationUseCase,
@@ -47,9 +44,6 @@ class ForecastViewModel(
 
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
-
-    private val _locationSearchState = MutableStateFlow(LocationSearchState())
-    val locationSearchState: StateFlow<LocationSearchState> = _locationSearchState
 
     private val _precipitationCondition = MutableStateFlow(
         value = PrecipitationCondition.NO_PRECIPITATION_DAY
@@ -156,42 +150,10 @@ class ForecastViewModel(
         }
     }
 
-    fun setCurrentLocationForecast(locationId: Long) {
-        //TODO add logic here
-    }
-
     fun onPageSelected(page: Int) {
         _locationsState.value?.get(page)?.let {
             _precipitationCondition.value = it.getPrecipitationsAndTimeOfDayStateForCurrentHour()
         }
-    }
-
-    fun searchLocation(
-        name: String,
-    ) {
-        viewModelScope.launch {
-            _locationSearchState.value = _locationSearchState.value.copy(isLoading = true)
-            when (val locationSearchResult = searchLocationUseCase(name = name)) {
-                is Result.Success -> {
-                    _locationSearchState.value = _locationSearchState.value.copy(
-                        isLoading = false,
-                        locations = locationSearchResult.data
-                    )
-                }
-
-                is Result.Error -> {
-                    _locationSearchState.value = _locationSearchState.value.copy(
-                        isLoading = false,
-                        locations = emptyList(),
-                        errorMessage = locationSearchResult.error,
-                    )
-                }
-            }
-        }
-    }
-
-    fun clearLocationSearch() {
-        _locationSearchState.value = _locationSearchState.value.copy(locations = emptyList())
     }
 
     suspend fun saveLocation(locationEntity: LocationEntity) {
@@ -205,8 +167,10 @@ class ForecastViewModel(
                 locations?.plus(locationDomainModel) ?: listOf(locationDomainModel)
             }
         }
+    }
 
-        setCurrentLocationForecast(locationId = locationEntity.locationId)
+    fun isLocationsEmpty(): Boolean {
+        return _locationsState.value?.isEmpty() ?: false
     }
 
     companion object {

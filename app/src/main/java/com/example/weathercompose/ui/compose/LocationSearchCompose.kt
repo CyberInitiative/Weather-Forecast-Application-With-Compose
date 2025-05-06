@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,44 +51,48 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
+import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private const val TAG = "LocationsManagerCompose"
 
 @Composable
-fun LocationSearchContent(
-    viewModel: ForecastViewModel,
+fun LocationSearchScreen(
+    forecastViewModel: ForecastViewModel,
+    viewModel: LocationSearchViewModel,
     precipitationCondition: PrecipitationCondition,
-    onNavigateToForecastScreen: () -> Any,
+    isLocationsEmpty: Boolean,
+    onNavigateToForecastScreen: (Long) -> Any,
 ) {
     val activity = LocalContext.current as? Activity
-    val locationForecastUIState by viewModel.locationsState.collectAsState()
-    if (locationForecastUIState != null && locationForecastUIState!!.isEmpty()) {
+    val locationSearchResult by viewModel.locationSearchState.collectAsState()
+
+    val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+    var query by remember { mutableStateOf("") }
+    var listItemsColor by remember { mutableIntStateOf(R.color.liberty) }
+
+    val onQueryChanged = { newQuery: String ->
+        query = newQuery
+        viewModel.searchLocation(newQuery)
+    }
+
+    val onLocationItemClick = { location: LocationEntity ->
+        coroutineScope.launch {
+            onNavigateToForecastScreen(location.locationId)
+            forecastViewModel.saveLocation(locationEntity = location)
+        }
+    }
+
+    if (isLocationsEmpty) {
         BackHandler {
             activity?.finish()
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.clearLocationSearch()
-        }
-    }
-
-    var query by remember { mutableStateOf("") }
-    val focusManager = LocalFocusManager.current
-    val coroutineScope = rememberCoroutineScope()
-    val locationSearchResult by viewModel.locationSearchState.collectAsState()
-    val onLocationItemClick = { location: LocationEntity ->
-        coroutineScope.launch {
-            onNavigateToForecastScreen()
-            viewModel.saveLocation(locationEntity = location)
-        }
-    }
-
-    var listItemsColor by remember { mutableIntStateOf(R.color.liberty) }
     when (precipitationCondition) {
         PrecipitationCondition.NO_PRECIPITATION_DAY -> {
             listItemsColor = R.color.liberty
@@ -109,17 +111,32 @@ fun LocationSearchContent(
         }
     }
 
+    LocationSearchContent(
+        query = query,
+        onQueryChanged = onQueryChanged,
+        onLocationItemClick = onLocationItemClick,
+        locationSearchResult = locationSearchResult,
+        focusManager = focusManager,
+        listItemsColor = listItemsColor,
+    )
+}
+
+@Composable
+private fun LocationSearchContent(
+    query: String,
+    onQueryChanged: (String) -> Unit,
+    onLocationItemClick: (LocationEntity) -> Job,
+    locationSearchResult: LocationSearchState,
+    focusManager: FocusManager,
+    @ColorRes
+    listItemsColor: Int,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         SearchBox(
             query = query,
-            onQueryChanged = { newQuery ->
-                query = newQuery
-                coroutineScope.launch {
-                    viewModel.searchLocation(name = newQuery)
-                }
-            },
+            onQueryChanged = onQueryChanged,
             itemBackgroundColor = listItemsColor,
             focusManager = focusManager,
         )
@@ -137,7 +154,7 @@ fun LocationSearchContent(
 }
 
 @Composable
-fun SearchBox(
+private fun SearchBox(
     query: String,
     onQueryChanged: (String) -> Unit,
     @ColorRes itemBackgroundColor: Int,
@@ -199,7 +216,7 @@ fun SearchBox(
 }
 
 @Composable
-fun LocationList(
+private fun LocationList(
     locations: List<LocationEntity>,
     modifier: Modifier = Modifier,
     @ColorRes itemBackgroundColor: Int,
@@ -226,7 +243,7 @@ fun LocationList(
 }
 
 @Composable
-fun LocationListItem(
+private fun LocationListItem(
     location: LocationEntity,
     onLocationItemClick: (LocationEntity) -> Job,
 ) {
@@ -251,7 +268,6 @@ fun LocationListItem(
 @Composable
 fun LoadingProcessIndicator() {
     Column(
-        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
