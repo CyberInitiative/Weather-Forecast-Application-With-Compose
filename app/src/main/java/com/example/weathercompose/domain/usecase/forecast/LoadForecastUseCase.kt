@@ -4,7 +4,7 @@ import com.example.weathercompose.data.api.ForecastAPI
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.mapper.DailyForecastMapper
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
-import com.example.weathercompose.domain.model.ForecastLoadResult
+import com.example.weathercompose.domain.model.forecast.ForecastLoadResult
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 

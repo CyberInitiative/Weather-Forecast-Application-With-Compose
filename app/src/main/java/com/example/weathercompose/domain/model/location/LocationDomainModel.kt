@@ -1,6 +1,6 @@
 package com.example.weathercompose.domain.model.location
 
-import com.example.weathercompose.domain.model.DataState
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.ui.model.PrecipitationCondition

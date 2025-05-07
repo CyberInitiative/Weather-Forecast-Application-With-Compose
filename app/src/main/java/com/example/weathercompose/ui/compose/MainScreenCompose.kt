@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,10 +43,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.weathercompose.R
+import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "MainScreenCompose"
@@ -54,6 +58,7 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
 @Composable
 fun NavigationHost(
+    coroutineScope: CoroutineScope,
     navController: NavHostController,
     precipitationCondition: PrecipitationCondition,
     onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
@@ -82,7 +87,6 @@ fun NavigationHost(
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
                 locationId = forecast.locationId,
             )
-
         }
 
         composable<NavigationRoute.LocationsManager> {
@@ -94,16 +98,18 @@ fun NavigationHost(
                 }
             }
 
+            val onNavigateToSearchScreen = {
+                navController.navigate(
+                    NavigationRoute.LocationSearch(
+                        isLocationsEmpty = false
+                    )
+                )
+            }
+
             LocationManagerContent(
                 viewModel = forecastViewModel,
                 precipitationCondition = precipitationCondition,
-                onNavigateToSearchScreen = {
-                    navController.navigate(
-                        NavigationRoute.LocationSearch(
-                            isLocationsEmpty = false
-                        )
-                    )
-                },
+                onNavigateToSearchScreen = onNavigateToSearchScreen,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
@@ -111,16 +117,20 @@ fun NavigationHost(
         composable<NavigationRoute.LocationSearch> { backStackEntry ->
             val locationSearch: NavigationRoute.LocationSearch = backStackEntry.toRoute()
 
-            val onNavigateToForecastScreen = { locationId: Long ->
-                navController.navigate(NavigationRoute.Forecast(locationId = locationId)) {
-                    popUpTo<NavigationRoute.Forecast> {
-                        inclusive = true
+            val onNavigateToForecastScreen = { location: LocationEntity ->
+                coroutineScope.launch {
+                    forecastViewModel.saveLocation(locationEntity = location)
+                    navController.navigate(
+                        NavigationRoute.Forecast(locationId = location.locationId)
+                    ) {
+                        popUpTo<NavigationRoute.Forecast> {
+                            inclusive = true
+                        }
                     }
                 }
             }
 
             LocationSearchScreen(
-                forecastViewModel = forecastViewModel,
                 viewModel = koinViewModel(),
                 precipitationCondition = precipitationCondition,
                 isLocationsEmpty = locationSearch.isLocationsEmpty,
@@ -132,6 +142,8 @@ fun NavigationHost(
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
 
     var precipitationCondition by rememberSaveable {
@@ -141,7 +153,6 @@ fun MainScreen() {
         precipitationCondition = state
     }
 
-    val context = LocalContext.current
     val backgroundColorTop by animateColorAsState(
         targetValue = when (precipitationCondition) {
             PrecipitationCondition.NO_PRECIPITATION_DAY -> {
@@ -200,11 +211,29 @@ fun MainScreen() {
         0.5f to backgroundColorTop,
         0.9f to backgroundColorBottom,
     )
+    val brush = Brush.linearGradient(colorStops = colorStops)
 
+    ScreenContent(
+        coroutineScope = coroutineScope,
+        navController = navController,
+        precipitationCondition = precipitationCondition,
+        onPrecipitationConditionChange = onAppearanceStateChange,
+        brush = brush
+    )
+}
+
+@Composable
+private fun ScreenContent(
+    coroutineScope: CoroutineScope,
+    navController: NavHostController,
+    precipitationCondition: PrecipitationCondition,
+    onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
+    brush: Brush,
+) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.linearGradient(colorStops = colorStops))
+            .background(brush)
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -221,15 +250,16 @@ fun MainScreen() {
                     .fillMaxSize()
             ) {
                 NavigationHost(
+                    coroutineScope = coroutineScope,
                     navController = navController,
                     precipitationCondition = precipitationCondition,
-                    onPrecipitationConditionChange = onAppearanceStateChange
+                    onPrecipitationConditionChange = onPrecipitationConditionChange,
                 )
             }
         }
     }
-
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

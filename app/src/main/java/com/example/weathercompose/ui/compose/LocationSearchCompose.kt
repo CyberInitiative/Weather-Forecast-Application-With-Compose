@@ -52,7 +52,6 @@ import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.ui_state.LocationSearchState
-import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -61,11 +60,10 @@ private const val TAG = "LocationsManagerCompose"
 
 @Composable
 fun LocationSearchScreen(
-    forecastViewModel: ForecastViewModel,
     viewModel: LocationSearchViewModel,
     precipitationCondition: PrecipitationCondition,
     isLocationsEmpty: Boolean,
-    onNavigateToForecastScreen: (Long) -> Any,
+    onNavigateToForecastScreen: (LocationEntity) -> Any,
 ) {
     val activity = LocalContext.current as? Activity
     val locationSearchResult by viewModel.locationSearchState.collectAsState()
@@ -82,8 +80,7 @@ fun LocationSearchScreen(
 
     val onLocationItemClick = { location: LocationEntity ->
         coroutineScope.launch {
-            onNavigateToForecastScreen(location.locationId)
-            forecastViewModel.saveLocation(locationEntity = location)
+            onNavigateToForecastScreen(location)
         }
     }
 

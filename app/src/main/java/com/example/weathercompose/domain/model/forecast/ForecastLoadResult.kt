@@ -1,7 +1,6 @@
-package com.example.weathercompose.domain.model
+package com.example.weathercompose.domain.model.forecast
 
 import com.example.weathercompose.data.api.Result
-import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 
 data class ForecastLoadResult(
     val forecastLoadTimestamp: Long = 0L,

@@ -94,7 +94,6 @@ fun ForecastScreen(
     ForecastContent(
         locationsUIStates = locationsUIStates,
         uiElementsBackgroundColor = uiElementsBackgroundColor,
-        onPageSelected = viewModel::onPageSelected,
         pagerState = pagerState,
     )
 }
@@ -103,7 +102,6 @@ fun ForecastScreen(
 private fun ForecastContent(
     locationsUIStates: List<LocationUIState>?,
     uiElementsBackgroundColor: Color,
-    onPageSelected: (Int) -> Unit,
     pagerState: PagerState,
 ) {
     if (locationsUIStates != null) {

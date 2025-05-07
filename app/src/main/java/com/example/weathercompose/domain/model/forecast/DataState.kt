@@ -1,4 +1,4 @@
-package com.example.weathercompose.domain.model
+package com.example.weathercompose.domain.model.forecast
 
 sealed class DataState<out T> {
     data object Initial : DataState<Nothing>()

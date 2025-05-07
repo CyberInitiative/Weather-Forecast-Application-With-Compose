@@ -3,7 +3,7 @@ package com.example.weathercompose.data.mapper
 import com.example.weathercompose.data.database.entity.combined.LocationWithDailyForecasts
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.location.LocationSearchItem
-import com.example.weathercompose.domain.model.DataState
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 
 fun LocationWithDailyForecasts.mapToLocationDomainModel(): LocationDomainModel {

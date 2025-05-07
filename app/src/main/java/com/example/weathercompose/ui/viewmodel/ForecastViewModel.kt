@@ -7,8 +7,8 @@ import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.mapper.mapToLocationDomainModel
 import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.domain.mapper.LocationUIStateMapper
-import com.example.weathercompose.domain.model.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
@@ -35,7 +35,6 @@ class ForecastViewModel(
     private val loadLocationUseCase: LoadLocationUseCase,
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
-    val locationsState: StateFlow<List<LocationDomainModel>?> get() = _locationsState.asStateFlow()
 
     private val _locationsUIStates = MutableStateFlow<List<LocationUIState>?>(value = null)
     val locationsUIStates: StateFlow<List<LocationUIState>?>
@@ -52,6 +51,17 @@ class ForecastViewModel(
         get() = _precipitationCondition
 
     init {
+        observeLocationsState()
+        loadLocations()
+    }
+
+    private fun loadLocations() {
+        viewModelScope.launch {
+            _locationsState.value = loadAllLocationsUseCase()
+        }
+    }
+
+    private fun observeLocationsState() {
         viewModelScope.launch {
             _locationsState
                 .filterNotNull()
@@ -71,14 +81,6 @@ class ForecastViewModel(
                         }
                     }
                 }
-        }
-
-        loadLocations()
-    }
-
-    private fun loadLocations() {
-        viewModelScope.launch {
-            _locationsState.value = loadAllLocationsUseCase()
         }
     }
 

@@ -38,8 +38,4 @@ class LocationSearchViewModel(
             }
         }
     }
-
-    fun clearLocationSearch() {
-        _locationSearchState.value = _locationSearchState.value.copy(locations = emptyList())
-    }
 }

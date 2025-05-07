@@ -1,7 +1,7 @@
 package com.example.weathercompose.domain.mapper
 
 import android.content.Context
-import com.example.weathercompose.domain.model.DataState
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.model.location.LocationDomainModel
