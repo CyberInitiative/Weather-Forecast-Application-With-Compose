@@ -5,12 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.mapper.mapToLocationDomainModel
+import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.domain.usecase.forecast.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
+import com.example.weathercompose.domain.usecase.forecast.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
@@ -21,6 +24,7 @@ import com.example.weathercompose.ui.ui_state.LocationUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,6 +37,8 @@ class ForecastViewModel(
     private val saveLocationUseCase: SaveLocationUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
     private val loadLocationUseCase: LoadLocationUseCase,
+    private val setCurrentTemperatureUnitUseCase: SetCurrentTemperatureUnitUseCase,
+    private val getTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase,
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
@@ -52,6 +58,7 @@ class ForecastViewModel(
 
     init {
         observeLocationsState()
+        observeLocationsAndTemperatureUnit()
         loadLocations()
     }
 
@@ -67,7 +74,6 @@ class ForecastViewModel(
                 .filterNotNull()
                 .collect { locations ->
                     updateLocationItems(locations = locations)
-                    updateLocationsUIStates(locations = locations)
 
                     locations.forEach { location ->
                         if (isNeedToLoadForecasts(location)) {
@@ -81,6 +87,23 @@ class ForecastViewModel(
                         }
                     }
                 }
+        }
+    }
+
+    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit){
+        setCurrentTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
+    }
+
+    private fun observeLocationsAndTemperatureUnit() {
+        viewModelScope.launch {
+            combine(
+                _locationsState.filterNotNull(),
+                getTemperatureUnitUseCase.execute()
+            ) { locations, unit ->
+                locations.map { locationUIStateMapper.mapToUIState(it, unit) } ?: emptyList()
+            }.collect { items ->
+                _locationsUIStates.value = items
+            }
         }
     }
 
@@ -139,9 +162,11 @@ class ForecastViewModel(
         _locationItems.update { locations.map { locationItemsMapper.mapToLocationItem(it) } }
     }
 
+    /*
     private fun updateLocationsUIStates(locations: List<LocationDomainModel>) {
         _locationsUIStates.update { locations.map { locationUIStateMapper.mapToUIState(it) } }
     }
+     */
 
     fun deleteLocation(locationId: Long) {
         viewModelScope.launch {

@@ -1,6 +1,6 @@
 package com.example.weathercompose.data.api
 
-import com.example.weathercompose.data.model.location.LocationSearchResult
+import com.example.weathercompose.data.model.location.CompleteLocationSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -12,7 +12,7 @@ interface GeocodingAPI {
         @Query("count") count: Int,
         @Query("language") language: String,
         @Query("format") format: String,
-    ): LocationSearchResult
+    ): CompleteLocationSearchResponse
 
     companion object{
         const val DEFAULT_NUMBER_OF_RESULTS = 20

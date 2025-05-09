@@ -1,8 +1,9 @@
 package com.example.weathercompose.domain.mapper
 
 import android.content.Context
-import com.example.weathercompose.domain.model.forecast.DataState
+import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.ui_state.LocationUIState
@@ -12,12 +13,18 @@ import java.util.Locale
 
 class LocationUIStateMapper(private val context: Context) {
 
-    fun mapToUIState(location: LocationDomainModel): LocationUIState {
+    fun mapToUIState(
+        location: LocationDomainModel,
+        temperatureUnit: TemperatureUnit,
+    ): LocationUIState {
         return when (location.forecastDataState) {
             DataState.Initial,
             DataState.Loading -> onInitialOrLoadingState(location = location)
 
-            is DataState.Ready -> onReadyState(location = location)
+            is DataState.Ready -> onReadyState(
+                location = location,
+                temperatureUnit = temperatureUnit
+            )
 
             is DataState.Error -> onError(location = location)
 
@@ -33,7 +40,10 @@ class LocationUIStateMapper(private val context: Context) {
         )
     }
 
-    private fun onReadyState(location: LocationDomainModel): LocationUIState {
+    private fun onReadyState(
+        location: LocationDomainModel,
+        temperatureUnit: TemperatureUnit
+    ): LocationUIState {
         val forecasts =
             (location.forecastDataState as DataState.Ready<List<DailyForecastDomainModel>>).data
         val currentHourlyForecast = location.getForecastForCurrentHour()
@@ -41,18 +51,41 @@ class LocationUIStateMapper(private val context: Context) {
         val weatherDescription = WeatherDescription.weatherDescriptionToString(
             weatherDescription = currentHourlyForecast.weatherDescription
         )
-        val currentDayMaxTemperature = Math.round(currentDayForecast.maxTemperature).toInt()
-        val currentDayMinTemperature = Math.round(currentDayForecast.minTemperature).toInt()
+
         return LocationUIState(
             id = location.id,
             locationName = location.name,
-            currentHourTemperature = "${Math.round(currentHourlyForecast.temperature).toInt()}°",
+
+            currentHourTemperature = "${
+                TemperatureUnit.getTemperature(
+                    temperature = currentHourlyForecast.temperature,
+                    temperatureUnit = temperatureUnit
+                )
+            }°",
             currentDayOfWeekAndDate = getCurrentDateAndDayOfWeek(location.timeZone),
-            currentDayMaxTemperature = "$currentDayMaxTemperature°",
-            currentDayMinTemperature = "$currentDayMinTemperature°",
+            currentDayMaxTemperature = "${
+                TemperatureUnit.getTemperature(
+                    temperature = currentDayForecast.maxTemperature,
+                    temperatureUnit = temperatureUnit
+                )
+            }°",
+            currentDayMinTemperature = "${
+                TemperatureUnit.getTemperature(
+                    temperature = currentDayForecast.minTemperature,
+                    temperatureUnit = temperatureUnit
+                )
+            }°",
+
             currentHourWeatherStatus = context.getString(weatherDescription),
-            dailyForecasts = forecasts.map { it.mapToDailyForecastItem(location.timeZone) },
-            hourlyForecasts = location.getForecastFor24Hours().map { it.mapToHourlyForecastItem() },
+            dailyForecasts = forecasts.map {
+                it.mapToDailyForecastItem(
+                    timeZone = location.timeZone,
+                    temperatureUnit = temperatureUnit
+                )
+            },
+            hourlyForecasts = location.getForecastFor24Hours().map {
+                it.mapToHourlyForecastItem(temperatureUnit = temperatureUnit)
+            },
         )
     }
 

@@ -6,6 +6,7 @@ import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.database.WeatherForecastDatabase
 import com.example.weathercompose.data.database.dao.ForecastDao
 import com.example.weathercompose.data.database.dao.LocationDao
+import com.example.weathercompose.data.datastore.AppSettings
 import com.example.weathercompose.data.mapper.DailyForecastMapper
 import com.example.weathercompose.data.mapper.HourlyForecastMapper
 import com.example.weathercompose.data.repository.forecast.ForecastRepositoryImpl
@@ -19,11 +20,17 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 val dataModule = module {
+
+    single {
+        AppSettings(context = get())
+    }
+
     single<ForecastRepository> { (dispatcher: CoroutineDispatcher) ->
         ForecastRepositoryImpl(
             dispatcher = dispatcher,
             forecastAPI = get(),
             forecastDao = get(),
+            appSettings = get(),
         )
     }
 

@@ -18,6 +18,8 @@ val uiModule = module {
             saveLocationUseCase = get(),
             loadForecastUseCase = get(),
             loadLocationUseCase = get(),
+            setCurrentTemperatureUnitUseCase = get(),
+            getTemperatureUnitUseCase = get(),
         )
     }
 

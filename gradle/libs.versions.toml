@@ -2,6 +2,7 @@
 agp = "8.7.2"
 constraintlayoutCompose = "1.1.0"
 converterGson = "2.11.0"
+datastorePreferences = "1.1.6"
 gson = "2.11.0"
 koinAndroid = "4.0.0"
 koinAndroidxCompose = "4.0.2"
@@ -26,6 +27,8 @@ junitKtx = "1.2.1"
 [libraries]
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastorePreferences" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }

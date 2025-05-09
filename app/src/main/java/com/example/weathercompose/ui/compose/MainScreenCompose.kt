@@ -44,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
+import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.PrecipitationCondition
 import com.example.weathercompose.ui.navigation.NavigationRoute
@@ -60,11 +61,10 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 fun NavigationHost(
     coroutineScope: CoroutineScope,
     navController: NavHostController,
+    forecastViewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
     onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
 ) {
-    val forecastViewModel: ForecastViewModel = koinViewModel()
-
     NavHost(
         navController = navController,
         startDestination = NavigationRoute.Forecast(locationId = null),
@@ -145,6 +145,7 @@ fun MainScreen() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
+    val forecastViewModel: ForecastViewModel = koinViewModel()
 
     var precipitationCondition by rememberSaveable {
         mutableStateOf(PrecipitationCondition.NO_PRECIPITATION_DAY)
@@ -216,6 +217,7 @@ fun MainScreen() {
     ScreenContent(
         coroutineScope = coroutineScope,
         navController = navController,
+        forecastViewModel = forecastViewModel,
         precipitationCondition = precipitationCondition,
         onPrecipitationConditionChange = onAppearanceStateChange,
         brush = brush
@@ -226,6 +228,7 @@ fun MainScreen() {
 private fun ScreenContent(
     coroutineScope: CoroutineScope,
     navController: NavHostController,
+    forecastViewModel: ForecastViewModel,
     precipitationCondition: PrecipitationCondition,
     onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
     brush: Brush,
@@ -241,6 +244,12 @@ private fun ScreenContent(
             topBar = {
                 MainScreenTopAppBar(
                     navController = navController,
+                    onTemperatureUnitConfirm = { selectedUnit: Int ->
+                        coroutineScope.launch {
+                            val unit = TemperatureUnit.entries[selectedUnit];
+                            forecastViewModel.setCurrentTemperatureUnit(unit)
+                        }
+                    }
                 )
             },
         ) { innerPadding ->
@@ -252,6 +261,7 @@ private fun ScreenContent(
                 NavigationHost(
                     coroutineScope = coroutineScope,
                     navController = navController,
+                    forecastViewModel = forecastViewModel,
                     precipitationCondition = precipitationCondition,
                     onPrecipitationConditionChange = onPrecipitationConditionChange,
                 )
@@ -265,6 +275,7 @@ private fun ScreenContent(
 @Composable
 private fun MainScreenTopAppBar(
     navController: NavController,
+    onTemperatureUnitConfirm: (Int) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -312,7 +323,8 @@ private fun MainScreenTopAppBar(
                         menuExpanded = menuExpanded,
                         onMenuClick = onMenuClick,
                         closeMenu = onMenuDismiss,
-                        navigateLocationsManagerScreen = navigateLocationsManagerScreen
+                        navigateLocationsManagerScreen = navigateLocationsManagerScreen,
+                        onTemperatureUnitConfirm = onTemperatureUnitConfirm,
                     )
                 }
 
@@ -328,50 +340,47 @@ private fun TopAppBarOptionsMenu(
     onMenuClick: () -> Unit,
     closeMenu: () -> Unit,
     navigateLocationsManagerScreen: () -> Unit,
+    onTemperatureUnitConfirm: (Int) -> Unit
 ) {
+    var isDialogVisible by remember { mutableStateOf(false) }
+
     IconButton(onClick = onMenuClick) {
         Icon(
             imageVector = Icons.Filled.MoreVert,
             contentDescription = "More options",
             tint = Color.White
         )
-        DropdownMenu(
-            expanded = menuExpanded,
-            onDismissRequest = { closeMenu() }
-        ) {
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = "Manage locations",
-                        fontSize = 16.sp,
-                    )
-                },
-                onClick = {
-                    navigateLocationsManagerScreen()
-                    closeMenu()
-                }
-            )
-            OptionsMenuItemDivider()
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = "Temperature Unit",
-                        fontSize = 16.sp,
-                    )
-                },
-                onClick = { /* Do something... */ }
-            )
-            OptionsMenuItemDivider()
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        "Update frequency",
-                        fontSize = 16.sp,
-                    )
-                },
-                onClick = { /* Do something... */ }
-            )
-        }
+    }
+
+    DropdownMenu(
+        expanded = menuExpanded,
+        onDismissRequest = { closeMenu() }
+    ) {
+        DropdownMenuItem(
+            text = { Text("Manage locations", fontSize = 16.sp) },
+            onClick = {
+                closeMenu()
+                navigateLocationsManagerScreen()
+            }
+        )
+        OptionsMenuItemDivider()
+        DropdownMenuItem(
+            text = { Text("Temperature Unit", fontSize = 16.sp) },
+            onClick = {
+                closeMenu()
+                isDialogVisible = true
+            }
+        )
+    }
+
+    if (isDialogVisible) {
+        TemperatureDialog(
+            onDismiss = { isDialogVisible = false },
+            onConfirm = { selectedOption ->
+                isDialogVisible = false
+                onTemperatureUnitConfirm(selectedOption)
+            }
+        )
     }
 }
 
@@ -381,4 +390,35 @@ private fun OptionsMenuItemDivider() {
         thickness = 0.8.dp,
         color = colorResource(R.color.intercoastal_gray)
     )
+}
+
+@Composable
+private fun TemperatureOptionMenu(
+    onTemperatureUnitConfirm: (Int) -> Unit,
+    closeMenu: () -> Unit,
+) {
+    var isDialogVisible by remember { mutableStateOf(false) }
+
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = "Temperature Unit",
+                fontSize = 16.sp,
+            )
+        },
+        onClick = {
+            closeMenu()
+            isDialogVisible = true
+        }
+    )
+
+    if (isDialogVisible) {
+        TemperatureDialog(
+            onDismiss = { isDialogVisible = false },
+            onConfirm = { selectedOption ->
+                onTemperatureUnitConfirm(selectedOption)
+                isDialogVisible = false
+            }
+        )
+    }
 }

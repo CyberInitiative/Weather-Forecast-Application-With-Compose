@@ -7,7 +7,7 @@ data class CompleteForecastResponse(
     @SerializedName("daily")
     val dailyForecastResponse: DailyForecastResponse,
     @SerializedName("daily_units")
-    val dailyUnits: DailyUnits,
+    val dailyUnitsResponse: DailyUnitsResponse,
     @SerializedName("elevation")
     val elevation: Double,
     @SerializedName("generationtime_ms")
@@ -15,7 +15,7 @@ data class CompleteForecastResponse(
     @SerializedName("hourly")
     val hourlyForecastResponse: HourlyForecastResponse,
     @SerializedName("hourly_units")
-    val hourlyUnits: HourlyUnits,
+    val hourlyUnitsResponse: HourlyUnitsResponse,
     @SerializedName("latitude")
     val latitude: Double,
     @SerializedName("longitude")

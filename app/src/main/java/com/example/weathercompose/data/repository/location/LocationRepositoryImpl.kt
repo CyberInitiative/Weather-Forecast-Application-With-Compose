@@ -29,7 +29,7 @@ class LocationRepositoryImpl(
                 count = count,
                 language = language,
                 format = format,
-            ).locationSearchItems?.map { it.mapToLocationEntity() } ?: emptyList()
+            ).locationSearchResponse?.map { it.mapToLocationEntity() } ?: emptyList()
         }
     }
 

@@ -76,6 +76,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     // https://mvnrepository.com/artifact/androidx.constraintlayout/constraintlayout-compose
     implementation(libs.androidx.constraintlayout.compose)
+    // https://mvnrepository.com/artifact/androidx.datastore/datastore-preferences
+    implementation(libs.androidx.datastore.preferences)
+    // https://mvnrepository.com/artifact/androidx.datastore/datastore-core
+    implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.junit.ktx)
 

@@ -3,7 +3,9 @@ package com.example.weathercompose.domain.repository
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
+import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
+import kotlinx.coroutines.flow.Flow
 
 interface ForecastRepository {
 
@@ -26,4 +28,8 @@ interface ForecastRepository {
     )
 
     suspend fun deleteForecastForLocation(locationId: Long)
+
+    fun getCurrentTemperatureUnit(): Flow<TemperatureUnit>
+
+    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit)
 }

@@ -3,7 +3,7 @@ package com.example.weathercompose.data.model.location
 import com.google.gson.annotations.SerializedName
 
 
-data class LocationSearchItem(
+data class LocationSearchResponse(
     @SerializedName("admin1")
     val firstAdministrativeLevel: String?,
     @SerializedName("admin1_id")
