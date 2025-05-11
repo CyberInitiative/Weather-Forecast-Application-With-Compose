@@ -1,6 +1,5 @@
 package com.example.weathercompose.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +31,29 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+/*
+private val ClearSkyWeatherTheme = lightColorScheme(
+    primary = Liberty,
+    onPrimary = Color.White,
+    secondary = Liberty,
+    onSecondary = Color.White,
+    background = CastleMoat,
+    tertiary = SiberianIce,
+)
+
+@Composable
+fun WeatherStateTheme(
+    content: @Composable () -> Unit
+) {
+
+    MaterialTheme(
+        colorScheme = ClearSkyWeatherTheme,
+        typography = Typography,
+        content = content
+    )
+}
+ */
 
 @Composable
 fun WeatherComposeTheme(

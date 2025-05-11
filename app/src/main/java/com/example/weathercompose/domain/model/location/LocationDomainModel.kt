@@ -3,7 +3,7 @@ package com.example.weathercompose.domain.model.location
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.utils.getCurrentDateAndHourInTimeZone
 import java.time.LocalDateTime
 
@@ -70,35 +70,35 @@ data class LocationDomainModel(
         }
     }
 
-    fun getPrecipitationsAndTimeOfDayStateForCurrentHour(): PrecipitationCondition {
+    fun getPrecipitationsAndTimeOfDayStateForCurrentHour(): WeatherAndDayTimeState {
         try {
             val hourlyForecast = getForecastForCurrentHour()
 
             return when {
                 hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
                     -> {
-                    PrecipitationCondition.NO_PRECIPITATION_DAY
+                    WeatherAndDayTimeState.NO_PRECIPITATION_DAY
                 }
 
                 !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
                     -> {
-                    PrecipitationCondition.NO_PRECIPITATION_NIGHT
+                    WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT
                 }
 
                 hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
                     -> {
-                    PrecipitationCondition.PRECIPITATION_DAY
+                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY
                 }
 
                 !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
                     -> {
-                    PrecipitationCondition.PRECIPITATION_NIGHT
+                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT
                 }
 
-                else -> PrecipitationCondition.NO_PRECIPITATION_DAY
+                else -> WeatherAndDayTimeState.NO_PRECIPITATION_DAY
             }
         } catch (e: IllegalStateException){
-            return PrecipitationCondition.NO_PRECIPITATION_DAY
+            return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
         }
     }
 

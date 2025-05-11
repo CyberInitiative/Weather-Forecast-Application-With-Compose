@@ -2,7 +2,6 @@ package com.example.weathercompose.ui.compose
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.annotation.ColorRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,15 +40,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
+import com.example.weathercompose.ui.theme.HiloBay25PerDarker
+import com.example.weathercompose.ui.theme.Liberty
+import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
+import com.example.weathercompose.ui.theme.SiberianIce
+import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
@@ -61,7 +62,7 @@ private const val TAG = "LocationsManagerCompose"
 @Composable
 fun LocationSearchScreen(
     viewModel: LocationSearchViewModel,
-    precipitationCondition: PrecipitationCondition,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
     isLocationsEmpty: Boolean,
     onNavigateToForecastScreen: (LocationEntity) -> Any,
 ) {
@@ -71,7 +72,7 @@ fun LocationSearchScreen(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
-    var listItemsColor by remember { mutableIntStateOf(R.color.liberty) }
+    var listItemsColor by remember { mutableStateOf(Liberty) }
 
     val onQueryChanged = { newQuery: String ->
         query = newQuery
@@ -90,21 +91,21 @@ fun LocationSearchScreen(
         }
     }
 
-    when (precipitationCondition) {
-        PrecipitationCondition.NO_PRECIPITATION_DAY -> {
-            listItemsColor = R.color.liberty
+    when (weatherAndDayTimeState) {
+        WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> {
+            listItemsColor = Liberty
         }
 
-        PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
-            listItemsColor = R.color.mesmerize
+        WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> {
+            listItemsColor = MediumDarkShadeCyanBlue
         }
 
-        PrecipitationCondition.PRECIPITATION_DAY -> {
-            listItemsColor = R.color.hilo_bay_25_percent_darker
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> {
+            listItemsColor = HiloBay25PerDarker
         }
 
-        PrecipitationCondition.PRECIPITATION_NIGHT -> {
-            listItemsColor = R.color.english_channel_10_percent_darker
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> {
+            listItemsColor = Solitaire5PerDarker
         }
     }
 
@@ -125,8 +126,7 @@ private fun LocationSearchContent(
     onLocationItemClick: (LocationEntity) -> Job,
     locationSearchResult: LocationSearchState,
     focusManager: FocusManager,
-    @ColorRes
-    listItemsColor: Int,
+    listItemsColor: Color,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -154,7 +154,7 @@ private fun LocationSearchContent(
 private fun SearchBox(
     query: String,
     onQueryChanged: (String) -> Unit,
-    @ColorRes itemBackgroundColor: Int,
+    itemBackgroundColor: Color,
     focusManager: FocusManager,
 ) {
     Row(
@@ -166,7 +166,7 @@ private fun SearchBox(
             modifier = Modifier
                 .size(width = 230.dp, height = 45.dp)
                 .background(
-                    color = colorResource(itemBackgroundColor),
+                    color = itemBackgroundColor,
                     shape = RoundedCornerShape(15.dp)
                 )
                 .padding(start = 10.dp, end = 15.dp)
@@ -200,7 +200,7 @@ private fun SearchBox(
                         Text(
                             text = "Search...",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = colorResource(R.color.bridal_veil),
+                                color = SiberianIce,
                                 fontSize = 18.sp
                             )
                         )
@@ -216,7 +216,7 @@ private fun SearchBox(
 private fun LocationList(
     locations: List<LocationEntity>,
     modifier: Modifier = Modifier,
-    @ColorRes itemBackgroundColor: Int,
+    itemBackgroundColor: Color,
     onLocationItemClick: (LocationEntity) -> Job,
 ) {
     LazyColumn(
@@ -232,7 +232,7 @@ private fun LocationList(
             if (index < locations.size - 1) {
                 HorizontalDivider(
                     thickness = 1.3.dp,
-                    color = colorResource(itemBackgroundColor)
+                    color = itemBackgroundColor
                 )
             }
         }

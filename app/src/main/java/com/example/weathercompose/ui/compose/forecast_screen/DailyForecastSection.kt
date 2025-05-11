@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
+import com.example.weathercompose.ui.theme.SiberianIce
 
 @Composable
 fun DailyForecastSection(
@@ -126,7 +126,7 @@ fun DailyForecastListItem(
         Text(
             text = "${dailyForecastItem.minTemperature}°",
             modifier = Modifier.padding(bottom = 15.dp),
-            color = colorResource(R.color.bridal_veil),
+            color = SiberianIce,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,

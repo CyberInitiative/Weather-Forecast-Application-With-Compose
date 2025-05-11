@@ -29,11 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -42,12 +39,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
+import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
+import com.example.weathercompose.ui.theme.Bayou
+import com.example.weathercompose.ui.theme.CastleMoat
+import com.example.weathercompose.ui.theme.CoalBlack
+import com.example.weathercompose.ui.theme.Fashionista20PerDarker
+import com.example.weathercompose.ui.theme.HiloBay
+import com.example.weathercompose.ui.theme.IntercoastalGray
+import com.example.weathercompose.ui.theme.LimoScene35PerDarker
+import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -62,8 +67,8 @@ fun NavigationHost(
     coroutineScope: CoroutineScope,
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
-    precipitationCondition: PrecipitationCondition,
-    onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
+    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -108,7 +113,7 @@ fun NavigationHost(
 
             LocationManagerContent(
                 viewModel = forecastViewModel,
-                precipitationCondition = precipitationCondition,
+                weatherAndDayTimeState = weatherAndDayTimeState,
                 onNavigateToSearchScreen = onNavigateToSearchScreen,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
@@ -132,7 +137,7 @@ fun NavigationHost(
 
             LocationSearchScreen(
                 viewModel = koinViewModel(),
-                precipitationCondition = precipitationCondition,
+                weatherAndDayTimeState = weatherAndDayTimeState,
                 isLocationsEmpty = locationSearch.isLocationsEmpty,
                 onNavigateToForecastScreen = onNavigateToForecastScreen
             )
@@ -142,85 +147,25 @@ fun NavigationHost(
 
 @Composable
 fun MainScreen() {
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
+
     val forecastViewModel: ForecastViewModel = koinViewModel()
 
-    var precipitationCondition by rememberSaveable {
-        mutableStateOf(PrecipitationCondition.NO_PRECIPITATION_DAY)
-    }
-    val onAppearanceStateChange = { state: PrecipitationCondition ->
-        precipitationCondition = state
+    var weatherAndDayTimeState by rememberSaveable {
+        mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
     }
 
-    val backgroundColorTop by animateColorAsState(
-        targetValue = when (precipitationCondition) {
-            PrecipitationCondition.NO_PRECIPITATION_DAY -> {
-                Color(ContextCompat.getColor(context, R.color.castle_moat))
-            }
-
-            PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
-                Color(ContextCompat.getColor(context, R.color.chinese_black))
-            }
-
-            PrecipitationCondition.PRECIPITATION_DAY -> {
-                Color(ContextCompat.getColor(context, R.color.hilo_bay))
-            }
-
-            PrecipitationCondition.PRECIPITATION_NIGHT -> {
-                Color(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.english_channel_45_percent_darker
-                    )
-                )
-            }
-
-        },
-        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
-    )
-
-    val backgroundColorBottom by animateColorAsState(
-        targetValue = when (precipitationCondition) {
-            PrecipitationCondition.NO_PRECIPITATION_DAY -> {
-                Color(143, 208, 252)
-            }
-
-            PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
-                Color(ContextCompat.getColor(context, R.color.peaceful_night))
-            }
-
-            PrecipitationCondition.PRECIPITATION_DAY -> {
-                Color(ContextCompat.getColor(context, R.color.hilo_bay))
-            }
-
-            PrecipitationCondition.PRECIPITATION_NIGHT -> {
-                Color(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.english_channel_45_percent_darker
-                    )
-                )
-            }
-
-        },
-        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
-    )
-
-    val colorStops = arrayOf(
-        0.5f to backgroundColorTop,
-        0.9f to backgroundColorBottom,
-    )
-    val brush = Brush.linearGradient(colorStops = colorStops)
+    val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
+        weatherAndDayTimeState = state
+    }
 
     ScreenContent(
         coroutineScope = coroutineScope,
         navController = navController,
         forecastViewModel = forecastViewModel,
-        precipitationCondition = precipitationCondition,
+        weatherAndDayTimeState = weatherAndDayTimeState,
         onPrecipitationConditionChange = onAppearanceStateChange,
-        brush = brush
     )
 }
 
@@ -229,14 +174,12 @@ private fun ScreenContent(
     coroutineScope: CoroutineScope,
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
-    precipitationCondition: PrecipitationCondition,
-    onPrecipitationConditionChange: (PrecipitationCondition) -> Unit,
-    brush: Brush,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
+    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
 ) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(brush)
+    AnimatedStatefulGradientBackground(
+        weatherAndDayTimeState = weatherAndDayTimeState,
+        modifier = Modifier.fillMaxSize(),
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -262,7 +205,7 @@ private fun ScreenContent(
                     coroutineScope = coroutineScope,
                     navController = navController,
                     forecastViewModel = forecastViewModel,
-                    precipitationCondition = precipitationCondition,
+                    weatherAndDayTimeState = weatherAndDayTimeState,
                     onPrecipitationConditionChange = onPrecipitationConditionChange,
                 )
             }
@@ -388,37 +331,64 @@ private fun TopAppBarOptionsMenu(
 private fun OptionsMenuItemDivider() {
     HorizontalDivider(
         thickness = 0.8.dp,
-        color = colorResource(R.color.intercoastal_gray)
+        color = IntercoastalGray
     )
 }
 
 @Composable
-private fun TemperatureOptionMenu(
-    onTemperatureUnitConfirm: (Int) -> Unit,
-    closeMenu: () -> Unit,
+fun AnimatedStatefulGradientBackground(
+    weatherAndDayTimeState: WeatherAndDayTimeState,
+    modifier: Modifier = Modifier,
+    durationMillis: Int = COLOR_TRANSITION_ANIMATION_DURATION,
+    content: @Composable () -> Unit
 ) {
-    var isDialogVisible by remember { mutableStateOf(false) }
+    val targetColors = getGradientForType(weatherAndDayTimeState)
 
-    DropdownMenuItem(
-        text = {
-            Text(
-                text = "Temperature Unit",
-                fontSize = 16.sp,
-            )
-        },
-        onClick = {
-            closeMenu()
-            isDialogVisible = true
-        }
+    val topColor by animateColorAsState(
+        targetValue = targetColors[0],
+        animationSpec = tween(durationMillis = durationMillis),
+        label = "gradientColor1"
     )
 
-    if (isDialogVisible) {
-        TemperatureDialog(
-            onDismiss = { isDialogVisible = false },
-            onConfirm = { selectedOption ->
-                onTemperatureUnitConfirm(selectedOption)
-                isDialogVisible = false
-            }
+    val bottomColor by animateColorAsState(
+        targetValue = targetColors[1],
+        animationSpec = tween(durationMillis = durationMillis),
+        label = "gradientColor2"
+    )
+
+    val colorStops = arrayOf(
+        0.5f to topColor,
+        0.8f to bottomColor,
+    )
+
+    val brush = Brush.verticalGradient(
+        colorStops = colorStops,
+    )
+
+    Box(
+        modifier = modifier
+            .background(brush)
+    ) {
+        content()
+    }
+}
+
+private fun getGradientForType(weatherAndDayTimeState: WeatherAndDayTimeState): List<Color> {
+    return when (weatherAndDayTimeState) {
+        WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> listOf(
+            CastleMoat, Bayou
+        )
+
+        WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> listOf(
+            VeryDarkShadeCyanBlue, CoalBlack
+        )
+
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> listOf(
+            HiloBay, HiloBay
+        )
+
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> listOf(
+            LimoScene35PerDarker, Fashionista20PerDarker
         )
     }
 }

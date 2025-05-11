@@ -19,7 +19,7 @@ import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCas
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.ui.model.LocationItem
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,11 +50,11 @@ class ForecastViewModel(
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
 
-    private val _precipitationCondition = MutableStateFlow(
-        value = PrecipitationCondition.NO_PRECIPITATION_DAY
+    private val _weatherAndDayTimeState = MutableStateFlow(
+        value = WeatherAndDayTimeState.NO_PRECIPITATION_DAY
     )
-    val precipitationCondition: StateFlow<PrecipitationCondition>
-        get() = _precipitationCondition
+    val weatherAndDayTimeState: StateFlow<WeatherAndDayTimeState>
+        get() = _weatherAndDayTimeState
 
     init {
         observeLocationsState()
@@ -179,7 +179,7 @@ class ForecastViewModel(
 
     fun onPageSelected(page: Int) {
         _locationsState.value?.get(page)?.let {
-            _precipitationCondition.value = it.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+            _weatherAndDayTimeState.value = it.getPrecipitationsAndTimeOfDayStateForCurrentHour()
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.weathercompose.ui.compose
+package com.example.weathercompose.ui.compose.dialog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,12 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.weathercompose.R
+import com.example.weathercompose.ui.theme.SiberianIce
 
 @Composable
 fun TemperatureDialog(
@@ -84,7 +83,7 @@ fun TemperatureDialog(
 
                         if (index != options.lastIndex) {
                             HorizontalDivider(
-                                color = colorResource(R.color.bridal_veil),
+                                color = SiberianIce,
                                 thickness = 1.2.dp
                             )
                         }

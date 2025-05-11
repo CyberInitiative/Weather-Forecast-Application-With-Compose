@@ -1,6 +1,5 @@
 package com.example.weathercompose.ui.compose
 
-import androidx.annotation.ColorRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,14 +32,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,9 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.LocationItem
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
+import com.example.weathercompose.ui.theme.HiloBay25PerDarker
+import com.example.weathercompose.ui.theme.Liberty
+import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
+import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 private const val ON_DELETE_SWIPE = "ON_DELETE_SWIPE"
@@ -60,28 +61,28 @@ private const val ON_DELETE_SWIPE = "ON_DELETE_SWIPE"
 @Composable
 fun LocationManagerContent(
     viewModel: ForecastViewModel,
-    precipitationCondition: PrecipitationCondition,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
     onNavigateToSearchScreen: () -> Unit,
     onNavigateToForecastScreen: (Long) -> Unit,
 ) {
     val locationItems by viewModel.locationItems.collectAsState()
 
-    var listItemAndAddButtonColor by remember { mutableIntStateOf(R.color.liberty) }
-    when (precipitationCondition) {
-        PrecipitationCondition.NO_PRECIPITATION_DAY -> {
-            listItemAndAddButtonColor = R.color.liberty
+    var listItemAndAddButtonColor by remember { mutableStateOf(Liberty) }
+    when (weatherAndDayTimeState) {
+        WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> {
+            listItemAndAddButtonColor = Liberty
         }
 
-        PrecipitationCondition.NO_PRECIPITATION_NIGHT -> {
-            listItemAndAddButtonColor = R.color.mesmerize
+        WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> {
+            listItemAndAddButtonColor = MediumDarkShadeCyanBlue
         }
 
-        PrecipitationCondition.PRECIPITATION_DAY -> {
-            listItemAndAddButtonColor = R.color.hilo_bay_25_percent_darker
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> {
+            listItemAndAddButtonColor = HiloBay25PerDarker
         }
 
-        PrecipitationCondition.PRECIPITATION_NIGHT -> {
-            listItemAndAddButtonColor = R.color.english_channel_10_percent_darker
+        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> {
+            listItemAndAddButtonColor = Solitaire5PerDarker
         }
     }
 
@@ -124,8 +125,7 @@ private fun LocationList(
     modifier: Modifier = Modifier,
     onLocationItemClick: (Long) -> Unit,
     onLocationItemDelete: (Long) -> Unit,
-    @ColorRes
-    itemBackgroundColor: Int,
+    itemBackgroundColor: Color,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth()
@@ -159,8 +159,7 @@ private fun SwipeToDeleteLocationItem(
     locationItem: LocationItem,
     onLocationItemClick: (Long) -> Unit,
     onLocationItemDelete: (Long) -> Unit,
-    @ColorRes
-    itemBackgroundColor: Int,
+    itemBackgroundColor: Color,
 ) {
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * .25f }
@@ -203,8 +202,7 @@ private fun SwipeToDeleteLocationItem(
 private fun LocationListItem(
     locationItem: LocationItem,
     onLocationItemClick: (Long) -> Unit,
-    @ColorRes
-    itemBackgroundColor: Int,
+    itemBackgroundColor: Color,
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -212,7 +210,7 @@ private fun LocationListItem(
             .height(75.dp)
             .clip(shape = RoundedCornerShape(15.dp))
             .background(
-                color = colorResource(itemBackgroundColor),
+                color = itemBackgroundColor,
             )
             .clickable {
                 onLocationItemClick(locationItem.id)
@@ -316,8 +314,7 @@ private fun DeleteLocationItemBackground(swipeToDismissBoxState: SwipeToDismissB
 private fun AddLocationButton(
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
-    @ColorRes
-    backgroundColor: Int,
+    backgroundColor: Color,
 ) {
     Button(
         onClick = onButtonClick,
@@ -326,7 +323,7 @@ private fun AddLocationButton(
             .wrapContentHeight(),
 
         colors = ButtonColors(
-            containerColor = colorResource(backgroundColor),
+            containerColor = backgroundColor,
             contentColor = Color.White,
             disabledContentColor = Color.Gray,
             disabledContainerColor = Color.Gray,

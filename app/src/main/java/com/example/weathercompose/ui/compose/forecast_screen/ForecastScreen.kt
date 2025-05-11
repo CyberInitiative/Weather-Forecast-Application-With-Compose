@@ -28,12 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.example.weathercompose.R
 import com.example.weathercompose.ui.compose.LoadingProcessIndicator
-import com.example.weathercompose.ui.model.PrecipitationCondition
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
+import com.example.weathercompose.ui.theme.HiloBay25PerDarker
+import com.example.weathercompose.ui.theme.Liberty
+import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
+import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
@@ -44,11 +46,11 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 fun ForecastScreen(
     viewModel: ForecastViewModel,
     locationId: Long?,
-    onAppearanceStateChange: (PrecipitationCondition) -> Unit,
+    onAppearanceStateChange: (WeatherAndDayTimeState) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
 ) {
 
-    val precipitationCondition by viewModel.precipitationCondition.collectAsState()
+    val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
 
     LaunchedEffect(precipitationCondition) {
@@ -63,15 +65,10 @@ fun ForecastScreen(
 
     val uiElementsBackgroundColor by animateColorAsState(
         targetValue = when (precipitationCondition) {
-            PrecipitationCondition.NO_PRECIPITATION_DAY -> colorResource(R.color.liberty)
-            PrecipitationCondition.NO_PRECIPITATION_NIGHT -> colorResource(R.color.mesmerize)
-            PrecipitationCondition.PRECIPITATION_DAY -> {
-                colorResource(R.color.hilo_bay_25_percent_darker)
-            }
-
-            PrecipitationCondition.PRECIPITATION_NIGHT -> {
-                colorResource(R.color.english_channel_10_percent_darker)
-            }
+            WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
+            WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
+            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
+            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker //EnglishChannel45PerDarker
         },
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
