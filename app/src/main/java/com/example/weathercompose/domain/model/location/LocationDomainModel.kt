@@ -1,7 +1,7 @@
 package com.example.weathercompose.domain.model.location
 
-import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.utils.getCurrentDateAndHourInTimeZone
@@ -100,6 +100,13 @@ data class LocationDomainModel(
         } catch (e: IllegalStateException){
             return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
         }
+    }
+
+    fun shouldLoadForecasts(): Boolean {
+        val isDataReady = this.forecastDataState is DataState.Ready
+        val isDataLoading = this.forecastDataState is DataState.Loading
+        val isTimestampExpired = this.isForecastLastUpdateTimestampExpired()
+        return (!isDataReady || isTimestampExpired) && !isDataLoading
     }
 
     companion object {

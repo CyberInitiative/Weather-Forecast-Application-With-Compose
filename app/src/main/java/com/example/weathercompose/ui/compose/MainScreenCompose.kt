@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -39,8 +40,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
+import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
@@ -51,7 +54,7 @@ import com.example.weathercompose.ui.theme.CoalBlack
 import com.example.weathercompose.ui.theme.Fashionista20PerDarker
 import com.example.weathercompose.ui.theme.HiloBay
 import com.example.weathercompose.ui.theme.IntercoastalGray
-import com.example.weathercompose.ui.theme.LimoScene35PerDarker
+import com.example.weathercompose.ui.theme.LimoScene40PerDarker
 import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +64,112 @@ import org.koin.androidx.compose.koinViewModel
 private const val TAG = "MainScreenCompose"
 
 private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
+
+@Composable
+fun MainScreen() {
+    val coroutineScope = rememberCoroutineScope()
+    val navController = rememberNavController()
+
+    val forecastViewModel: ForecastViewModel = koinViewModel()
+
+    var isTemperatureUnitDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var isForecastUpdateFrequencyDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var weatherAndDayTimeState by rememberSaveable {
+        mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
+    }
+
+    val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
+        weatherAndDayTimeState = state
+    }
+
+    val onTemperatureUnitDialogOptionChoose = {
+        isTemperatureUnitDialogVisible = true
+    }
+
+    val onForecastUpdateFrequencyDialogOptionChoose = {
+        isForecastUpdateFrequencyDialogVisible = true
+    }
+
+    if (isTemperatureUnitDialogVisible) {
+        TemperatureDialog(
+            temperatureUnit = forecastViewModel.currentTemperatureUnit,
+            onDismiss = { isTemperatureUnitDialogVisible = false },
+            onConfirm = { selectedOption ->
+                isTemperatureUnitDialogVisible = false
+                coroutineScope.launch {
+                    val unit = TemperatureUnit.entries[selectedOption]
+                    forecastViewModel.setCurrentTemperatureUnit(unit)
+                }
+            }
+        )
+    }
+
+    if (isForecastUpdateFrequencyDialogVisible) {
+        ForecastUpdateFrequencyDialog(
+            updateFrequency = forecastViewModel.currentForecastUpdateFrequencyInHours,
+            onDismiss = { isForecastUpdateFrequencyDialogVisible = false },
+            onConfirm = { selectedOption ->
+                isForecastUpdateFrequencyDialogVisible = false
+                coroutineScope.launch {
+                    forecastViewModel.setForecastUpdateFrequency(selectedOption)
+                }
+            }
+        )
+    }
+
+    ScreenContent(
+        coroutineScope = coroutineScope,
+        navController = navController,
+        forecastViewModel = forecastViewModel,
+        weatherAndDayTimeState = weatherAndDayTimeState,
+        onPrecipitationConditionChange = onAppearanceStateChange,
+        onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
+        onForecastUpdateFrequencyDialogOptionChoose = onForecastUpdateFrequencyDialogOptionChoose,
+    )
+}
+
+@Composable
+private fun ScreenContent(
+    coroutineScope: CoroutineScope,
+    navController: NavHostController,
+    forecastViewModel: ForecastViewModel,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
+    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
+    onTemperatureUnitDialogOptionChoose: () -> Unit,
+    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit,
+) {
+    AnimatedStatefulGradientBackground(
+        weatherAndDayTimeState = weatherAndDayTimeState,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                MainScreenTopAppBar(
+                    navController = navController,
+                    onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
+                    onForecastUpdateFrequencyDialogOptionChoose =
+                    onForecastUpdateFrequencyDialogOptionChoose
+                )
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                NavigationHost(
+                    coroutineScope = coroutineScope,
+                    navController = navController,
+                    forecastViewModel = forecastViewModel,
+                    weatherAndDayTimeState = weatherAndDayTimeState,
+                    onPrecipitationConditionChange = onPrecipitationConditionChange,
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun NavigationHost(
@@ -145,80 +254,12 @@ fun NavigationHost(
     }
 }
 
-@Composable
-fun MainScreen() {
-    val coroutineScope = rememberCoroutineScope()
-    val navController = rememberNavController()
-
-    val forecastViewModel: ForecastViewModel = koinViewModel()
-
-    var weatherAndDayTimeState by rememberSaveable {
-        mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
-    }
-
-    val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
-        weatherAndDayTimeState = state
-    }
-
-    ScreenContent(
-        coroutineScope = coroutineScope,
-        navController = navController,
-        forecastViewModel = forecastViewModel,
-        weatherAndDayTimeState = weatherAndDayTimeState,
-        onPrecipitationConditionChange = onAppearanceStateChange,
-    )
-}
-
-@Composable
-private fun ScreenContent(
-    coroutineScope: CoroutineScope,
-    navController: NavHostController,
-    forecastViewModel: ForecastViewModel,
-    weatherAndDayTimeState: WeatherAndDayTimeState,
-    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
-) {
-    AnimatedStatefulGradientBackground(
-        weatherAndDayTimeState = weatherAndDayTimeState,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent,
-            topBar = {
-                MainScreenTopAppBar(
-                    navController = navController,
-                    onTemperatureUnitConfirm = { selectedUnit: Int ->
-                        coroutineScope.launch {
-                            val unit = TemperatureUnit.entries[selectedUnit];
-                            forecastViewModel.setCurrentTemperatureUnit(unit)
-                        }
-                    }
-                )
-            },
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-            ) {
-                NavigationHost(
-                    coroutineScope = coroutineScope,
-                    navController = navController,
-                    forecastViewModel = forecastViewModel,
-                    weatherAndDayTimeState = weatherAndDayTimeState,
-                    onPrecipitationConditionChange = onPrecipitationConditionChange,
-                )
-            }
-        }
-    }
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreenTopAppBar(
     navController: NavController,
-    onTemperatureUnitConfirm: (Int) -> Unit
+    onTemperatureUnitDialogOptionChoose: () -> Unit,
+    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -241,7 +282,7 @@ private fun MainScreenTopAppBar(
             when {
                 destination?.hasRoute<NavigationRoute.LocationsManager>() == true -> {
                     Text(
-                        text = "Manage locations",
+                        text = stringResource(R.string.manage_locations),
                         modifier = Modifier.padding(start = 10.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -250,7 +291,7 @@ private fun MainScreenTopAppBar(
 
                 destination?.hasRoute<NavigationRoute.LocationSearch>() == true -> {
                     Text(
-                        text = "Add location",
+                        text = stringResource(R.string.add_location),
                         modifier = Modifier.padding(start = 10.dp),
                         color = Color.White,
                         fontSize = 20.sp,
@@ -263,11 +304,13 @@ private fun MainScreenTopAppBar(
             when {
                 destination?.hasRoute<NavigationRoute.Forecast>() == true -> {
                     TopAppBarOptionsMenu(
-                        menuExpanded = menuExpanded,
+                        isMenuExpanded = menuExpanded,
                         onMenuClick = onMenuClick,
                         closeMenu = onMenuDismiss,
                         navigateLocationsManagerScreen = navigateLocationsManagerScreen,
-                        onTemperatureUnitConfirm = onTemperatureUnitConfirm,
+                        onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
+                        onForecastUpdateFrequencyDialogOptionChoose =
+                        onForecastUpdateFrequencyDialogOptionChoose
                     )
                 }
 
@@ -279,13 +322,13 @@ private fun MainScreenTopAppBar(
 
 @Composable
 private fun TopAppBarOptionsMenu(
-    menuExpanded: Boolean,
+    isMenuExpanded: Boolean,
     onMenuClick: () -> Unit,
     closeMenu: () -> Unit,
     navigateLocationsManagerScreen: () -> Unit,
-    onTemperatureUnitConfirm: (Int) -> Unit
+    onTemperatureUnitDialogOptionChoose: () -> Unit,
+    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit
 ) {
-    var isDialogVisible by remember { mutableStateOf(false) }
 
     IconButton(onClick = onMenuClick) {
         Icon(
@@ -296,11 +339,11 @@ private fun TopAppBarOptionsMenu(
     }
 
     DropdownMenu(
-        expanded = menuExpanded,
+        expanded = isMenuExpanded,
         onDismissRequest = { closeMenu() }
     ) {
         DropdownMenuItem(
-            text = { Text("Manage locations", fontSize = 16.sp) },
+            text = { Text(stringResource(R.string.manage_locations), fontSize = 16.sp) },
             onClick = {
                 closeMenu()
                 navigateLocationsManagerScreen()
@@ -308,20 +351,18 @@ private fun TopAppBarOptionsMenu(
         )
         OptionsMenuItemDivider()
         DropdownMenuItem(
-            text = { Text("Temperature Unit", fontSize = 16.sp) },
+            text = { Text(stringResource(R.string.temperature_unit), fontSize = 16.sp) },
             onClick = {
                 closeMenu()
-                isDialogVisible = true
+                onTemperatureUnitDialogOptionChoose()
             }
         )
-    }
-
-    if (isDialogVisible) {
-        TemperatureDialog(
-            onDismiss = { isDialogVisible = false },
-            onConfirm = { selectedOption ->
-                isDialogVisible = false
-                onTemperatureUnitConfirm(selectedOption)
+        OptionsMenuItemDivider()
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.update_frequency), fontSize = 16.sp) },
+            onClick = {
+                closeMenu()
+                onForecastUpdateFrequencyDialogOptionChoose()
             }
         )
     }
@@ -388,7 +429,7 @@ private fun getGradientForType(weatherAndDayTimeState: WeatherAndDayTimeState): 
         )
 
         WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> listOf(
-            LimoScene35PerDarker, Fashionista20PerDarker
+            LimoScene40PerDarker, Fashionista20PerDarker
         )
     }
 }

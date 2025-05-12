@@ -24,6 +24,6 @@ val CoalBlack = Color(0xFF002F63)
 val HiloBay = Color(0xFF758AA2)
 val HiloBay25PerDarker = Color(0xFF54677d)
 
-val LimoScene35PerDarker = Color(0xFF212635)
+val LimoScene40PerDarker = Color(0xFF1f2331)
 val Fashionista20PerDarker = Color(0xFF404664)
 val Solitaire5PerDarker = Color(0xFF66719d)

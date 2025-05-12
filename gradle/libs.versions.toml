@@ -1,11 +1,14 @@
 [versions]
-agp = "8.7.2"
+agp = "8.7.3"
 constraintlayoutCompose = "1.1.0"
 converterGson = "2.11.0"
 datastorePreferences = "1.1.6"
 gson = "2.11.0"
 koinAndroid = "4.0.0"
+koinAndroidVersion = "4.0.4"
 koinAndroidxCompose = "4.0.2"
+koinAndroidxComposeVersion = "4.0.4"
+koinAndroidxWorkmanager = "4.0.4"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -23,6 +26,7 @@ constraintlayout = "2.2.0"
 composeMaterial = "1.4.0"
 roomTesting = "2.6.1"
 junitKtx = "1.2.1"
+workRuntimeKtx = "2.10.1"
 
 [libraries]
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
@@ -33,6 +37,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -49,7 +54,10 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
+koin-android-v404 = { module = "io.insert-koin:koin-android", version.ref = "koinAndroidVersion" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
+koin-androidx-compose-v404 = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxComposeVersion" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koinAndroidxWorkmanager" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

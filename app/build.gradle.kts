@@ -64,9 +64,11 @@ dependencies {
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
     implementation(libs.retrofit)
     // https://mvnrepository.com/artifact/io.insert-koin/koin-android
-    implementation(libs.koin.android)
+    implementation(libs.koin.android.v404)
     // https://mvnrepository.com/artifact/io.insert-koin/koin-androidx-compose
-    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.androidx.compose.v404)
+    // https://mvnrepository.com/artifact/io.insert-koin/koin-androidx-workmanager
+    implementation(libs.koin.androidx.workmanager)
     // https://mvnrepository.com/artifact/androidx.navigation/navigation-compose
     implementation(libs.androidx.navigation.compose)
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization-json
@@ -80,6 +82,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     // https://mvnrepository.com/artifact/androidx.datastore/datastore-core
     implementation(libs.androidx.datastore.core)
+    // https://mvnrepository.com/artifact/androidx.work/work-runtime-ktx
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.junit.ktx)
 

@@ -7,11 +7,9 @@ import com.example.weathercompose.data.database.entity.forecast.DailyForecastEnt
 import com.example.weathercompose.data.datastore.AppSettings
 import com.example.weathercompose.data.mapper.mapToDailyForecastDomainModel
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
-import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
@@ -84,13 +82,5 @@ class ForecastRepositoryImpl(
         withContext(dispatcher) {
             forecastDao.deleteDailyForecastsByLocationId(locationId = locationId)
         }
-    }
-
-    override fun getCurrentTemperatureUnit(): Flow<TemperatureUnit> {
-        return appSettings.currentTemperatureUnit
-    }
-
-    override suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
-        appSettings.setCurrentTemperatureUnit(temperatureUnit = temperatureUnit)
     }
 }

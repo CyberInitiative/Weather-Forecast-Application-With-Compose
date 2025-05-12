@@ -23,33 +23,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.weathercompose.R
-import com.example.weathercompose.data.model.forecast.TemperatureUnit
+import com.example.weathercompose.data.model.ForecastUpdateFrequency
 import com.example.weathercompose.ui.theme.IntercoastalGray
 import com.example.weathercompose.ui.theme.Liberty
 
 @Composable
-fun TemperatureDialog(
-    temperatureUnit: TemperatureUnit,
-
+fun ForecastUpdateFrequencyDialog(
+    updateFrequency: ForecastUpdateFrequency,
     onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit
+    onConfirm: (ForecastUpdateFrequency) -> Unit
 ) {
-    val initialSelected = when (temperatureUnit) {
-        TemperatureUnit.CELSIUS -> 0
-        TemperatureUnit.FAHRENHEIT -> 1
-    }
+    val frequencies = stringArrayResource(R.array.update_frequency_options)
 
-    var selectedOption by remember(temperatureUnit) {
-        mutableIntStateOf(initialSelected)
-    }
+    val options = arrayOf(
+        ForecastUpdateFrequency.ONE_HOUR to frequencies[0],
+        ForecastUpdateFrequency.TWO_HOURS to frequencies[1],
+        ForecastUpdateFrequency.THREE_HOURS to frequencies[2],
+        ForecastUpdateFrequency.SIX_HOURS to frequencies[3],
+        ForecastUpdateFrequency.TWELVE_HOURS to frequencies[4],
+        ForecastUpdateFrequency.TWENTY_FOUR_HOURS to frequencies[5]
+    )
 
-    val options = listOf("C°", "F°")
+    var selectedOptionIndex by remember {
+        mutableIntStateOf(options.indexOfFirst { it.first == updateFrequency })
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -62,21 +66,16 @@ fun TemperatureDialog(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Text(
-                        text = stringResource(R.string.temperature_unit_dialog_title),
-                        color = Color.Black,
-                        fontSize = 18.sp,
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.forecast_update_frequency_dialog_title),
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                )
                 Spacer(Modifier.height(10.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    options.forEachIndexed { index, option ->
+                    options.forEachIndexed { index, (_, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -85,14 +84,14 @@ fun TemperatureDialog(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = option,
+                                text = label,
                                 color = Color.Black,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                             )
                             RadioButton(
-                                selected = selectedOption == index,
-                                onClick = { selectedOption = index },
+                                selected = selectedOptionIndex == index,
+                                onClick = { selectedOptionIndex = index },
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = Liberty,
                                 )
@@ -113,7 +112,10 @@ fun TemperatureDialog(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     TextButton(
-                        onClick = { onConfirm(selectedOption) },
+                        onClick = {
+                            val selectedHoursValue = options[selectedOptionIndex].first
+                            onConfirm(selectedHoursValue)
+                        },
                     ) {
                         Text(text = "OK", color = Liberty, fontSize = 18.sp)
                     }

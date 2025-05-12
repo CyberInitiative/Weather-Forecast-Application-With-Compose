@@ -5,19 +5,22 @@ import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.mapper.mapToLocationDomainModel
+import com.example.weathercompose.data.model.ForecastUpdateFrequency
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.location.LocationDomainModel
-import com.example.weathercompose.domain.usecase.forecast.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
-import com.example.weathercompose.domain.usecase.forecast.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
+import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
+import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
@@ -39,16 +42,25 @@ class ForecastViewModel(
     private val loadLocationUseCase: LoadLocationUseCase,
     private val setCurrentTemperatureUnitUseCase: SetCurrentTemperatureUnitUseCase,
     private val getTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase,
+    private val setForecastUpdateFrequencyUseCase: SetForecastUpdateFrequencyUseCase,
+    private val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase,
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
     private val _locationsUIStates = MutableStateFlow<List<LocationUIState>?>(value = null)
     val locationsUIStates: StateFlow<List<LocationUIState>?>
-        get() =
-            _locationsUIStates.asStateFlow()
+        get() = _locationsUIStates.asStateFlow()
 
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
+
+    private var _currentTemperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS
+    val currentTemperatureUnit: TemperatureUnit get() = _currentTemperatureUnit
+
+    private var _currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency =
+        ForecastUpdateFrequency.ONE_HOUR
+    val currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency
+        get() = _currentForecastUpdateFrequencyInHours
 
     private val _weatherAndDayTimeState = MutableStateFlow(
         value = WeatherAndDayTimeState.NO_PRECIPITATION_DAY
@@ -59,6 +71,8 @@ class ForecastViewModel(
     init {
         observeLocationsState()
         observeLocationsAndTemperatureUnit()
+        observeTemperatureUnit()
+        observeForecastUpdateFrequency()
         loadLocations()
     }
 
@@ -76,8 +90,8 @@ class ForecastViewModel(
                     updateLocationItems(locations = locations)
 
                     locations.forEach { location ->
-                        if (isNeedToLoadForecasts(location)) {
-                            updateForecastForLocation(
+                        if (location.shouldLoadForecasts()) {
+                            updateForecastDataStateForLocation(
                                 locationId = location.id,
                                 newForecastDataState = DataState.Loading,
                             )
@@ -90,28 +104,41 @@ class ForecastViewModel(
         }
     }
 
-    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit){
+    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
         setCurrentTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
+    }
+
+    suspend fun setForecastUpdateFrequency(forecastUpdateFrequency: ForecastUpdateFrequency) {
+        setForecastUpdateFrequencyUseCase(forecastUpdateFrequency = forecastUpdateFrequency)
     }
 
     private fun observeLocationsAndTemperatureUnit() {
         viewModelScope.launch {
             combine(
                 _locationsState.filterNotNull(),
-                getTemperatureUnitUseCase.execute()
+                getTemperatureUnitUseCase()
             ) { locations, unit ->
-                locations.map { locationUIStateMapper.mapToUIState(it, unit) } ?: emptyList()
+                locations.map { locationUIStateMapper.mapToUIState(it, unit) }
             }.collect { items ->
                 _locationsUIStates.value = items
             }
         }
     }
 
-    private fun isNeedToLoadForecasts(location: LocationDomainModel): Boolean {
-        val isDataReady = location.forecastDataState is DataState.Ready
-        val isDataLoading = location.forecastDataState is DataState.Loading
-        val isTimestampExpired = location.isForecastLastUpdateTimestampExpired()
-        return (!isDataReady || isTimestampExpired) && !isDataLoading
+    private fun observeTemperatureUnit() {
+        viewModelScope.launch {
+            getTemperatureUnitUseCase().collect { unit ->
+                _currentTemperatureUnit = unit
+            }
+        }
+    }
+
+    private fun observeForecastUpdateFrequency() {
+        viewModelScope.launch {
+            getForecastUpdateFrequencyUseCase().collect { frequency ->
+                _currentForecastUpdateFrequencyInHours = frequency
+            }
+        }
     }
 
     private suspend fun loadForecast(location: LocationDomainModel) {
@@ -125,14 +152,14 @@ class ForecastViewModel(
                 DataState.Error(forecastLoadResult.forecastLoadResult.error)
             }
         }
-        updateForecastForLocation(
+        updateForecastDataStateForLocation(
             locationId = location.id,
             newForecastDataState = forecastLoadState,
             newForecastUpdateTimestamp = forecastLoadResult.forecastLoadTimestamp
         )
     }
 
-    private fun updateForecastForLocation(
+    private fun updateForecastDataStateForLocation(
         locationId: Long,
         newForecastDataState: DataState<List<DailyForecastDomainModel>>,
         newForecastUpdateTimestamp: Long = 0L,

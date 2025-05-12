@@ -36,4 +36,21 @@
     <string name="max_temperature_label">max: %d°</string>
     <string name="min_temperature_label">min: %d°</string>
     <string name="temperature_label">%d°</string>
+
+    <string name="add_location">Add location</string>
+    <string name="manage_locations">Manage locations</string>
+    <string name="temperature_unit">Temperature unit</string>
+    <string name="update_frequency">Update frequency</string>
+
+    <string name="temperature_unit_dialog_title">Select temperature unit</string>
+    <string name="forecast_update_frequency_dialog_title">Select update frequency</string>
+
+    <string-array name="update_frequency_options">
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>24 hours</item>
+    </string-array>
 </resources>
