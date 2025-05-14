@@ -49,23 +49,19 @@ fun HourlyForecastSection(
             thickness = 1.3.dp,
             color = Color.White
         )
-        HourlyForecastList(
-            hourlyForecasts = hourlyForecasts, backgroundColor = backgroundColor
-        )
+        HourlyForecastList(hourlyForecasts = hourlyForecasts)
     }
 }
 
 @Composable
 fun HourlyForecastList(
     hourlyForecasts: List<HourlyForecastItem>,
-    backgroundColor: Color,
 ) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(shape = RoundedCornerShape(size = 20.dp))
-            .background(color = backgroundColor),
+            .clip(shape = RoundedCornerShape(size = 20.dp)),
         horizontalArrangement = Arrangement.spacedBy(7.5.dp)
     ) {
         items(hourlyForecasts) { item ->

@@ -37,11 +37,4 @@ abstract class LocationDao {
     @Query("DELETE FROM locations WHERE locationId = :locationId")
     abstract suspend fun deleteLocationById(locationId: Long)
 
-    @Query(
-        """
-            UPDATE locations SET forecastLastUpdateTimestamp = :timestamp 
-            WHERE locationId = :locationId
-        """
-    )
-    abstract suspend fun updateForecastLastUpdateTimestamp(locationId: Long, timestamp: Long)
 }

@@ -63,12 +63,12 @@ fun ForecastScreen(
         }
     }
 
-    val uiElementsBackgroundColor by animateColorAsState(
+    val uiElementsColor by animateColorAsState(
         targetValue = when (precipitationCondition) {
             WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
             WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
             WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
-            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker //EnglishChannel45PerDarker
+            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
         },
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
@@ -83,14 +83,16 @@ fun ForecastScreen(
     }
 
     LaunchedEffect(pagerState, locationsUIStates) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            viewModel.onPageSelected(page)
+        if(locationsUIStates?.isNotEmpty() == true) {
+            snapshotFlow { pagerState.currentPage }.collect { page ->
+                viewModel.onPageSelected(page)
+            }
         }
     }
 
     ForecastContent(
         locationsUIStates = locationsUIStates,
-        uiElementsBackgroundColor = uiElementsBackgroundColor,
+        uiElementsColor = uiElementsColor,
         pagerState = pagerState,
     )
 }
@@ -98,14 +100,14 @@ fun ForecastScreen(
 @Composable
 private fun ForecastContent(
     locationsUIStates: List<LocationUIState>?,
-    uiElementsBackgroundColor: Color,
+    uiElementsColor: Color,
     pagerState: PagerState,
 ) {
     if (locationsUIStates != null) {
 
         LoadedData(
             locationsUIStates = locationsUIStates,
-            uiElementsBackgroundColor = uiElementsBackgroundColor,
+            uiElementsColor = uiElementsColor,
             pagerState = pagerState,
         )
     } else {
@@ -116,7 +118,7 @@ private fun ForecastContent(
 @Composable
 private fun LoadedData(
     locationsUIStates: List<LocationUIState>,
-    uiElementsBackgroundColor: Color,
+    uiElementsColor: Color,
     pagerState: PagerState,
 ) {
     ConstraintLayout {
@@ -143,14 +145,14 @@ private fun LoadedData(
 
             LocationPage(
                 currentLocation = currentLocation,
-                uiElementsBackgroundColor = uiElementsBackgroundColor,
+                uiElementsColor = uiElementsColor,
             )
         }
 
         PageIndicator(
             modifier = pagerIndicatorModifier,
             pagerState = pagerState,
-            uiElementsBackgroundColor = uiElementsBackgroundColor,
+            uiElementsColor = uiElementsColor,
         )
     }
 }
@@ -158,7 +160,7 @@ private fun LoadedData(
 @Composable
 private fun LocationPage(
     currentLocation: LocationUIState,
-    uiElementsBackgroundColor: Color,
+    uiElementsColor: Color,
 ) {
     Column(
         modifier = Modifier
@@ -182,7 +184,7 @@ private fun LocationPage(
 
             HourlyForecastSection(
                 hourlyForecasts = currentLocation.hourlyForecasts,
-                backgroundColor = uiElementsBackgroundColor
+                backgroundColor = uiElementsColor
             )
 
             Spacer(
@@ -193,7 +195,7 @@ private fun LocationPage(
 
             DailyForecastSection(
                 dailyForecasts = currentLocation.dailyForecasts,
-                backgroundColor = uiElementsBackgroundColor
+                backgroundColor = uiElementsColor
             )
         }
     }
@@ -203,7 +205,7 @@ private fun LocationPage(
 private fun PageIndicator(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
-    uiElementsBackgroundColor: Color,
+    uiElementsColor: Color,
 ) {
     Row(
         modifier = modifier
@@ -216,7 +218,7 @@ private fun PageIndicator(
             val color = if (pagerState.currentPage == iteration) {
                 Color.White
             } else {
-                uiElementsBackgroundColor
+                uiElementsColor
             }
 
             Box(

@@ -44,7 +44,10 @@
 
     <string name="temperature_unit_dialog_title">Select temperature unit</string>
     <string name="forecast_update_frequency_dialog_title">Select update frequency</string>
-
+    
+    <string name="location_search_box_hint">Search…</string>
+    <string name="loading_process_text">Loading…</string>
+    
     <string-array name="update_frequency_options">
         <item>1 hour</item>
         <item>2 hours</item>

@@ -4,7 +4,7 @@ import com.example.weathercompose.data.api.ForecastAPI
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.mapper.DailyForecastMapper
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
-import com.example.weathercompose.domain.model.forecast.ForecastLoadResult
+import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 
@@ -14,19 +14,23 @@ class LoadForecastUseCase(
     private val dailyForecastMapper: DailyForecastMapper,
 ) {
     suspend operator fun invoke(
+        forceLoadFromNetwork: Boolean,
         locationDomainModel: LocationDomainModel
-    ): ForecastLoadResult {
-        val isTimestampExpired = locationDomainModel.isForecastLastUpdateTimestampExpired()
-        return if (isTimestampExpired) {
-            onTimestampExpired(locationDomainModel = locationDomainModel)
+    ): Result<List<DailyForecastDomainModel>> {
+        return if (forceLoadFromNetwork) {
+            getForecastsFromNetwork(
+                forceLoadFromNetwork = true,
+                locationDomainModel = locationDomainModel
+            )
         } else {
             getCachedForecasts(locationDomainModel = locationDomainModel)
         }
     }
 
-    private suspend fun onTimestampExpired(
+    private suspend fun getForecastsFromNetwork(
+        forceLoadFromNetwork: Boolean,
         locationDomainModel: LocationDomainModel
-    ): ForecastLoadResult {
+    ): Result<List<DailyForecastDomainModel>> {
         val completeForecast = forecastRepository.loadForecast(
             latitude = locationDomainModel.latitude,
             longitude = locationDomainModel.longitude,
@@ -45,7 +49,11 @@ class LoadForecastUseCase(
             }
 
             is Result.Error -> {
-                getCachedForecasts(locationDomainModel = locationDomainModel)
+                if (!forceLoadFromNetwork) {
+                    getCachedForecasts(locationDomainModel = locationDomainModel)
+                } else {
+                    Result.Error(error = "Failed to load forecast!")
+                }
             }
         }
     }
@@ -53,8 +61,8 @@ class LoadForecastUseCase(
     private suspend fun getForecastsFromNetwork(
         locationDomainModel: LocationDomainModel,
         completeForecast: CompleteForecastResponse,
-    ): ForecastLoadResult {
-        val timestamp = saveForecastEntities(
+    ): Result<List<DailyForecastDomainModel>> {
+        saveForecastEntities(
             locationDomainModel = locationDomainModel,
             completeForecast = completeForecast,
         )
@@ -63,16 +71,13 @@ class LoadForecastUseCase(
             completeForecastResponse = completeForecast,
         )
 
-        return ForecastLoadResult(
-            forecastLoadTimestamp = timestamp,
-            forecastLoadResult = Result.Success(data = forecasts)
-        )
+        return Result.Success(data = forecasts)
     }
 
     private suspend fun saveForecastEntities(
         locationDomainModel: LocationDomainModel,
         completeForecast: CompleteForecastResponse,
-    ): Long {
+    ) {
         val forecastEntities = dailyForecastMapper.mapResponseToDailyForecastEntities(
             locationId = locationDomainModel.id,
             completeForecastResponse = completeForecast,
@@ -86,19 +91,24 @@ class LoadForecastUseCase(
 
     private suspend fun getCachedForecasts(
         locationDomainModel: LocationDomainModel,
-    ): ForecastLoadResult {
+    ): Result<List<DailyForecastDomainModel>> {
         val cachedData = forecastRepository.getForecastsByLocationID(
             locationId = locationDomainModel.id
         )
 
-        return if (cachedData.isNotEmpty()) {
-            ForecastLoadResult(
-                forecastLoadResult = Result.Success(cachedData)
-            )
+        if (cachedData.isNotEmpty()) {
+            return Result.Success(cachedData)
+        }
+
+        val result = getForecastsFromNetwork(
+            forceLoadFromNetwork = false,
+            locationDomainModel = locationDomainModel
+        )
+
+        return if (result is Result.Success) {
+            result
         } else {
-            ForecastLoadResult(
-                forecastLoadResult = Result.Error(error = "No data available!")
-            )
+            Result.Error("No data available!")
         }
     }
 }

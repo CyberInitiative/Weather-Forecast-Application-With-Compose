@@ -23,7 +23,10 @@ class ForecastUpdatingWorker(
             coroutineScope {
                 locations.map { location ->
                     async {
-                        loadForecastUseCase(location)
+                        loadForecastUseCase(
+                            forceLoadFromNetwork = true,
+                            locationDomainModel = location
+                        )
                     }
                 }.awaitAll()
             }

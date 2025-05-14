@@ -18,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,14 +32,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.weathercompose.R
 import com.example.weathercompose.data.model.ForecastUpdateFrequency
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
+import com.example.weathercompose.ui.theme.HiloBay25PerDarker
 import com.example.weathercompose.ui.theme.IntercoastalGray
 import com.example.weathercompose.ui.theme.Liberty
+import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
+import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 
 @Composable
 fun ForecastUpdateFrequencyDialog(
     updateFrequency: ForecastUpdateFrequency,
     onDismiss: () -> Unit,
-    onConfirm: (ForecastUpdateFrequency) -> Unit
+    onConfirm: (ForecastUpdateFrequency) -> Unit,
+    weatherAndDayTimeState: WeatherAndDayTimeState,
 ) {
     val frequencies = stringArrayResource(R.array.update_frequency_options)
 
@@ -53,6 +59,16 @@ fun ForecastUpdateFrequencyDialog(
 
     var selectedOptionIndex by remember {
         mutableIntStateOf(options.indexOfFirst { it.first == updateFrequency })
+    }
+    val uiElementsColor by remember(weatherAndDayTimeState) {
+        mutableStateOf(
+            when (weatherAndDayTimeState) {
+                WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
+                WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
+            }
+        )
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -93,7 +109,7 @@ fun ForecastUpdateFrequencyDialog(
                                 selected = selectedOptionIndex == index,
                                 onClick = { selectedOptionIndex = index },
                                 colors = RadioButtonDefaults.colors(
-                                    selectedColor = Liberty,
+                                    selectedColor = uiElementsColor,
                                 )
                             )
                         }
@@ -117,7 +133,7 @@ fun ForecastUpdateFrequencyDialog(
                             onConfirm(selectedHoursValue)
                         },
                     ) {
-                        Text(text = "OK", color = Liberty, fontSize = 18.sp)
+                        Text(text = "OK", color = uiElementsColor, fontSize = 18.sp)
                     }
                 }
             }

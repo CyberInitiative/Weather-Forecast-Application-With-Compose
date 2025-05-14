@@ -48,13 +48,14 @@ import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
-import com.example.weathercompose.ui.theme.Bayou
 import com.example.weathercompose.ui.theme.CastleMoat
+import com.example.weathercompose.ui.theme.Coal
 import com.example.weathercompose.ui.theme.CoalBlack
 import com.example.weathercompose.ui.theme.Fashionista20PerDarker
 import com.example.weathercompose.ui.theme.HiloBay
 import com.example.weathercompose.ui.theme.IntercoastalGray
 import com.example.weathercompose.ui.theme.LimoScene40PerDarker
+import com.example.weathercompose.ui.theme.RomanSilver
 import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +101,8 @@ fun MainScreen() {
                     val unit = TemperatureUnit.entries[selectedOption]
                     forecastViewModel.setCurrentTemperatureUnit(unit)
                 }
-            }
+            },
+            weatherAndDayTimeState = weatherAndDayTimeState,
         )
     }
 
@@ -113,7 +115,8 @@ fun MainScreen() {
                 coroutineScope.launch {
                     forecastViewModel.setForecastUpdateFrequency(selectedOption)
                 }
-            }
+            },
+            weatherAndDayTimeState = weatherAndDayTimeState,
         )
     }
 
@@ -383,23 +386,23 @@ fun AnimatedStatefulGradientBackground(
     durationMillis: Int = COLOR_TRANSITION_ANIMATION_DURATION,
     content: @Composable () -> Unit
 ) {
-    val targetColors = getGradientForType(weatherAndDayTimeState)
+    val targetColors = getGradientByWeatherAndDayTimeState(weatherAndDayTimeState)
 
     val topColor by animateColorAsState(
         targetValue = targetColors[0],
         animationSpec = tween(durationMillis = durationMillis),
-        label = "gradientColor1"
+        label = "gradientColorTop"
     )
 
     val bottomColor by animateColorAsState(
         targetValue = targetColors[1],
         animationSpec = tween(durationMillis = durationMillis),
-        label = "gradientColor2"
+        label = "gradientColorBottom"
     )
 
     val colorStops = arrayOf(
-        0.5f to topColor,
-        0.8f to bottomColor,
+        0.0f to topColor,
+        1.0f to bottomColor
     )
 
     val brush = Brush.verticalGradient(
@@ -414,10 +417,12 @@ fun AnimatedStatefulGradientBackground(
     }
 }
 
-private fun getGradientForType(weatherAndDayTimeState: WeatherAndDayTimeState): List<Color> {
+private fun getGradientByWeatherAndDayTimeState(
+    weatherAndDayTimeState: WeatherAndDayTimeState,
+): List<Color> {
     return when (weatherAndDayTimeState) {
         WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> listOf(
-            CastleMoat, Bayou
+            CastleMoat, Coal
         )
 
         WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> listOf(
@@ -425,7 +430,7 @@ private fun getGradientForType(weatherAndDayTimeState: WeatherAndDayTimeState): 
         )
 
         WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> listOf(
-            HiloBay, HiloBay
+            RomanSilver, HiloBay
         )
 
         WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> listOf(

@@ -8,8 +8,8 @@ import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCas
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
-import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +56,6 @@ val domainModule = module {
     factory {
         SaveForecastUseCase(
             forecastRepository = get { parametersOf(Dispatchers.IO) },
-            locationRepository = get { parametersOf(Dispatchers.IO) },
         )
     }
 

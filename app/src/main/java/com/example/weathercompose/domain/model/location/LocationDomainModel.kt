@@ -18,16 +18,8 @@ data class LocationDomainModel(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
-    val forecastLastUpdateTimestamp: Long = 0L,
     var forecastDataState: DataState<List<DailyForecastDomainModel>> = DataState.Initial,
 ) {
-
-    fun isForecastLastUpdateTimestampExpired(): Boolean {
-        if (forecastLastUpdateTimestamp == 0L) return true
-        val currentTimeMillis = System.currentTimeMillis()
-        val oneHourInMillis = 60 * 60 * 1000
-        return currentTimeMillis - forecastLastUpdateTimestamp > oneHourInMillis
-    }
 
     fun getForecastForCurrentHour(): HourlyForecastDomainModel {
         if (forecastDataState is DataState.Ready) {
@@ -100,13 +92,6 @@ data class LocationDomainModel(
         } catch (e: IllegalStateException){
             return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
         }
-    }
-
-    fun shouldLoadForecasts(): Boolean {
-        val isDataReady = this.forecastDataState is DataState.Ready
-        val isDataLoading = this.forecastDataState is DataState.Loading
-        val isTimestampExpired = this.isForecastLastUpdateTimestampExpired()
-        return (!isDataReady || isTimestampExpired) && !isDataLoading
     }
 
     companion object {

@@ -90,7 +90,7 @@ class ForecastViewModel(
                     updateLocationItems(locations = locations)
 
                     locations.forEach { location ->
-                        if (location.shouldLoadForecasts()) {
+                        if (shouldLoadForecasts(location = location)) {
                             updateForecastDataStateForLocation(
                                 locationId = location.id,
                                 newForecastDataState = DataState.Loading,
@@ -102,6 +102,12 @@ class ForecastViewModel(
                     }
                 }
         }
+    }
+
+    private fun shouldLoadForecasts(location: LocationDomainModel): Boolean {
+        val isDataReady = location.forecastDataState is DataState.Ready
+        val isDataLoading = location.forecastDataState is DataState.Loading
+        return !isDataReady && !isDataLoading
     }
 
     suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
@@ -142,39 +148,34 @@ class ForecastViewModel(
     }
 
     private suspend fun loadForecast(location: LocationDomainModel) {
-        val forecastLoadResult = loadForecastUseCase(location)
-        val forecastLoadState = when (forecastLoadResult.forecastLoadResult) {
+        val forecastLoadResult = loadForecastUseCase(
+            forceLoadFromNetwork = false,
+            locationDomainModel = location
+        )
+        val forecastLoadState = when (forecastLoadResult) {
             is Result.Success -> {
-                DataState.Ready(forecastLoadResult.forecastLoadResult.data)
+                DataState.Ready(forecastLoadResult.data)
             }
 
             is Result.Error -> {
-                DataState.Error(forecastLoadResult.forecastLoadResult.error)
+                DataState.Error(forecastLoadResult.error)
             }
         }
         updateForecastDataStateForLocation(
             locationId = location.id,
             newForecastDataState = forecastLoadState,
-            newForecastUpdateTimestamp = forecastLoadResult.forecastLoadTimestamp
         )
     }
 
     private fun updateForecastDataStateForLocation(
         locationId: Long,
         newForecastDataState: DataState<List<DailyForecastDomainModel>>,
-        newForecastUpdateTimestamp: Long = 0L,
     ) {
         _locationsState.update { currentList ->
             currentList?.map { location ->
                 if (location.id == locationId) {
-                    val timestamp = if (newForecastUpdateTimestamp == 0L) {
-                        location.forecastLastUpdateTimestamp
-                    } else {
-                        newForecastUpdateTimestamp
-                    }
                     val updatedLocation = location.copy(
                         forecastDataState = newForecastDataState,
-                        forecastLastUpdateTimestamp = timestamp,
                     )
 
                     updatedLocation

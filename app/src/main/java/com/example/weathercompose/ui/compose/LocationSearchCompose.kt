@@ -40,11 +40,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.theme.HiloBay25PerDarker
@@ -72,7 +74,16 @@ fun LocationSearchScreen(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
-    var listItemsColor by remember { mutableStateOf(Liberty) }
+    val uiElementsColor by remember(weatherAndDayTimeState) {
+        mutableStateOf(
+            when (weatherAndDayTimeState) {
+                WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
+                WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
+            }
+        )
+    }
 
     val onQueryChanged = { newQuery: String ->
         query = newQuery
@@ -91,31 +102,13 @@ fun LocationSearchScreen(
         }
     }
 
-    when (weatherAndDayTimeState) {
-        WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> {
-            listItemsColor = Liberty
-        }
-
-        WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> {
-            listItemsColor = MediumDarkShadeCyanBlue
-        }
-
-        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> {
-            listItemsColor = HiloBay25PerDarker
-        }
-
-        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> {
-            listItemsColor = Solitaire5PerDarker
-        }
-    }
-
     LocationSearchContent(
         query = query,
         onQueryChanged = onQueryChanged,
         onLocationItemClick = onLocationItemClick,
         locationSearchResult = locationSearchResult,
         focusManager = focusManager,
-        listItemsColor = listItemsColor,
+        uiElementsColor = uiElementsColor,
     )
 }
 
@@ -126,7 +119,7 @@ private fun LocationSearchContent(
     onLocationItemClick: (LocationEntity) -> Job,
     locationSearchResult: LocationSearchState,
     focusManager: FocusManager,
-    listItemsColor: Color,
+    uiElementsColor: Color,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -134,7 +127,7 @@ private fun LocationSearchContent(
         SearchBox(
             query = query,
             onQueryChanged = onQueryChanged,
-            itemBackgroundColor = listItemsColor,
+            uiElementsColor = uiElementsColor,
             focusManager = focusManager,
         )
 
@@ -143,7 +136,7 @@ private fun LocationSearchContent(
             locationSearchResult.locations.isNotEmpty() ->
                 LocationList(
                     locations = locationSearchResult.locations,
-                    itemBackgroundColor = listItemsColor,
+                    uiElementsColor = uiElementsColor,
                     onLocationItemClick = onLocationItemClick,
                 )
         }
@@ -154,7 +147,7 @@ private fun LocationSearchContent(
 private fun SearchBox(
     query: String,
     onQueryChanged: (String) -> Unit,
-    itemBackgroundColor: Color,
+    uiElementsColor: Color,
     focusManager: FocusManager,
 ) {
     Row(
@@ -166,7 +159,7 @@ private fun SearchBox(
             modifier = Modifier
                 .size(width = 230.dp, height = 45.dp)
                 .background(
-                    color = itemBackgroundColor,
+                    color = uiElementsColor,
                     shape = RoundedCornerShape(15.dp)
                 )
                 .padding(start = 10.dp, end = 15.dp)
@@ -198,7 +191,7 @@ private fun SearchBox(
                 decorationBox = { innerTextField ->
                     if (query.isEmpty()) {
                         Text(
-                            text = "Search...",
+                            text = stringResource(R.string.location_search_box_hint),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = SiberianIce,
                                 fontSize = 18.sp
@@ -216,7 +209,7 @@ private fun SearchBox(
 private fun LocationList(
     locations: List<LocationEntity>,
     modifier: Modifier = Modifier,
-    itemBackgroundColor: Color,
+    uiElementsColor: Color,
     onLocationItemClick: (LocationEntity) -> Job,
 ) {
     LazyColumn(
@@ -232,7 +225,7 @@ private fun LocationList(
             if (index < locations.size - 1) {
                 HorizontalDivider(
                     thickness = 1.3.dp,
-                    color = itemBackgroundColor
+                    color = Color.White
                 )
             }
         }
@@ -255,7 +248,7 @@ private fun LocationListItem(
         Text(
             color = Color.White,
             text = location.getFullLocationName(),
-            fontSize = 14.sp,
+            fontSize = 15.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -275,7 +268,7 @@ fun LoadingProcessIndicator() {
         Spacer(modifier = Modifier.height(15.dp))
         Text(
             color = Color.White,
-            text = "Loading...",
+            text = stringResource(R.string.loading_process_text),
             fontSize = 16.sp,
         )
     }

@@ -50,17 +50,13 @@ fun DailyForecastSection(
             thickness = 1.3.dp,
             color = Color.White
         )
-        DailyForecastList(
-            dailyForecasts = dailyForecasts,
-            backgroundColor = backgroundColor,
-        )
+        DailyForecastList(dailyForecasts = dailyForecasts)
     }
 }
 
 @Composable
 fun DailyForecastList(
     dailyForecasts: List<DailyForecastItem>,
-    backgroundColor: Color,
 ) {
     LazyRow(
         modifier = Modifier
@@ -91,14 +87,12 @@ fun DailyForecastListItem(
         Text(
             modifier = Modifier.padding(top = 15.dp),
             fontSize = 16.sp,
-            //fontWeight = FontWeight.Medium,
             text = dailyForecastItem.date,
             textAlign = TextAlign.Center,
             color = Color.White,
         )
 
         Text(
-            //modifier = Modifier.padding(top = 2.5.dp, bottom = 10.dp),
             fontSize = 14.sp,
             text = dailyForecastItem.dayOfMonth,
             textAlign = TextAlign.Center,
@@ -112,10 +106,7 @@ fun DailyForecastListItem(
             tint = Color.White,
         )
 
-        //WeatherDescriptionLabel(text = stringResource(dailyForecastItem.weatherDescription))
-
         Text(
-            //modifier = Modifier.padding(top = 10.dp, bottom = 2.5.dp),
             text = "${dailyForecastItem.maxTemperature}°",
             color = Color.White,
             fontSize = 16.sp,

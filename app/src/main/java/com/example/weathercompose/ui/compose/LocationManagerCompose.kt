@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.theme.HiloBay25PerDarker
@@ -304,7 +305,7 @@ private fun DeleteLocationItemBackground(swipeToDismissBoxState: SwipeToDismissB
     ) {
         Icon(
             Icons.Default.Delete,
-            contentDescription = "delete",
+            contentDescription = "Delete",
             modifier = Modifier.padding(end = 20.dp),
         )
     }
@@ -330,7 +331,7 @@ private fun AddLocationButton(
         )
     ) {
         Text(
-            text = "Add location",
+            text = stringResource(R.string.add_location),
             modifier = Modifier
                 .padding(
                     vertical = 7.dp,

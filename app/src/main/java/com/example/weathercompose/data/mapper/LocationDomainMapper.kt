@@ -78,7 +78,6 @@ fun LocationEntity.mapToLocationDomainModel(): LocationDomainModel {
             fourthAdministrativeLevel = fourthAdministrativeLevel,
             country = country,
             timeZone = timeZone,
-            forecastLastUpdateTimestamp = forecastLastUpdateTimestamp,
         )
     }
 }

@@ -4,6 +4,7 @@ import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 
 interface LocationRepository {
+
     suspend fun search(
         name: String,
         count: Int,
@@ -21,5 +22,4 @@ interface LocationRepository {
 
     suspend fun deleteLocationById(locationId: Long)
 
-    suspend fun updateForecastLastUpdateTimestamp(locationId: Long, timestamp: Long)
 }

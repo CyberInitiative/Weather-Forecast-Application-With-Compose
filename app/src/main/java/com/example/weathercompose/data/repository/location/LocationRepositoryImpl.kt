@@ -1,6 +1,5 @@
 package com.example.weathercompose.data.repository.location
 
-import android.util.Log
 import com.example.weathercompose.data.api.GeocodingAPI
 import com.example.weathercompose.data.database.dao.LocationDao
 import com.example.weathercompose.data.database.entity.location.LocationEntity
@@ -60,16 +59,6 @@ class LocationRepositoryImpl(
     override suspend fun deleteLocationById(locationId: Long) {
         withContext(dispatcher) {
             locationDao.deleteLocationById(locationId = locationId)
-        }
-    }
-
-    override suspend fun updateForecastLastUpdateTimestamp(locationId: Long, timestamp: Long) {
-        withContext(dispatcher) {
-            Log.d(TAG, "updateForecastLastUpdateTimestamp() called")
-            locationDao.updateForecastLastUpdateTimestamp(
-                locationId = locationId,
-                timestamp = timestamp,
-            )
         }
     }
 

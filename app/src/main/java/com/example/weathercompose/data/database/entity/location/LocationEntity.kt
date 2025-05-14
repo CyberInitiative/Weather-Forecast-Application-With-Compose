@@ -16,7 +16,6 @@ data class LocationEntity(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
-    val forecastLastUpdateTimestamp: Long = 0L
 ){
 
     fun getFullLocationName(): String {
