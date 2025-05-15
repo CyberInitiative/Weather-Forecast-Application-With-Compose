@@ -5,13 +5,17 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -43,6 +47,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,6 +79,9 @@ fun LocationSearchScreen(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
+
+    var debounceJob by remember { mutableStateOf<Job?>(null) }
+
     val uiElementsColor by remember(weatherAndDayTimeState) {
         mutableStateOf(
             when (weatherAndDayTimeState) {
@@ -87,7 +95,11 @@ fun LocationSearchScreen(
 
     val onQueryChanged = { newQuery: String ->
         query = newQuery
-        viewModel.searchLocation(newQuery)
+        debounceJob?.cancel()
+        debounceJob = coroutineScope.launch {
+            kotlinx.coroutines.delay(300)
+            viewModel.searchLocation(newQuery)
+        }
     }
 
     val onLocationItemClick = { location: LocationEntity ->
@@ -132,13 +144,35 @@ private fun LocationSearchContent(
         )
 
         when {
-            locationSearchResult.isLoading -> LoadingProcessIndicator()
+            locationSearchResult.isLoading -> LoadingProcessIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .imePadding()
+            )
+
             locationSearchResult.locations.isNotEmpty() ->
                 LocationList(
                     locations = locationSearchResult.locations,
-                    uiElementsColor = uiElementsColor,
                     onLocationItemClick = onLocationItemClick,
                 )
+
+            locationSearchResult.locations.isEmpty() && query.isNotBlank() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .imePadding(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "No cities found",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
     }
 }
@@ -209,7 +243,6 @@ private fun SearchBox(
 private fun LocationList(
     locations: List<LocationEntity>,
     modifier: Modifier = Modifier,
-    uiElementsColor: Color,
     onLocationItemClick: (LocationEntity) -> Job,
 ) {
     LazyColumn(
@@ -256,8 +289,9 @@ private fun LocationListItem(
 }
 
 @Composable
-fun LoadingProcessIndicator() {
+fun LoadingProcessIndicator(modifier: Modifier = Modifier) {
     Column(
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

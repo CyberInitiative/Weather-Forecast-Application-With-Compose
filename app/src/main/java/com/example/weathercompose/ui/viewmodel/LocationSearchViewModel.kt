@@ -20,21 +20,28 @@ class LocationSearchViewModel(
     ) {
         viewModelScope.launch {
             _locationSearchState.value = _locationSearchState.value.copy(isLoading = true)
-            when (val locationSearchResult = searchLocationUseCase(name = name)) {
-                is Result.Success -> {
-                    _locationSearchState.value = _locationSearchState.value.copy(
-                        isLoading = false,
-                        locations = locationSearchResult.data
-                    )
-                }
+            if(name.length >= 2) {
+                when (val locationSearchResult = searchLocationUseCase(name = name)) {
+                    is Result.Success -> {
+                        _locationSearchState.value = _locationSearchState.value.copy(
+                            isLoading = false,
+                            locations = locationSearchResult.data
+                        )
+                    }
 
-                is Result.Error -> {
-                    _locationSearchState.value = _locationSearchState.value.copy(
-                        isLoading = false,
-                        locations = emptyList(),
-                        errorMessage = locationSearchResult.error,
-                    )
+                    is Result.Error -> {
+                        _locationSearchState.value = _locationSearchState.value.copy(
+                            isLoading = false,
+                            locations = emptyList(),
+                            errorMessage = locationSearchResult.error,
+                        )
+                    }
                 }
+            } else {
+                _locationSearchState.value = _locationSearchState.value.copy(
+                    isLoading = false,
+                    locations = emptyList()
+                )
             }
         }
     }
