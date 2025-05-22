@@ -4,7 +4,6 @@ import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.domain.mapper.LocationUIStateMapper
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
-import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -22,16 +21,18 @@ val uiModule = module {
             getTemperatureUnitUseCase = get(),
             setForecastUpdateFrequencyUseCase = get(),
             getForecastUpdateFrequencyUseCase = get(),
+            networkManager = get(),
         )
     }
 
     viewModel {
         LocationSearchViewModel(
             searchLocationUseCase = get(),
+            networkManager = get(),
         )
     }
 
-    factory { LocationUIStateMapper(context = androidApplication()) }
+    factory { LocationUIStateMapper(context = get()) }
 
-    factory { LocationItemMapper(context = androidApplication()) }
+    factory { LocationItemMapper() }
 }

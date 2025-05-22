@@ -16,5 +16,19 @@ enum class TemperatureUnit {
                 }
             }
         }
+
+        fun getTemperatureForUI(temperature: Double, temperatureUnit: TemperatureUnit): String {
+            val convertedTemperature = when (temperatureUnit) {
+                CELSIUS -> {
+                    Math.round(temperature).toInt()
+                }
+
+                FAHRENHEIT -> {
+                    val temperatureInFahrenheit = (temperature * 9 / 5) + 32
+                    Math.round(temperatureInFahrenheit).toInt()
+                }
+            }
+            return "$convertedTemperature°"
+        }
     }
 }

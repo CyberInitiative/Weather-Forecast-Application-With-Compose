@@ -47,7 +47,6 @@ fun ForecastUpdateFrequencyDialog(
     weatherAndDayTimeState: WeatherAndDayTimeState,
 ) {
     val frequencies = stringArrayResource(R.array.update_frequency_options)
-
     val options = arrayOf(
         ForecastUpdateFrequency.ONE_HOUR to frequencies[0],
         ForecastUpdateFrequency.TWO_HOURS to frequencies[1],
@@ -56,10 +55,10 @@ fun ForecastUpdateFrequencyDialog(
         ForecastUpdateFrequency.TWELVE_HOURS to frequencies[4],
         ForecastUpdateFrequency.TWENTY_FOUR_HOURS to frequencies[5]
     )
-
     var selectedOptionIndex by remember {
         mutableIntStateOf(options.indexOfFirst { it.first == updateFrequency })
     }
+
     val uiElementsColor by remember(weatherAndDayTimeState) {
         mutableStateOf(
             when (weatherAndDayTimeState) {
@@ -82,10 +81,12 @@ fun ForecastUpdateFrequencyDialog(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
+                Spacer(Modifier.height(10.dp))
                 Text(
                     text = stringResource(R.string.forecast_update_frequency_dialog_title),
                     color = Color.Black,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(10.dp))
                 Column(

@@ -56,25 +56,19 @@ class LocationUIStateMapper(private val context: Context) {
             id = location.id,
             locationName = location.name,
 
-            currentHourTemperature = "${
-                TemperatureUnit.getTemperature(
-                    temperature = currentHourlyForecast.temperature,
-                    temperatureUnit = temperatureUnit
-                )
-            }°",
+            currentHourTemperature = TemperatureUnit.getTemperatureForUI(
+                temperature = currentHourlyForecast.temperature,
+                temperatureUnit = temperatureUnit
+            ),
             currentDayOfWeekAndDate = getCurrentDateAndDayOfWeek(location.timeZone),
-            currentDayMaxTemperature = "${
-                TemperatureUnit.getTemperature(
-                    temperature = currentDayForecast.maxTemperature,
-                    temperatureUnit = temperatureUnit
-                )
-            }°",
-            currentDayMinTemperature = "${
-                TemperatureUnit.getTemperature(
-                    temperature = currentDayForecast.minTemperature,
-                    temperatureUnit = temperatureUnit
-                )
-            }°",
+            currentDayMaxTemperature = TemperatureUnit.getTemperatureForUI(
+                temperature = currentDayForecast.maxTemperature,
+                temperatureUnit = temperatureUnit
+            ),
+            currentDayMinTemperature = TemperatureUnit.getTemperatureForUI(
+                temperature = currentDayForecast.minTemperature,
+                temperatureUnit = temperatureUnit
+            ),
 
             currentHourWeatherStatus = context.getString(weatherDescription),
             dailyForecasts = forecasts.map {

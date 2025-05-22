@@ -83,7 +83,7 @@ fun ForecastScreen(
     }
 
     LaunchedEffect(pagerState, locationsUIStates) {
-        if(locationsUIStates?.isNotEmpty() == true) {
+        if (locationsUIStates?.isNotEmpty() == true) {
             snapshotFlow { pagerState.currentPage }.collect { page ->
                 viewModel.onPageSelected(page)
             }
@@ -145,6 +145,7 @@ private fun LoadedData(
 
             LocationPage(
                 currentLocation = currentLocation,
+                shouldResetScroll = page != pagerState.currentPage,
                 uiElementsColor = uiElementsColor,
             )
         }
@@ -160,6 +161,7 @@ private fun LoadedData(
 @Composable
 private fun LocationPage(
     currentLocation: LocationUIState,
+    shouldResetScroll: Boolean,
     uiElementsColor: Color,
 ) {
     Column(
@@ -184,6 +186,7 @@ private fun LocationPage(
 
             HourlyForecastSection(
                 hourlyForecasts = currentLocation.hourlyForecasts,
+                shouldResetScroll = shouldResetScroll,
                 backgroundColor = uiElementsColor
             )
 
@@ -195,6 +198,7 @@ private fun LocationPage(
 
             DailyForecastSection(
                 dailyForecasts = currentLocation.dailyForecasts,
+                shouldResetScroll = shouldResetScroll,
                 backgroundColor = uiElementsColor
             )
         }
@@ -226,7 +230,7 @@ private fun PageIndicator(
                     .padding(2.dp)
                     .clip(CircleShape)
                     .background(color)
-                    .size(7.dp)
+                    .size(7.5.dp)
             )
         }
     }

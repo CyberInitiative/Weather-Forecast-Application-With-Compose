@@ -8,13 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,12 +31,25 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.theme.SiberianIce
+import kotlinx.coroutines.launch
 
 @Composable
 fun DailyForecastSection(
     dailyForecasts: List<DailyForecastItem>,
+    shouldResetScroll: Boolean,
     backgroundColor: Color,
 ) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(shouldResetScroll) {
+        if (shouldResetScroll) {
+            scope.launch {
+                listState.scrollToItem(0)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -50,15 +67,17 @@ fun DailyForecastSection(
             thickness = 1.3.dp,
             color = Color.White
         )
-        DailyForecastList(dailyForecasts = dailyForecasts)
+        DailyForecastList(dailyForecasts = dailyForecasts, state = listState)
     }
 }
 
 @Composable
 fun DailyForecastList(
     dailyForecasts: List<DailyForecastItem>,
+    state: LazyListState,
 ) {
     LazyRow(
+        state = state,
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),

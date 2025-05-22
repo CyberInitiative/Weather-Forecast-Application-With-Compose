@@ -1,5 +1,7 @@
 package com.example.weathercompose.ui.compose
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +48,7 @@ import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialog
+import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
@@ -59,6 +64,7 @@ import com.example.weathercompose.ui.theme.RomanSilver
 import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,13 +74,12 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
 
     val forecastViewModel: ForecastViewModel = koinViewModel()
 
-    var isTemperatureUnitDialogVisible by rememberSaveable { mutableStateOf(false) }
-    var isForecastUpdateFrequencyDialogVisible by rememberSaveable { mutableStateOf(false) }
     var weatherAndDayTimeState by rememberSaveable {
         mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
     }
@@ -82,6 +87,10 @@ fun MainScreen() {
     val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
         weatherAndDayTimeState = state
     }
+
+    var isTemperatureUnitDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var isForecastUpdateFrequencyDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var isNoInternetDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     val onTemperatureUnitDialogOptionChoose = {
         isTemperatureUnitDialogVisible = true
@@ -118,6 +127,21 @@ fun MainScreen() {
             },
             weatherAndDayTimeState = weatherAndDayTimeState,
         )
+    }
+
+    if (isNoInternetDialogVisible) {
+        NoInternetDialog(
+            onDismiss = { isNoInternetDialogVisible = false },
+            onConfirm = { context.startActivity(Intent(Settings.ACTION_SETTINGS)) },
+            weatherAndDayTimeState = weatherAndDayTimeState
+        )
+    }
+
+    LaunchedEffect(Unit){
+        delay(300)
+        if(!forecastViewModel.isNetworkAvailable()){
+            isNoInternetDialogVisible = true
+        }
     }
 
     ScreenContent(

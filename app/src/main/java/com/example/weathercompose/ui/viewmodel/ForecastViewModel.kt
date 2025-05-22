@@ -24,6 +24,7 @@ import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequ
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
+import com.example.weathercompose.utils.NetworkManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +45,7 @@ class ForecastViewModel(
     private val getTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase,
     private val setForecastUpdateFrequencyUseCase: SetForecastUpdateFrequencyUseCase,
     private val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase,
+    private val networkManager: NetworkManager,
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
@@ -87,8 +89,6 @@ class ForecastViewModel(
             _locationsState
                 .filterNotNull()
                 .collect { locations ->
-                    updateLocationItems(locations = locations)
-
                     locations.forEach { location ->
                         if (shouldLoadForecasts(location = location)) {
                             updateForecastDataStateForLocation(
@@ -124,7 +124,10 @@ class ForecastViewModel(
                 _locationsState.filterNotNull(),
                 getTemperatureUnitUseCase()
             ) { locations, unit ->
-                locations.map { locationUIStateMapper.mapToUIState(it, unit) }
+                updateLocationItems(locations = locations, temperatureUnit = unit)
+                locations.map { location ->
+                    locationUIStateMapper.mapToUIState(location = location, temperatureUnit = unit)
+                }
             }.collect { items ->
                 _locationsUIStates.value = items
             }
@@ -186,8 +189,18 @@ class ForecastViewModel(
         }
     }
 
-    private fun updateLocationItems(locations: List<LocationDomainModel>) {
-        _locationItems.update { locations.map { locationItemsMapper.mapToLocationItem(it) } }
+    private fun updateLocationItems(
+        locations: List<LocationDomainModel>,
+        temperatureUnit: TemperatureUnit,
+    ) {
+        _locationItems.update {
+            locations.map { location ->
+                locationItemsMapper.mapToLocationItem(
+                    location = location,
+                    temperatureUnit = temperatureUnit,
+                )
+            }
+        }
     }
 
     /*
@@ -195,6 +208,10 @@ class ForecastViewModel(
         _locationsUIStates.update { locations.map { locationUIStateMapper.mapToUIState(it) } }
     }
      */
+
+    fun isNetworkAvailable(): Boolean {
+        return networkManager.isInternetAvailable()
+    }
 
     fun deleteLocation(locationId: Long) {
         viewModelScope.launch {

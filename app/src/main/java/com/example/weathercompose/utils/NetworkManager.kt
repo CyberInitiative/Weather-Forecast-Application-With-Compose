@@ -2,7 +2,6 @@ package com.example.weathercompose.utils
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -37,7 +36,7 @@ class NetworkManager(context: Context) {
         connectivityManager.registerNetworkCallback(networkRequest.build(), networkStateCallback)
     }
 
-    fun unregisterNetworkCallback(networkCallback: NetworkCallback) {
+    fun unregisterNetworkCallback() {
         connectivityManager.unregisterNetworkCallback(networkStateCallback)
     }
 

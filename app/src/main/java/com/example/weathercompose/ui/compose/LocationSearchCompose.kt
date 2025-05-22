@@ -1,11 +1,12 @@
 package com.example.weathercompose.ui.compose
 
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
+import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.theme.HiloBay25PerDarker
 import com.example.weathercompose.ui.theme.Liberty
@@ -62,6 +66,7 @@ import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "LocationsManagerCompose"
@@ -73,14 +78,25 @@ fun LocationSearchScreen(
     isLocationsEmpty: Boolean,
     onNavigateToForecastScreen: (LocationEntity) -> Any,
 ) {
-    val activity = LocalContext.current as? Activity
+    val context = LocalContext.current
     val locationSearchResult by viewModel.locationSearchState.collectAsState()
 
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
-    var query by remember { mutableStateOf("") }
 
+    var query by rememberSaveable { mutableStateOf("") }
+    var isDebouncing by remember { mutableStateOf(false) }
     var debounceJob by remember { mutableStateOf<Job?>(null) }
+
+    var isNoInternetDialogVisible by rememberSaveable { mutableStateOf(false) }
+
+    if (isNoInternetDialogVisible) {
+        NoInternetDialog(
+            onDismiss = { isNoInternetDialogVisible = false },
+            onConfirm = { context.startActivity(Intent(Settings.ACTION_SETTINGS)) },
+            weatherAndDayTimeState = weatherAndDayTimeState
+        )
+    }
 
     val uiElementsColor by remember(weatherAndDayTimeState) {
         mutableStateOf(
@@ -93,12 +109,20 @@ fun LocationSearchScreen(
         )
     }
 
-    val onQueryChanged = { newQuery: String ->
+    val onQueryChanged: (String) -> Unit = { newQuery: String ->
         query = newQuery
-        debounceJob?.cancel()
-        debounceJob = coroutineScope.launch {
-            kotlinx.coroutines.delay(300)
-            viewModel.searchLocation(newQuery)
+        if (!viewModel.isNetworkAvailable()) {
+            isNoInternetDialogVisible = true
+            viewModel.clearSearchResult()
+            debounceJob?.cancel()
+        } else {
+            isDebouncing = true
+            debounceJob?.cancel()
+            debounceJob = coroutineScope.launch {
+                delay(300)
+                isDebouncing = false
+                viewModel.searchLocation(newQuery)
+            }
         }
     }
 
@@ -110,13 +134,14 @@ fun LocationSearchScreen(
 
     if (isLocationsEmpty) {
         BackHandler {
-            activity?.finish()
+            (context as? Activity)?.finish()
         }
     }
 
     LocationSearchContent(
         query = query,
         onQueryChanged = onQueryChanged,
+        isDebouncing = isDebouncing,
         onLocationItemClick = onLocationItemClick,
         locationSearchResult = locationSearchResult,
         focusManager = focusManager,
@@ -128,6 +153,7 @@ fun LocationSearchScreen(
 private fun LocationSearchContent(
     query: String,
     onQueryChanged: (String) -> Unit,
+    isDebouncing: Boolean,
     onLocationItemClick: (LocationEntity) -> Job,
     locationSearchResult: LocationSearchState,
     focusManager: FocusManager,
@@ -144,7 +170,7 @@ private fun LocationSearchContent(
         )
 
         when {
-            locationSearchResult.isLoading -> LoadingProcessIndicator(
+            locationSearchResult.isLoading || isDebouncing -> LoadingProcessIndicator(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
@@ -158,15 +184,22 @@ private fun LocationSearchContent(
                 )
 
             locationSearchResult.locations.isEmpty() && query.isNotBlank() -> {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .statusBarsPadding()
                         .imePadding(),
-                    contentAlignment = Alignment.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                 ) {
+                    Icon(
+                        modifier = Modifier.padding(bottom = 10.dp),
+                        painter = painterResource(R.drawable.location_icon_2),
+                        contentDescription = "No locations found icon",
+                        tint = Color.White,
+                    )
+
                     Text(
-                        text = "No cities found",
+                        text = stringResource(R.string.no_locations_found_search_result),
                         color = Color.White,
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center,
@@ -224,13 +257,7 @@ private fun SearchBox(
                 cursorBrush = SolidColor(Color.White),
                 decorationBox = { innerTextField ->
                     if (query.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.location_search_box_hint),
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = SiberianIce,
-                                fontSize = 18.sp
-                            )
-                        )
+                        SearchBoxHint()
                     }
                     innerTextField()
                 }
@@ -286,6 +313,17 @@ private fun LocationListItem(
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Composable
+private fun SearchBoxHint() {
+    Text(
+        text = stringResource(R.string.location_search_box_hint),
+        style = MaterialTheme.typography.bodyMedium.copy(
+            color = SiberianIce,
+            fontSize = 18.sp
+        )
+    )
 }
 
 @Composable
