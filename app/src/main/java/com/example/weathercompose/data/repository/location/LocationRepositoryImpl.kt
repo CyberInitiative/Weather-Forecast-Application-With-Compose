@@ -8,6 +8,8 @@ import com.example.weathercompose.data.mapper.mapToLocationEntity
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.LocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class LocationRepositoryImpl(
@@ -38,6 +40,12 @@ class LocationRepositoryImpl(
         }
     }
 
+    override fun loadAllLocationsWithForecasts(): Flow<List<LocationDomainModel>> {
+        return locationDao.loadAllLocationsWithForecasts().map { locations ->
+            locations.map { it.mapToLocationDomainModel() }
+        }
+    }
+
     override suspend fun load(locationId: Long): LocationDomainModel? {
         return withContext(dispatcher) {
             locationDao.load(locationId = locationId)?.mapToLocationDomainModel()
@@ -47,6 +55,12 @@ class LocationRepositoryImpl(
     override suspend fun insert(location: LocationEntity): Long {
         return withContext(dispatcher) {
             locationDao.insert(location)
+        }
+    }
+
+    override suspend fun setLocationAsHome(locationId: Long) {
+        return withContext(dispatcher) {
+            locationDao.setLocationAsHome(locationId = locationId)
         }
     }
 
@@ -62,7 +76,7 @@ class LocationRepositoryImpl(
         }
     }
 
-    companion object{
+    companion object {
         private const val TAG = "LocationRepositoryImpl"
     }
 }

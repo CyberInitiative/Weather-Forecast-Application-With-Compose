@@ -18,6 +18,7 @@ data class LocationDomainModel(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
+    var isHomeLocation: Boolean = false,
     var forecastDataState: DataState<List<DailyForecastDomainModel>> = DataState.Initial,
 ) {
 
@@ -89,7 +90,7 @@ data class LocationDomainModel(
 
                 else -> WeatherAndDayTimeState.NO_PRECIPITATION_DAY
             }
-        } catch (e: IllegalStateException){
+        } catch (e: IllegalStateException) {
             return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
         }
     }

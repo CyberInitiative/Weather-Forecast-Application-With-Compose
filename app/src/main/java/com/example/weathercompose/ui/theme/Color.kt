@@ -28,3 +28,6 @@ val HiloBay25PerDarker = Color(0xFF54677D)
 val LimoScene40PerDarker = Color(0XFF1F2331)
 val Fashionista20PerDarker = Color(0XFF404664)
 val Solitaire5PerDarker = Color(0XFF66719D)
+
+val TealZeal = Color(0XFF5CD3A1)
+val PeonyPink = Color(0XFFEB7591)

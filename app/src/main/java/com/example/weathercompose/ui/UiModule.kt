@@ -11,6 +11,8 @@ val uiModule = module {
     viewModel {
         ForecastViewModel(
             loadAllLocationsUseCase = get(),
+            //loadLocationsUseCase = get(),
+            setLocationAsHomeUseCase = get(),
             deleteLocationUseCase = get(),
             locationUIStateMapper = get(),
             locationItemsMapper = get(),

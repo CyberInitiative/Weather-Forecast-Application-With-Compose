@@ -20,10 +20,10 @@ abstract class ForecastDao {
         locationId: Long,
     ): List<DailyForecastWithHourlyForecast>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertDailyForecast(dailyForecast: DailyForecastEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertHourlyForecast(hourlyForecast: HourlyForecastEntity): Long
 
     @Query("DELETE FROM daily_forecasts WHERE locationId = :locationId")

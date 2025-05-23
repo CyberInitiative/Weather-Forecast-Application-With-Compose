@@ -46,6 +46,7 @@ class LocationItemMapper {
             currentHourTemperature = temperature,
             currentHourWeatherDescription = weatherDescription,
             currentHourWeatherIconRes = icon,
+            isHomeLocation = location.isHomeLocation,
         )
     }
 }

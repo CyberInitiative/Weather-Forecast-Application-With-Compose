@@ -8,6 +8,7 @@ import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCas
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
+import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
@@ -48,6 +49,12 @@ val domainModule = module {
     }
 
     factory {
+        SetLocationAsHomeUseCase(
+            locationRepository = get { parametersOf(Dispatchers.IO) },
+        )
+    }
+
+    factory {
         DeleteForecastUseCase(
             forecastRepository = get { parametersOf(Dispatchers.IO) },
         )
@@ -82,4 +89,12 @@ val domainModule = module {
             appSettings = get { parametersOf(Dispatchers.IO) },
         )
     }
+
+    /*
+    factory {
+        LoadLocationsUseCase(
+            locationRepository = get { parametersOf(Dispatchers.IO) },
+        )
+    }
+     */
 }

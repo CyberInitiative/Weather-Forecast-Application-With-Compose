@@ -16,7 +16,8 @@ data class LocationEntity(
     val fourthAdministrativeLevel: String,
     val country: String,
     val timeZone: String,
-){
+    val isHomeLocation: Boolean = false,
+) {
 
     fun getFullLocationName(): String {
         return listOf(

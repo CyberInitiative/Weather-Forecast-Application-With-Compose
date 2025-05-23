@@ -119,7 +119,7 @@ fun LocationSearchScreen(
             isDebouncing = true
             debounceJob?.cancel()
             debounceJob = coroutineScope.launch {
-                delay(300)
+                delay(175)
                 isDebouncing = false
                 viewModel.searchLocation(newQuery)
             }

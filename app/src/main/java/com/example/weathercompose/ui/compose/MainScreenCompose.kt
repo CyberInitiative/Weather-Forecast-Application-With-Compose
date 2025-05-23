@@ -51,6 +51,7 @@ import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialo
 import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
+import com.example.weathercompose.ui.compose.location_manager.LocationManagerContent
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.theme.CastleMoat

@@ -17,6 +17,7 @@ import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
+import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
@@ -35,6 +36,8 @@ import kotlinx.coroutines.launch
 
 class ForecastViewModel(
     private val loadAllLocationsUseCase: LoadAllLocationsUseCase,
+    // private val loadLocationsUseCase: LoadLocationsUseCase,
+    private val setLocationAsHomeUseCase: SetLocationAsHomeUseCase,
     private val deleteLocationUseCase: DeleteLocationUseCase,
     private val locationUIStateMapper: LocationUIStateMapper,
     private val locationItemsMapper: LocationItemMapper,
@@ -75,6 +78,7 @@ class ForecastViewModel(
         observeLocationsAndTemperatureUnit()
         observeTemperatureUnit()
         observeForecastUpdateFrequency()
+//        loadAllLocations()
         loadLocations()
     }
 
@@ -84,12 +88,24 @@ class ForecastViewModel(
         }
     }
 
+    /*
+    private fun loadAllLocations() {
+        viewModelScope.launch {
+            loadLocationsUseCase().collect { locations ->
+                _locationsState.value = locations
+            }
+        }
+    }
+     */
+
     private fun observeLocationsState() {
         viewModelScope.launch {
             _locationsState
                 .filterNotNull()
                 .collect { locations ->
-                    locations.forEach { location ->
+                    val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
+
+                    sortedLocations.forEach { location ->
                         if (shouldLoadForecasts(location = location)) {
                             updateForecastDataStateForLocation(
                                 locationId = location.id,
@@ -124,8 +140,10 @@ class ForecastViewModel(
                 _locationsState.filterNotNull(),
                 getTemperatureUnitUseCase()
             ) { locations, unit ->
+                val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
+
                 updateLocationItems(locations = locations, temperatureUnit = unit)
-                locations.map { location ->
+                sortedLocations.map { location ->
                     locationUIStateMapper.mapToUIState(location = location, temperatureUnit = unit)
                 }
             }.collect { items ->
@@ -184,6 +202,30 @@ class ForecastViewModel(
                     updatedLocation
                 } else {
                     location
+                }
+            }
+        }
+    }
+
+    fun setLocationHomeStatus(locationId: Long) {
+        viewModelScope.launch {
+            setLocationAsHomeUseCase(locationId = locationId)
+
+            _locationsState.update { currentList ->
+                currentList?.map { location ->
+                    if (location.id == locationId) {
+                        if(location.isHomeLocation) {
+                            location.copy(isHomeLocation = false)
+                        } else {
+                            location.copy(isHomeLocation = true)
+                        }
+                    } else {
+                        if (location.isHomeLocation) {
+                            location.copy(isHomeLocation = false)
+                        } else {
+                            location
+                        }
+                    }
                 }
             }
         }
