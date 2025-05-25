@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.compose.location_manager
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,8 +39,12 @@ fun LocationManagerContent(
     viewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
     onNavigateToSearchScreen: () -> Unit,
-    onNavigateToForecastScreen: (Long) -> Unit,
+    onNavigateToForecastScreen: (Long?) -> Unit,
 ) {
+    BackHandler {
+        onNavigateToForecastScreen(null)
+    }
+
     val locationItems by viewModel.locationItems.collectAsState()
 
     var listItemAndAddButtonColor by remember { mutableStateOf(Liberty) }

@@ -48,7 +48,7 @@ class LocationSearchViewModel(
         }
     }
 
-    fun clearSearchResult(){
+    fun clearSearchResult() {
         _locationSearchState.value = _locationSearchState.value.copy(
             isLoading = false,
             locations = emptyList()

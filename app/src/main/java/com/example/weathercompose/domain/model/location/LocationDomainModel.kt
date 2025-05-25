@@ -3,7 +3,6 @@ package com.example.weathercompose.domain.model.location
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
-import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.utils.getCurrentDateAndHourInTimeZone
 import java.time.LocalDateTime
 
@@ -60,38 +59,6 @@ data class LocationDomainModel(
 
         } else {
             throw IllegalStateException("Forecast data is not ready!")
-        }
-    }
-
-    fun getPrecipitationsAndTimeOfDayStateForCurrentHour(): WeatherAndDayTimeState {
-        try {
-            val hourlyForecast = getForecastForCurrentHour()
-
-            return when {
-                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
-                    -> {
-                    WeatherAndDayTimeState.NO_PRECIPITATION_DAY
-                }
-
-                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
-                    -> {
-                    WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT
-                }
-
-                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
-                    -> {
-                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY
-                }
-
-                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
-                    -> {
-                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT
-                }
-
-                else -> WeatherAndDayTimeState.NO_PRECIPITATION_DAY
-            }
-        } catch (e: IllegalStateException) {
-            return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
         }
     }
 

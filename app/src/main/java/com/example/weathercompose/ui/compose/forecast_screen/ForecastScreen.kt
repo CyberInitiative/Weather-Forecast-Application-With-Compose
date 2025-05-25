@@ -45,11 +45,10 @@ private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 @Composable
 fun ForecastScreen(
     viewModel: ForecastViewModel,
-    locationId: Long?,
     onAppearanceStateChange: (WeatherAndDayTimeState) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
+    locationId: Long?
 ) {
-
     val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
 
@@ -76,10 +75,20 @@ fun ForecastScreen(
     val pagerState = rememberPagerState(pageCount = { locationsUIStates?.size ?: 0 })
 
     LaunchedEffect(locationId) {
-        if (locationId != null) {
-            val index = locationsUIStates?.indexOfFirst { it.id == locationId } ?: 0
-            pagerState.scrollToPage(if (index != -1) index else 0)
-        }
+        /*val index = if (locationId != null) {
+            Log.d(TAG, "IF; locationId != null; locationId: $locationId")
+            locationsUIStates?.indexOfFirst { it.id == locationId } ?: 0
+        } else {
+            Log.d(
+                TAG,
+                "ELSE; locationId == null; viewModel.currentLocationId: ${viewModel.currentLocationId}"
+            )
+            locationsUIStates?.indexOfFirst { it.id == viewModel.currentLocationId } ?: 0
+        }*/
+
+        val currentPage = pagerState.currentPage
+        val index = locationsUIStates?.indexOfFirst { it.id == locationId } ?: currentPage
+        pagerState.scrollToPage(if (index != -1) index else currentPage)
     }
 
     LaunchedEffect(pagerState, locationsUIStates) {

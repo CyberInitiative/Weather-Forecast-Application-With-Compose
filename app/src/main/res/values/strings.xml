@@ -48,7 +48,7 @@
     <string name="location_search_box_hint">Search…</string>
     <string name="loading_process_text">Loading…</string>
 
-    <string name="no_locations_found_search_result">No locations icon</string>
+    <string name="no_locations_found_search_result">No locations found</string>
     <string name="no_internet_dialog_text">No internet connection. Check your network settings.</string>
     <string name="go_to_settings_text_button">GO TO SETTINGS</string>
     

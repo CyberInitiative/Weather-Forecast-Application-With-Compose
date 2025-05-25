@@ -79,6 +79,12 @@ fun LocationSearchScreen(
     onNavigateToForecastScreen: (LocationEntity) -> Any,
 ) {
     val context = LocalContext.current
+    if (isLocationsEmpty) {
+        BackHandler {
+            (context as? Activity)?.finish()
+        }
+    }
+
     val locationSearchResult by viewModel.locationSearchState.collectAsState()
 
     val focusManager = LocalFocusManager.current
@@ -129,12 +135,6 @@ fun LocationSearchScreen(
     val onLocationItemClick = { location: LocationEntity ->
         coroutineScope.launch {
             onNavigateToForecastScreen(location)
-        }
-    }
-
-    if (isLocationsEmpty) {
-        BackHandler {
-            (context as? Activity)?.finish()
         }
     }
 

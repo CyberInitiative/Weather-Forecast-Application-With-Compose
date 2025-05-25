@@ -6,6 +6,7 @@ import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.model.location.LocationDomainModel
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import com.example.weathercompose.utils.getCurrentDateInTimeZone
 import java.time.format.TextStyle
@@ -80,6 +81,9 @@ class LocationUIStateMapper(private val context: Context) {
             hourlyForecasts = location.getForecastFor24Hours().map {
                 it.mapToHourlyForecastItem(temperatureUnit = temperatureUnit)
             },
+            weatherAndDayTimeState = getPrecipitationsAndTimeOfDayStateForCurrentHour(
+                location = location
+            )
         )
     }
 
@@ -110,4 +114,39 @@ class LocationUIStateMapper(private val context: Context) {
         }"
         return "$dayOfWeek, $date"
     }
+
+    private fun getPrecipitationsAndTimeOfDayStateForCurrentHour(
+        location: LocationDomainModel
+    ): WeatherAndDayTimeState {
+        try {
+            val hourlyForecast = location.getForecastForCurrentHour()
+
+            return when {
+                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    WeatherAndDayTimeState.NO_PRECIPITATION_DAY
+                }
+
+                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT
+                }
+
+                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY
+                }
+
+                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                    -> {
+                    WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT
+                }
+
+                else -> WeatherAndDayTimeState.NO_PRECIPITATION_DAY
+            }
+        } catch (e: IllegalStateException) {
+            return WeatherAndDayTimeState.NO_PRECIPITATION_DAY
+        }
+    }
+
 }

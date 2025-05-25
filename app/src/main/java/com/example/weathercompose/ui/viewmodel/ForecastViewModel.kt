@@ -214,7 +214,7 @@ class ForecastViewModel(
             _locationsState.update { currentList ->
                 currentList?.map { location ->
                     if (location.id == locationId) {
-                        if(location.isHomeLocation) {
+                        if (location.isHomeLocation) {
                             location.copy(isHomeLocation = false)
                         } else {
                             location.copy(isHomeLocation = true)
@@ -265,8 +265,8 @@ class ForecastViewModel(
     }
 
     fun onPageSelected(page: Int) {
-        _locationsState.value?.get(page)?.let {
-            _weatherAndDayTimeState.value = it.getPrecipitationsAndTimeOfDayStateForCurrentHour()
+        _locationsUIStates.value?.get(page)?.let {
+            _weatherAndDayTimeState.value = it.weatherAndDayTimeState
         }
     }
 
@@ -286,6 +286,10 @@ class ForecastViewModel(
     fun isLocationsEmpty(): Boolean {
         return _locationsState.value?.isEmpty() ?: false
     }
+
+//    fun setCurrentLocationId(id: Long) {
+//        currentLocationId = id
+//    }
 
     companion object {
         private const val TAG = "ForecastViewModel"

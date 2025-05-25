@@ -2,6 +2,7 @@ package com.example.weathercompose.ui.ui_state
 
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 
 data class LocationUIState(
     val id: Long,
@@ -13,6 +14,7 @@ data class LocationUIState(
     val currentHourWeatherStatus: String = "",
     val dailyForecasts: List<DailyForecastItem> = emptyList(),
     val hourlyForecasts: List<HourlyForecastItem> = emptyList(),
+    val weatherAndDayTimeState: WeatherAndDayTimeState = WeatherAndDayTimeState.NO_PRECIPITATION_DAY,
     val isLoading: Boolean = false,
     val errorMessage: String = "",
 )

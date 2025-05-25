@@ -73,6 +73,8 @@ private const val TAG = "MainScreenCompose"
 
 private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
+private const val LOCATION_ID = "location_id"
+
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
@@ -138,9 +140,9 @@ fun MainScreen() {
         )
     }
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         delay(300)
-        if(!forecastViewModel.isNetworkAvailable()){
+        if (!forecastViewModel.isNetworkAvailable()) {
             isNoInternetDialogVisible = true
         }
     }
@@ -209,15 +211,15 @@ fun NavigationHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoute.Forecast(locationId = null),
+        startDestination = NavigationRoute.Forecast,
         modifier = Modifier.fillMaxSize(),
     ) {
         composable<NavigationRoute.Forecast> { backStackEntry ->
-            val forecast: NavigationRoute.Forecast = backStackEntry.toRoute()
+            val locationId: Long? = backStackEntry.savedStateHandle.get<Long>(LOCATION_ID)
 
             val onNavigateToLocationSearchScreen = {
                 navController.navigate(
-                    NavigationRoute.LocationSearch(
+                    route = NavigationRoute.LocationSearch(
                         isLocationsEmpty = forecastViewModel.isLocationsEmpty()
                     )
                 )
@@ -227,24 +229,19 @@ fun NavigationHost(
                 viewModel = forecastViewModel,
                 onAppearanceStateChange = onPrecipitationConditionChange,
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
-                locationId = forecast.locationId,
+                locationId = locationId,
             )
         }
 
         composable<NavigationRoute.LocationsManager> {
-            val onNavigateToForecastScreen = { locationId: Long ->
-                navController.navigate(NavigationRoute.Forecast(locationId = locationId)) {
-                    popUpTo<NavigationRoute.Forecast> {
-                        inclusive = true
-                    }
-                }
+            val onNavigateToForecastScreen: (Long?) -> Unit = { locationId: Long? ->
+                navController.previousBackStackEntry?.savedStateHandle?.set(LOCATION_ID, locationId)
+                navController.popBackStack()
             }
 
             val onNavigateToSearchScreen = {
                 navController.navigate(
-                    NavigationRoute.LocationSearch(
-                        isLocationsEmpty = false
-                    )
+                    route = NavigationRoute.LocationSearch(isLocationsEmpty = false)
                 )
             }
 
@@ -259,16 +256,13 @@ fun NavigationHost(
         composable<NavigationRoute.LocationSearch> { backStackEntry ->
             val locationSearch: NavigationRoute.LocationSearch = backStackEntry.toRoute()
 
-            val onNavigateToForecastScreen = { location: LocationEntity ->
+            val onNavigateToForecastScreen: (LocationEntity) -> Unit = { location: LocationEntity ->
                 coroutineScope.launch {
                     forecastViewModel.saveLocation(locationEntity = location)
-                    navController.navigate(
-                        NavigationRoute.Forecast(locationId = location.locationId)
-                    ) {
-                        popUpTo<NavigationRoute.Forecast> {
-                            inclusive = true
-                        }
-                    }
+                    val forecastBackStackEntry =
+                        navController.getBackStackEntry(NavigationRoute.Forecast)
+                    forecastBackStackEntry.savedStateHandle[LOCATION_ID] = location.locationId
+                    navController.popBackStack(NavigationRoute.Forecast, inclusive = false)
                 }
             }
 

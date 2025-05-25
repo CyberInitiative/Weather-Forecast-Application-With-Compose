@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 sealed class NavigationRoute() {
 
     @Serializable
-    data class Forecast(val locationId: Long?) : NavigationRoute()
+    data object Forecast : NavigationRoute()
 
     @Serializable
     data object LocationsManager : NavigationRoute()
