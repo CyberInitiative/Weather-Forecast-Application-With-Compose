@@ -35,10 +35,11 @@ class HourlyForecastMapper {
                     date = date,
                     time = time,
                     weatherDescription = WeatherDescription.weatherCodeToDescription(
-                        code = hourlyForecastResponse.weatherCodes!![index]
+                        code = weatherCodes!![index]
                     ),
-                    temperature = hourlyForecastResponse.temperatureData!![index],
-                    isDay = isDayTime(hourlyForecastResponse.isDayData!![index]),
+                    temperature = temperatureData!![index],
+                    precipitationProbability = precipitationProbability!![index],
+                    isDay = isDayTime(isDayData!![index]),
                 )
 
                 if (dateToForecasts.contains(date.toString())) {
@@ -82,10 +83,11 @@ class HourlyForecastMapper {
                     date = date.toString(),
                     time = time.toString(),
                     weatherDescription = WeatherDescription.weatherCodeToDescription(
-                        code = hourlyForecastResponse.weatherCodes!![index]
+                        code = weatherCodes!![index]
                     ),
-                    temperature = hourlyForecastResponse.temperatureData!![index],
-                    isDay = isDayTime(hourlyForecastResponse.isDayData!![index]),
+                    temperature = temperatureData!![index],
+                    precipitationProbability = precipitationProbability!![index],
+                    isDay = isDayTime(isDayData!![index]),
                 )
 
                 if (dateToForecasts.contains(date.toString())) {
@@ -107,6 +109,7 @@ class HourlyForecastMapper {
                 dateAndTimeData,
                 weatherCodes,
                 temperatureData,
+                precipitationProbability,
                 isDayData,
             )
             val isAllDataExists = lists.all { it != null }

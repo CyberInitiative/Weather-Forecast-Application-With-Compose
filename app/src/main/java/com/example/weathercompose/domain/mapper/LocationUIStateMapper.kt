@@ -122,22 +122,22 @@ class LocationUIStateMapper(private val context: Context) {
             val hourlyForecast = location.getForecastForCurrentHour()
 
             return when {
-                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
                     -> {
                     WeatherAndDayTimeState.NO_PRECIPITATION_DAY
                 }
 
-                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitations()
+                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
                     -> {
                     WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT
                 }
 
-                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
                     -> {
                     WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY
                 }
 
-                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitations()
+                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
                     -> {
                     WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT
                 }

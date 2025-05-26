@@ -8,6 +8,8 @@ data class HourlyForecastResponse(
     val isDayData: List<Int>?,
     @SerializedName("temperature_2m")
     val temperatureData: List<Double>?,
+    @SerializedName("precipitation_probability")
+    val precipitationProbability: List<Int>?,
     @SerializedName("time")
     val dateAndTimeData: List<String>?,
     @SerializedName("weather_code")

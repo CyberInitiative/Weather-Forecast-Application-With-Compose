@@ -47,6 +47,12 @@ private fun getDayOfWeek(date: LocalDate, timeZone: String): String {
 fun HourlyForecastDomainModel.mapToHourlyForecastItem(
     temperatureUnit: TemperatureUnit
 ): HourlyForecastItem {
+    val precipitationProbability = if (isWeatherWithPrecipitations()) {
+        precipitationProbability
+    } else {
+        null
+    }
+
     return HourlyForecastItem(
         time = time,
         date = date,
@@ -61,5 +67,6 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
             temperature = temperature,
             temperatureUnit = temperatureUnit
         ),
+        precipitationProbability = precipitationProbability
     )
 }

@@ -21,6 +21,7 @@ data class HourlyForecastEntity(
     val time: String,
     val weatherDescription: WeatherDescription,
     val temperature: Double,
+    val precipitationProbability: Int,
     val isDay: Boolean,
     @PrimaryKey(autoGenerate = true)
     val hourlyForecastId: Long = 0,

@@ -30,6 +30,7 @@ val uiModule = module {
     viewModel {
         LocationSearchViewModel(
             searchLocationUseCase = get(),
+            saveLocationUseCase = get(),
             networkManager = get(),
         )
     }

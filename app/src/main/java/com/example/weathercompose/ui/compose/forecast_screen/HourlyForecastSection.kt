@@ -3,7 +3,9 @@ package com.example.weathercompose.ui.compose.forecast_screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.HourlyForecastItem
+import com.example.weathercompose.ui.theme.SiberianIce
 import kotlinx.coroutines.launch
 
 @Composable
@@ -100,30 +103,40 @@ fun HourlyForecastListItem(
             .width(60.dp)
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(7.5.dp)
+        //verticalArrangement = Arrangement.spacedBy(7.5.dp)
     ) {
+        Spacer(modifier = Modifier.height(15.dp))
         Text(
-            modifier = Modifier.padding(top = 15.dp),
             fontSize = 14.sp,
             text = hourlyForecastItem.time.toString(),
             textAlign = TextAlign.Center,
             color = Color.White,
         )
-
+        Spacer(modifier = Modifier.height(7.5.dp))
         Icon(
             painter = painterResource(id = hourlyForecastItem.weatherIconRes),
             contentDescription = "The weather icon",
             modifier = Modifier.size(35.dp),
             tint = Color.White,
         )
-
         Text(
-            modifier = Modifier.padding(bottom = 15.dp),
+            fontSize = 12.sp,
+            text = if (hourlyForecastItem.precipitationProbability != null) {
+                "${hourlyForecastItem.precipitationProbability}%"
+            } else {
+                ""
+            },
+            textAlign = TextAlign.Center,
+            color = SiberianIce,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             text = "${hourlyForecastItem.temperature}°",
             textAlign = TextAlign.Center,
             color = Color.White,
         )
+        Spacer(modifier = Modifier.height(15.dp))
     }
 }

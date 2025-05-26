@@ -257,17 +257,15 @@ fun NavigationHost(
             val locationSearch: NavigationRoute.LocationSearch = backStackEntry.toRoute()
 
             val onNavigateToForecastScreen: (LocationEntity) -> Unit = { location: LocationEntity ->
-                coroutineScope.launch {
-                    forecastViewModel.saveLocation(locationEntity = location)
-                    val forecastBackStackEntry =
-                        navController.getBackStackEntry(NavigationRoute.Forecast)
-                    forecastBackStackEntry.savedStateHandle[LOCATION_ID] = location.locationId
-                    navController.popBackStack(NavigationRoute.Forecast, inclusive = false)
-                }
+                val forecastBackStackEntry =
+                    navController.getBackStackEntry(NavigationRoute.Forecast)
+                forecastBackStackEntry.savedStateHandle[LOCATION_ID] = location.locationId
+                navController.popBackStack(NavigationRoute.Forecast, inclusive = false)
             }
 
             LocationSearchScreen(
                 viewModel = koinViewModel(),
+                forecastViewModel = forecastViewModel,
                 weatherAndDayTimeState = weatherAndDayTimeState,
                 isLocationsEmpty = locationSearch.isLocationsEmpty,
                 onNavigateToForecastScreen = onNavigateToForecastScreen

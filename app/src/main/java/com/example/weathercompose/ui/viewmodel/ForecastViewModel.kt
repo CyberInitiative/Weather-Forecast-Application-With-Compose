@@ -3,8 +3,6 @@ package com.example.weathercompose.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.Result
-import com.example.weathercompose.data.database.entity.location.LocationEntity
-import com.example.weathercompose.data.mapper.mapToLocationDomainModel
 import com.example.weathercompose.data.model.ForecastUpdateFrequency
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.mapper.LocationItemMapper
@@ -52,8 +50,10 @@ class ForecastViewModel(
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
-    private val _locationsUIStates = MutableStateFlow<List<LocationUIState>?>(value = null)
-    val locationsUIStates: StateFlow<List<LocationUIState>?>
+    private val _locationsUIStates = MutableStateFlow<DataState<List<LocationUIState>>>(
+        value = DataState.Initial
+    )
+    val locationsUIStates: StateFlow<DataState<List<LocationUIState>>>
         get() = _locationsUIStates.asStateFlow()
 
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
@@ -74,6 +74,7 @@ class ForecastViewModel(
         get() = _weatherAndDayTimeState
 
     init {
+        _locationsUIStates.value = DataState.Loading
         observeLocationsState()
         observeLocationsAndTemperatureUnit()
         observeTemperatureUnit()
@@ -126,14 +127,6 @@ class ForecastViewModel(
         return !isDataReady && !isDataLoading
     }
 
-    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
-        setCurrentTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
-    }
-
-    suspend fun setForecastUpdateFrequency(forecastUpdateFrequency: ForecastUpdateFrequency) {
-        setForecastUpdateFrequencyUseCase(forecastUpdateFrequency = forecastUpdateFrequency)
-    }
-
     private fun observeLocationsAndTemperatureUnit() {
         viewModelScope.launch {
             combine(
@@ -147,7 +140,11 @@ class ForecastViewModel(
                     locationUIStateMapper.mapToUIState(location = location, temperatureUnit = unit)
                 }
             }.collect { items ->
-                _locationsUIStates.value = items
+                if (items.isNotEmpty()) {
+                    _locationsUIStates.value = DataState.Ready(data = items)
+                } else {
+                    _locationsUIStates.value = DataState.NoData
+                }
             }
         }
     }
@@ -231,6 +228,14 @@ class ForecastViewModel(
         }
     }
 
+    suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
+        setCurrentTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
+    }
+
+    suspend fun setForecastUpdateFrequency(forecastUpdateFrequency: ForecastUpdateFrequency) {
+        setForecastUpdateFrequencyUseCase(forecastUpdateFrequency = forecastUpdateFrequency)
+    }
+
     private fun updateLocationItems(
         locations: List<LocationDomainModel>,
         temperatureUnit: TemperatureUnit,
@@ -265,20 +270,22 @@ class ForecastViewModel(
     }
 
     fun onPageSelected(page: Int) {
-        _locationsUIStates.value?.get(page)?.let {
-            _weatherAndDayTimeState.value = it.weatherAndDayTimeState
+        (_locationsUIStates.value as? DataState.Ready)?.let { state ->
+            _weatherAndDayTimeState.value = state.data[page].weatherAndDayTimeState
         }
     }
 
-    suspend fun saveLocation(locationEntity: LocationEntity) {
-        val existingLocation = loadLocationUseCase(locationId = locationEntity.locationId)
+    suspend fun loadLocationIfAbsent(locationId: Long) {
+        val searchedLocation = _locationsState.value?.firstOrNull { location ->
+            location.id == locationId
+        }
 
-        if (existingLocation == null) {
-            saveLocationUseCase(location = locationEntity)
-            val locationDomainModel = locationEntity.mapToLocationDomainModel()
-
-            _locationsState.update { locations ->
-                locations?.plus(locationDomainModel) ?: listOf(locationDomainModel)
+        if(searchedLocation == null){
+            _locationsUIStates.value = DataState.Loading
+            loadLocationUseCase(locationId = locationId)?.let { loadedLocation ->
+                _locationsState.update { locations ->
+                    locations?.plus(loadedLocation) ?: listOf(loadedLocation)
+                }
             }
         }
     }
@@ -286,10 +293,6 @@ class ForecastViewModel(
     fun isLocationsEmpty(): Boolean {
         return _locationsState.value?.isEmpty() ?: false
     }
-
-//    fun setCurrentLocationId(id: Long) {
-//        currentLocationId = id
-//    }
 
     companion object {
         private const val TAG = "ForecastViewModel"

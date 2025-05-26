@@ -20,6 +20,7 @@ fun DailyForecastWithHourlyForecast.mapToDailyForecastDomainModel(): DailyForeca
                 time = LocalTime.parse(hourlyForecastItem.time),
                 weatherDescription = hourlyForecastItem.weatherDescription,
                 temperature = hourlyForecastItem.temperature,
+                precipitationProbability = hourlyForecastItem.precipitationProbability,
                 isDay = hourlyForecastItem.isDay,
             )
         }

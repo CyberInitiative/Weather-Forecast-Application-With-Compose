@@ -3,6 +3,8 @@ package com.example.weathercompose.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weathercompose.data.api.Result
+import com.example.weathercompose.data.database.entity.location.LocationEntity
+import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.utils.NetworkManager
@@ -12,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class LocationSearchViewModel(
     private val searchLocationUseCase: SearchLocationUseCase,
+    private val saveLocationUseCase: SaveLocationUseCase,
     private val networkManager: NetworkManager,
 ) : ViewModel() {
     private val _locationSearchState = MutableStateFlow(LocationSearchState())
@@ -53,6 +56,10 @@ class LocationSearchViewModel(
             isLoading = false,
             locations = emptyList()
         )
+    }
+
+    suspend fun saveLocation(location: LocationEntity) {
+        saveLocationUseCase(location = location)
     }
 
     fun isNetworkAvailable(): Boolean {

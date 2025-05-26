@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.ui.compose.LoadingProcessIndicator
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.theme.HiloBay25PerDarker
@@ -57,8 +58,28 @@ fun ForecastScreen(
     }
 
     LaunchedEffect(locationsUIStates) {
-        if (locationsUIStates?.isEmpty() == true) {
+        if (locationsUIStates is DataState.NoData) {
             onNavigateToLocationSearchScreen()
+        }
+    }
+
+    val pagerState = rememberPagerState(pageCount = {
+        (locationsUIStates as? DataState.Ready)?.data?.size ?: 0
+    })
+
+    LaunchedEffect(locationId) {
+        val currentPage = pagerState.currentPage
+        val locationsData = (locationsUIStates as? DataState.Ready)?.data
+        val index = locationsData?.indexOfFirst { it.id == locationId } ?: currentPage
+        pagerState.scrollToPage(if (index != -1) index else currentPage)
+    }
+
+    LaunchedEffect(pagerState, locationsUIStates) {
+        val locationsData = (locationsUIStates as? DataState.Ready)?.data
+        if (locationsData?.isNotEmpty() == true) {
+            snapshotFlow { pagerState.currentPage }.collect { page ->
+                viewModel.onPageSelected(page)
+            }
         }
     }
 
@@ -72,33 +93,6 @@ fun ForecastScreen(
         animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
     )
 
-    val pagerState = rememberPagerState(pageCount = { locationsUIStates?.size ?: 0 })
-
-    LaunchedEffect(locationId) {
-        /*val index = if (locationId != null) {
-            Log.d(TAG, "IF; locationId != null; locationId: $locationId")
-            locationsUIStates?.indexOfFirst { it.id == locationId } ?: 0
-        } else {
-            Log.d(
-                TAG,
-                "ELSE; locationId == null; viewModel.currentLocationId: ${viewModel.currentLocationId}"
-            )
-            locationsUIStates?.indexOfFirst { it.id == viewModel.currentLocationId } ?: 0
-        }*/
-
-        val currentPage = pagerState.currentPage
-        val index = locationsUIStates?.indexOfFirst { it.id == locationId } ?: currentPage
-        pagerState.scrollToPage(if (index != -1) index else currentPage)
-    }
-
-    LaunchedEffect(pagerState, locationsUIStates) {
-        if (locationsUIStates?.isNotEmpty() == true) {
-            snapshotFlow { pagerState.currentPage }.collect { page ->
-                viewModel.onPageSelected(page)
-            }
-        }
-    }
-
     ForecastContent(
         locationsUIStates = locationsUIStates,
         uiElementsColor = uiElementsColor,
@@ -108,19 +102,25 @@ fun ForecastScreen(
 
 @Composable
 private fun ForecastContent(
-    locationsUIStates: List<LocationUIState>?,
+    locationsUIStates: DataState<List<LocationUIState>>,
     uiElementsColor: Color,
     pagerState: PagerState,
 ) {
-    if (locationsUIStates != null) {
+    when (locationsUIStates) {
+        DataState.Initial, DataState.Loading -> {
+            LoadingProcessIndicator()
+        }
 
-        LoadedData(
-            locationsUIStates = locationsUIStates,
-            uiElementsColor = uiElementsColor,
-            pagerState = pagerState,
-        )
-    } else {
-        LoadingProcessIndicator()
+        is DataState.Ready -> {
+            LoadedData(
+                locationsUIStates = locationsUIStates.data,
+                uiElementsColor = uiElementsColor,
+                pagerState = pagerState,
+            )
+        }
+
+        DataState.NoData -> {}
+        is DataState.Error -> {}
     }
 }
 

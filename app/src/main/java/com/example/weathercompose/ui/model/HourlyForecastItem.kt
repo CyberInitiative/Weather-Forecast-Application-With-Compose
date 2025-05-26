@@ -12,5 +12,6 @@ data class HourlyForecastItem(
     val weatherIconRes: Int,
     @StringRes
     val weatherDescription: Int,
+    val precipitationProbability: Int?,
     val temperature: Int,
 )

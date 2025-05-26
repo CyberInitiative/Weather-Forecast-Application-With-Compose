@@ -32,6 +32,7 @@ interface ForecastAPI {
             listOf(
                 "temperature_2m",
                 "weather_code",
+                "precipitation_probability",
                 "is_day"
             )
     }

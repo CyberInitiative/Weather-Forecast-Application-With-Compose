@@ -64,6 +64,7 @@ import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
 import com.example.weathercompose.ui.theme.SiberianIce
 import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationSearchState
+import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -74,9 +75,10 @@ private const val TAG = "LocationsManagerCompose"
 @Composable
 fun LocationSearchScreen(
     viewModel: LocationSearchViewModel,
+    forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
     isLocationsEmpty: Boolean,
-    onNavigateToForecastScreen: (LocationEntity) -> Any,
+    onNavigateToForecastScreen: (LocationEntity) -> Unit,
 ) {
     val context = LocalContext.current
     if (isLocationsEmpty) {
@@ -134,6 +136,8 @@ fun LocationSearchScreen(
 
     val onLocationItemClick = { location: LocationEntity ->
         coroutineScope.launch {
+            viewModel.saveLocation(location = location)
+            forecastViewModel.loadLocationIfAbsent(locationId = location.locationId)
             onNavigateToForecastScreen(location)
         }
     }
