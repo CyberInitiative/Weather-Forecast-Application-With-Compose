@@ -7,7 +7,9 @@ import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.utils.getCurrentDateInTimeZone
+import com.example.weathercompose.utils.getCurrentHourInTimeZone
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -45,6 +47,7 @@ private fun getDayOfWeek(date: LocalDate, timeZone: String): String {
 }
 
 fun HourlyForecastDomainModel.mapToHourlyForecastItem(
+    timeZone: String,
     temperatureUnit: TemperatureUnit
 ): HourlyForecastItem {
     val precipitationProbability = if (isWeatherWithPrecipitations()) {
@@ -54,7 +57,7 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
     }
 
     return HourlyForecastItem(
-        time = time,
+        time = getTime(time, timeZone),
         date = date,
         weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
             weatherDescription = weatherDescription,
@@ -69,4 +72,13 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
         ),
         precipitationProbability = precipitationProbability
     )
+}
+
+private fun getTime(time: LocalTime, timeZone: String): String {
+    val currentDateInTimeZone = getCurrentHourInTimeZone(timeZone = timeZone)
+    return if (currentDateInTimeZone == time) {
+        "Now"
+    } else {
+        time.toString()
+    }
 }

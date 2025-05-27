@@ -117,6 +117,7 @@ private fun LocationList(
             key = { _, item -> item.id }
         ) { index, item ->
             SwipeToRevealLocationItem(
+                modifier = Modifier.animateItem(),
                 itemHeight = 75.dp,
                 locationItem = item,
                 onLocationItemClick = onLocationItemClick,

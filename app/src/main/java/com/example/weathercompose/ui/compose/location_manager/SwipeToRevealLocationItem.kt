@@ -57,6 +57,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun SwipeToRevealLocationItem(
+    modifier: Modifier = Modifier,
     itemHeight: Dp,
     locationItem: LocationItem,
     onLocationItemClick: (Long) -> Unit,
@@ -73,14 +74,20 @@ fun SwipeToRevealLocationItem(
     val onSetActionsRevealedState = { areRevealed: Boolean -> areActionsRevealed = areRevealed }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(itemHeight)
     ) {
         ActionsRow(
             itemHeight = itemHeight,
             onSetActionsWidth = onSetActionsWidth,
-            onDelete = onLocationDelete,
+            onDelete = { locationId ->
+                scope.launch {
+                    offsetX.animateTo(0f)
+                    areActionsRevealed = false
+                    onLocationDelete(locationId)
+                }
+            },
             onSetAsHome = onLocationAsHomeSet,
             locationId = locationItem.id,
             isHomeLocation = locationItem.isHomeLocation,

@@ -52,7 +52,7 @@ data class LocationDomainModel(
                     LocalDateTime.of(
                         it.date,
                         it.time
-                    ) > currentDateAndHour.toLocalDateTime()
+                    ) >= currentDateAndHour.toLocalDateTime()
                 }
                 .take(24)
                 .toList()

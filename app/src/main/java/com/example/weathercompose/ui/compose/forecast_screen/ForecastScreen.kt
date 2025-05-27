@@ -2,6 +2,7 @@ package com.example.weathercompose.ui.compose.forecast_screen
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -130,6 +131,8 @@ private fun LoadedData(
     uiElementsColor: Color,
     pagerState: PagerState,
 ) {
+    val sharedScrollState = rememberScrollState()
+
     ConstraintLayout {
         val (pager, pageIndicator) = createRefs()
 
@@ -156,6 +159,7 @@ private fun LoadedData(
                 currentLocation = currentLocation,
                 shouldResetScroll = page != pagerState.currentPage,
                 uiElementsColor = uiElementsColor,
+                scrollState = sharedScrollState,
             )
         }
 
@@ -172,13 +176,14 @@ private fun LocationPage(
     currentLocation: LocationUIState,
     shouldResetScroll: Boolean,
     uiElementsColor: Color,
+    scrollState: ScrollState
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 10.dp)
             .padding(horizontal = 15.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(state = scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (currentLocation.isLoading) {

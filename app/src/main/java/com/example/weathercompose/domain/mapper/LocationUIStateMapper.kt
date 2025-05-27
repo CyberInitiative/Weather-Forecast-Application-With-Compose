@@ -79,7 +79,10 @@ class LocationUIStateMapper(private val context: Context) {
                 )
             },
             hourlyForecasts = location.getForecastFor24Hours().map {
-                it.mapToHourlyForecastItem(temperatureUnit = temperatureUnit)
+                it.mapToHourlyForecastItem(
+                    timeZone = location.timeZone,
+                    temperatureUnit = temperatureUnit
+                )
             },
             weatherAndDayTimeState = getPrecipitationsAndTimeOfDayStateForCurrentHour(
                 location = location

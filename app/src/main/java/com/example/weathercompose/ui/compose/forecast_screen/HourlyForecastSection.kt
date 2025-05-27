@@ -1,9 +1,9 @@
 package com.example.weathercompose.ui.compose.forecast_screen
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.ui.theme.SiberianIce
@@ -98,45 +99,85 @@ fun HourlyForecastList(
 fun HourlyForecastListItem(
     hourlyForecastItem: HourlyForecastItem,
 ) {
-    Column(
+    ConstraintLayout(
         modifier = Modifier
             .width(60.dp)
-            .wrapContentHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        //verticalArrangement = Arrangement.spacedBy(7.5.dp)
+            .height(150.dp)
     ) {
-        Spacer(modifier = Modifier.height(15.dp))
+        val (time, weatherIconWithPrecipitationProbability, temperature) = createRefs()
+
+        val timeModifier = Modifier.constrainAs(time) {
+            top.linkTo(parent.top, margin = 15.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+
+        val weatherIconWithPrecipitationProbabilityModifier =
+            Modifier.constrainAs(weatherIconWithPrecipitationProbability) {
+                top.linkTo(time.bottom)
+                bottom.linkTo(temperature.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            }
+
+        val temperatureModifier = Modifier.constrainAs(temperature) {
+            bottom.linkTo(parent.bottom, margin = 15.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+
         Text(
+            modifier = timeModifier,
             fontSize = 14.sp,
-            text = hourlyForecastItem.time.toString(),
+            text = hourlyForecastItem.time,
             textAlign = TextAlign.Center,
             color = Color.White,
         )
-        Spacer(modifier = Modifier.height(7.5.dp))
-        Icon(
-            painter = painterResource(id = hourlyForecastItem.weatherIconRes),
-            contentDescription = "The weather icon",
-            modifier = Modifier.size(35.dp),
-            tint = Color.White,
+
+        WeatherIconWithPrecipitationProbability(
+            precipitationProbability = hourlyForecastItem.precipitationProbability,
+            weatherIcon = hourlyForecastItem.weatherIconRes,
+            modifier = weatherIconWithPrecipitationProbabilityModifier,
         )
+
         Text(
-            fontSize = 12.sp,
-            text = if (hourlyForecastItem.precipitationProbability != null) {
-                "${hourlyForecastItem.precipitationProbability}%"
-            } else {
-                ""
-            },
-            textAlign = TextAlign.Center,
-            color = SiberianIce,
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
+            modifier = temperatureModifier,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             text = "${hourlyForecastItem.temperature}°",
             textAlign = TextAlign.Center,
             color = Color.White,
         )
-        Spacer(modifier = Modifier.height(15.dp))
+    }
+}
+
+@Composable
+private fun WeatherIconWithPrecipitationProbability(
+    precipitationProbability: Int?,
+    @DrawableRes
+    weatherIcon: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        if (precipitationProbability != null) {
+            Text(
+                text = "${precipitationProbability}%",
+                color = SiberianIce,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+            )
+        }
+        Icon(
+            painter = painterResource(id = weatherIcon),
+            contentDescription = "The weather icon",
+            modifier = Modifier
+                .size(35.dp),
+            tint = Color.White,
+        )
     }
 }
