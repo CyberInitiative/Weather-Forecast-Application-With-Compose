@@ -48,6 +48,7 @@ class WeatherApplication : Application() {
     private fun setForecastUpdatingWorker(frequencyInHours: Int) {
         val workRequest = PeriodicWorkRequestBuilder<ForecastUpdatingWorker>(
             frequencyInHours.toLong(), TimeUnit.HOURS
+            //16L, TimeUnit.MINUTES
         )
             .setConstraints(
                 Constraints.Builder()
@@ -64,6 +65,6 @@ class WeatherApplication : Application() {
     }
 
     companion object {
-        private const val FORECAST_UPDATING_WORK = "forecastUpdatingWork"
+        const val FORECAST_UPDATING_WORK = "forecastUpdatingWork"
     }
 }

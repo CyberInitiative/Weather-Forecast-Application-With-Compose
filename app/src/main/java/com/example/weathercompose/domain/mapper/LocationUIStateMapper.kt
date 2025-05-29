@@ -55,8 +55,8 @@ class LocationUIStateMapper(private val context: Context) {
 
         return LocationUIState(
             id = location.id,
-            locationName = location.name,
-
+            locationName = "${location.name},",
+            locationCountry = location.country,
             currentHourTemperature = TemperatureUnit.getTemperatureForUI(
                 temperature = currentHourlyForecast.temperature,
                 temperatureUnit = temperatureUnit
@@ -70,8 +70,11 @@ class LocationUIStateMapper(private val context: Context) {
                 temperature = currentDayForecast.minTemperature,
                 temperatureUnit = temperatureUnit
             ),
-
             currentHourWeatherStatus = context.getString(weatherDescription),
+            currentRelativeHumidity = "${currentHourlyForecast.relativeHumidity}%",
+            currentWindSpeed = "${currentHourlyForecast.windSpeed} km/h",
+            sunset = currentDayForecast.sunset,
+            sunrise = currentDayForecast.sunrise,
             dailyForecasts = forecasts.map {
                 it.mapToDailyForecastItem(
                     timeZone = location.timeZone,

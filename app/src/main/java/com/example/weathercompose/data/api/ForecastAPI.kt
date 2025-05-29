@@ -22,17 +22,20 @@ interface ForecastAPI {
 
         val dailyOptions =
             listOf(
+                "weather_code",
                 "temperature_2m_max",
                 "temperature_2m_min",
-                "sunrise,sunset",
-                "weather_code"
+                "sunrise",
+                "sunset",
             )
 
         val hourlyOptions =
             listOf(
                 "temperature_2m",
-                "weather_code",
+                "relative_humidity_2m",
                 "precipitation_probability",
+                "wind_speed_10m",
+                "weather_code",
                 "is_day"
             )
     }

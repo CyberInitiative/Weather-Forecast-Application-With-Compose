@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.compose.forecast_screen
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
@@ -13,13 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,8 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.compose.ui.unit.sp
+import com.example.weathercompose.R
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.ui.compose.LoadingProcessIndicator
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
@@ -133,25 +141,10 @@ private fun LoadedData(
 ) {
     val sharedScrollState = rememberScrollState()
 
-    ConstraintLayout {
-        val (pager, pageIndicator) = createRefs()
-
-        val pagerIndicatorModifier = Modifier.constrainAs(pageIndicator) {
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-            bottom.linkTo(parent.bottom)
-        }
-
-        val pagerModifier = Modifier.constrainAs(pager) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-            bottom.linkTo(pageIndicator.top)
-        }
-
+    Column {
         HorizontalPager(
             state = pagerState,
-            modifier = pagerModifier
+            modifier = Modifier.weight(1f) // Fill available space
         ) { page ->
             val currentLocation = locationsUIStates[page]
 
@@ -164,7 +157,7 @@ private fun LoadedData(
         }
 
         PageIndicator(
-            modifier = pagerIndicatorModifier,
+            modifier = Modifier,
             pagerState = pagerState,
             uiElementsColor = uiElementsColor,
         )
@@ -181,7 +174,6 @@ private fun LocationPage(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp)
             .padding(horizontal = 15.dp)
             .verticalScroll(state = scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -192,11 +184,15 @@ private fun LocationPage(
             LocationAndWeatherInfoSection(
                 locationUIState = currentLocation
             )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(15.dp)
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            AdditionalData(
+                currentLocation = currentLocation,
+                backgroundColor = uiElementsColor,
             )
+
+            Spacer(modifier = Modifier.height(15.dp))
 
             HourlyForecastSection(
                 hourlyForecasts = currentLocation.hourlyForecasts,
@@ -204,18 +200,124 @@ private fun LocationPage(
                 backgroundColor = uiElementsColor
             )
 
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp)
-            )
+            Spacer(modifier = Modifier.height(15.dp))
 
             DailyForecastSection(
                 dailyForecasts = currentLocation.dailyForecasts,
                 shouldResetScroll = shouldResetScroll,
                 backgroundColor = uiElementsColor
             )
+
+            Spacer(modifier = Modifier.height(5.dp))
         }
+    }
+}
+
+@Composable
+private fun AdditionalData(
+    currentLocation: LocationUIState,
+    backgroundColor: Color,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 17.dp))
+            .background(color = backgroundColor),
+    ) {
+        AdditionalDataUnit(
+            icon = R.drawable.wind,
+            iconContentDescription = "Wind icon",
+            iconSize = 40.dp,
+            firstLevelText = currentLocation.currentWindSpeed,
+            firstLevelTextSize = 13.sp,
+            secondLevelText = "Wind",
+            secondLevelTextSize = 12.sp,
+            secondLevelFontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        AdditionalDataUnit(
+            icon = R.drawable.humidity,
+            iconContentDescription = "Humidity icon",
+            iconSize = 40.dp,
+            firstLevelText = currentLocation.currentRelativeHumidity,
+            firstLevelTextSize = 13.sp,
+            secondLevelText = "Humidity",
+            secondLevelTextSize = 12.sp,
+            secondLevelFontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        AdditionalDataUnit(
+            icon = R.drawable.sun_sunrise,
+            iconContentDescription = "Sunrise icon",
+            iconSize = 40.dp,
+            firstLevelText = currentLocation.sunrise,
+            firstLevelTextSize = 13.sp,
+            secondLevelText = "Sunrise",
+            secondLevelTextSize = 12.sp,
+            secondLevelFontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .weight(1f)
+        )
+
+        AdditionalDataUnit(
+            icon = R.drawable.sun_sunrise,
+            iconContentDescription = "Sunset icon",
+            iconSize = 40.dp,
+            firstLevelText = currentLocation.sunset,
+            firstLevelTextSize = 13.sp,
+            secondLevelText = "Sunset",
+            secondLevelTextSize = 12.sp,
+            secondLevelFontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun AdditionalDataUnit(
+    @DrawableRes
+    icon: Int,
+    iconContentDescription: String = "",
+    iconSize: Dp = 40.dp,
+    iconTint: Color = Color.White,
+    firstLevelText: String,
+    firstLevelTextColor: Color = Color.White,
+    firstLevelTextSize: TextUnit = 14.sp,
+    firstLevelFontWeight: FontWeight? = null,
+    secondLevelText: String,
+    secondLevelTextColor: Color = Color.White,
+    secondLevelTextSize: TextUnit = 14.sp,
+    secondLevelFontWeight: FontWeight? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = iconContentDescription,
+            modifier = Modifier.size(iconSize),
+            tint = iconTint,
+        )
+        Text(
+            text = firstLevelText,
+            color = firstLevelTextColor,
+            fontSize = firstLevelTextSize,
+            fontWeight = firstLevelFontWeight,
+        )
+        Text(
+            text = secondLevelText,
+            color = secondLevelTextColor,
+            fontSize = secondLevelTextSize,
+            fontWeight = secondLevelFontWeight
+        )
     }
 }
 
@@ -227,10 +329,10 @@ private fun PageIndicator(
 ) {
     Row(
         modifier = modifier
-            .wrapContentHeight()
             .fillMaxWidth()
-            .padding(bottom = 10.dp, top = 5.dp),
-        horizontalArrangement = Arrangement.Center
+            .height(30.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(pagerState.pageCount) { iteration ->
             val color = if (pagerState.currentPage == iteration) {

@@ -14,21 +14,27 @@ class LoadForecastUseCase(
     private val dailyForecastMapper: DailyForecastMapper,
 ) {
     suspend operator fun invoke(
-        forceLoadFromNetwork: Boolean,
+        loadingStrategy: LoadingStrategy,
         locationDomainModel: LocationDomainModel
     ): Result<List<DailyForecastDomainModel>> {
-        return if (forceLoadFromNetwork) {
-            getForecastsFromNetwork(
-                forceLoadFromNetwork = true,
-                locationDomainModel = locationDomainModel
+        return when (loadingStrategy) {
+            LoadingStrategy.FORCE_NETWORK -> getForecastsFromNetwork(
+                locationDomainModel = locationDomainModel,
             )
-        } else {
-            getCachedForecasts(locationDomainModel = locationDomainModel)
+
+            LoadingStrategy.FORCE_CACHE -> getCachedForecasts(
+                isForcedToUseCacheOnly = true,
+                locationDomainModel = locationDomainModel,
+            )
+
+            LoadingStrategy.DEFAULT -> getCachedForecasts(
+                isForcedToUseCacheOnly = false,
+                locationDomainModel = locationDomainModel,
+            )
         }
     }
 
     private suspend fun getForecastsFromNetwork(
-        forceLoadFromNetwork: Boolean,
         locationDomainModel: LocationDomainModel
     ): Result<List<DailyForecastDomainModel>> {
         val completeForecast = forecastRepository.loadForecast(
@@ -42,23 +48,22 @@ class LoadForecastUseCase(
 
         return when (completeForecast) {
             is Result.Success -> {
-                getForecastsFromNetwork(
+                saveAndMapForecasts(
                     locationDomainModel = locationDomainModel,
                     completeForecast = completeForecast.data,
                 )
             }
 
             is Result.Error -> {
-                if (!forceLoadFromNetwork) {
-                    getCachedForecasts(locationDomainModel = locationDomainModel)
-                } else {
-                    Result.Error(error = "Failed to load forecast!")
-                }
+                getCachedForecasts(
+                    isForcedToUseCacheOnly = true,
+                    locationDomainModel = locationDomainModel,
+                )
             }
         }
     }
 
-    private suspend fun getForecastsFromNetwork(
+    private suspend fun saveAndMapForecasts(
         locationDomainModel: LocationDomainModel,
         completeForecast: CompleteForecastResponse,
     ): Result<List<DailyForecastDomainModel>> {
@@ -90,6 +95,7 @@ class LoadForecastUseCase(
     }
 
     private suspend fun getCachedForecasts(
+        isForcedToUseCacheOnly: Boolean,
         locationDomainModel: LocationDomainModel,
     ): Result<List<DailyForecastDomainModel>> {
         val cachedData = forecastRepository.getForecastsByLocationID(
@@ -97,18 +103,35 @@ class LoadForecastUseCase(
         )
 
         if (cachedData.isNotEmpty()) {
-            return Result.Success(cachedData)
+            return Result.Success(data = cachedData)
         }
 
-        val result = getForecastsFromNetwork(
-            forceLoadFromNetwork = false,
-            locationDomainModel = locationDomainModel
-        )
-
-        return if (result is Result.Success) {
-            result
+        return if (isForcedToUseCacheOnly) {
+            Result.Error(error = "Failed to load forecast!")
         } else {
-            Result.Error("No data available!")
+            getForecastsFromNetwork(locationDomainModel)
         }
+    }
+
+    enum class LoadingStrategy {
+        /**
+         * If the FORCE_NETWORK strategy is selected, the forecast will initially be retrieved
+         * from the network; if that attempt fails, it will fall back to retrieving it from
+         * the cache.
+         */
+        FORCE_NETWORK,
+
+        /**
+         * If the FORCE_CACHE strategy is selected, upon failure to load the forecast
+         * from the cache, no attempt will be made to retrieve it from the network,
+         * and Result.Error will be returned.
+         */
+        FORCE_CACHE,
+
+        /**
+         * If the DEFAULT strategy is selected, it will first attempt to retrieve the forecast
+         * from the cache; if that fails, it will then attempt to retrieve it from the network.
+         */
+        DEFAULT,
     }
 }

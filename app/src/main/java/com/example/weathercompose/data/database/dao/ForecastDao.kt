@@ -8,11 +8,14 @@ import androidx.room.Transaction
 import com.example.weathercompose.data.database.entity.combined.DailyForecastWithHourlyForecast
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.database.entity.forecast.HourlyForecastEntity
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class ForecastDao {
+
+    @Transaction
+    @Query("SELECT * FROM daily_forecasts")
+    abstract fun loadAllDailyForecastsWithHourlyForecasts(): Flow<List<DailyForecastWithHourlyForecast>>
 
     @Transaction
     @Query("SELECT * FROM daily_forecasts WHERE locationId = :locationId")
@@ -48,23 +51,16 @@ abstract class ForecastDao {
     open suspend fun saveForecasts(
         locationId: Long,
         dailyForecasts: List<DailyForecastEntity>
-    ) = coroutineScope {
+    ) {
         deleteDailyForecastsByLocationId(locationId = locationId)
-        dailyForecasts.map { dailyForecastEntity ->
-            async {
-                val dailyForecastEntityId = insertDailyForecast(
-                    dailyForecast = dailyForecastEntity
-                )
 
-                dailyForecastEntity.hourlyForecasts.map { hourlyForecastEntity ->
-                    async {
-                        insertHourlyForecast(
-                            hourlyForecast = hourlyForecastEntity.copy(
-                                dailyForecastId = dailyForecastEntityId
-                            )
-                        )
-                    }
-                }
+        for (dailyForecastEntity in dailyForecasts) {
+            val dailyForecastEntityId = insertDailyForecast(dailyForecastEntity)
+
+            for (hourlyForecastEntity in dailyForecastEntity.hourlyForecasts) {
+                insertHourlyForecast(
+                    hourlyForecastEntity.copy(dailyForecastId = dailyForecastEntityId)
+                )
             }
         }
     }

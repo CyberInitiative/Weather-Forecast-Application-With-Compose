@@ -2,7 +2,10 @@ package com.example.weathercompose.ui.compose.forecast_screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -65,10 +68,17 @@ fun LocationAndWeatherInfoSection(
             width = Dimension.fillToConstraints
         }
 
-        LocationName(
-            name = locationUIState.locationName,
-            modifier = locationNameModifier,
-        )
+        Column(modifier = locationNameModifier) {
+            LocationName(
+                name = locationUIState.locationName,
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            if (locationUIState.locationCountry.isNotEmpty()) {
+                LocationName(
+                    name = locationUIState.locationCountry,
+                )
+            }
+        }
 
         Text(
             text = locationUIState.currentDayOfWeekAndDate,
@@ -90,7 +100,7 @@ fun LocationAndWeatherInfoSection(
         )
 
         Text(
-            text = locationUIState.currentHourWeatherStatus /*"Thunderstorm with slight hail"*/,
+            text = locationUIState.currentHourWeatherStatus, /*"Thunderstorm with slight hail"*/
             modifier = weatherStatusModifier.fillMaxWidth(),
             color = Color.White,
             fontSize = 20.sp,

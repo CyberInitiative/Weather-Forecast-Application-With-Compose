@@ -11,8 +11,10 @@ import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
+import com.example.weathercompose.domain.usecase.settings.GetLastTimeForecastUpdatedUseCase
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
+import com.example.weathercompose.domain.usecase.settings.SetLastTimeForecastUpdatedUseCase
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
@@ -90,11 +92,15 @@ val domainModule = module {
         )
     }
 
-    /*
     factory {
-        LoadLocationsUseCase(
-            locationRepository = get { parametersOf(Dispatchers.IO) },
+        GetLastTimeForecastUpdatedUseCase(
+            appSettings = get { parametersOf(Dispatchers.IO) },
         )
     }
-     */
+
+    factory {
+        SetLastTimeForecastUpdatedUseCase(
+            appSettings = get { parametersOf(Dispatchers.IO) },
+        )
+    }
 }

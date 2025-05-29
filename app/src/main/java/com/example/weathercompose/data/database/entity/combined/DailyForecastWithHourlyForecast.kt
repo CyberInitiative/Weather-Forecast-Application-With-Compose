@@ -12,4 +12,7 @@ data class DailyForecastWithHourlyForecast(
         entityColumn = "dailyForecastId"
     )
     val hourlyForecasts: List<HourlyForecastEntity>
-)
+) {
+
+    fun getLocationId(): Long = dailyForecastEntity.locationId
+}

@@ -83,4 +83,7 @@ class ForecastRepositoryImpl(
             forecastDao.deleteDailyForecastsByLocationId(locationId = locationId)
         }
     }
+
+    override fun loadAllDailyForecastsWithHourlyForecasts() =
+        forecastDao.loadAllDailyForecastsWithHourlyForecasts()
 }

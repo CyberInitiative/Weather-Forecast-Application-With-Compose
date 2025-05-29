@@ -34,11 +34,13 @@ class HourlyForecastMapper {
                 val hourlyForecastDomainModel = HourlyForecastDomainModel(
                     date = date,
                     time = time,
+                    temperature = temperatureData!![index],
+                    relativeHumidity = relativeHumidity!![index],
+                    precipitationProbability = precipitationProbability!![index],
                     weatherDescription = WeatherDescription.weatherCodeToDescription(
                         code = weatherCodes!![index]
                     ),
-                    temperature = temperatureData!![index],
-                    precipitationProbability = precipitationProbability!![index],
+                    windSpeed = windSpeed!![index],
                     isDay = isDayTime(isDayData!![index]),
                 )
 
@@ -82,11 +84,13 @@ class HourlyForecastMapper {
                     dailyForecastId = NO_DAILY_FORECAST_ID_SET,
                     date = date.toString(),
                     time = time.toString(),
+                    temperature = temperatureData!![index],
                     weatherDescription = WeatherDescription.weatherCodeToDescription(
                         code = weatherCodes!![index]
                     ),
-                    temperature = temperatureData!![index],
+                    relativeHumidity = relativeHumidity!![index],
                     precipitationProbability = precipitationProbability!![index],
+                    windSpeed = windSpeed!![index],
                     isDay = isDayTime(isDayData!![index]),
                 )
 
@@ -107,9 +111,11 @@ class HourlyForecastMapper {
         with(hourlyForecastResponse) {
             val lists = listOf(
                 dateAndTimeData,
-                weatherCodes,
                 temperatureData,
+                relativeHumidity,
                 precipitationProbability,
+                weatherCodes,
+                windSpeed,
                 isDayData,
             )
             val isAllDataExists = lists.all { it != null }
@@ -135,7 +141,7 @@ class HourlyForecastMapper {
         private const val DAYLIGHT = 1
         private const val NIGHT = 0
 
-        private const val TAG = "hourlyForecastMapper"
+        private const val TAG = "HourlyForecastMapper"
     }
 }
 

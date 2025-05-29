@@ -14,10 +14,10 @@ import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
-import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
+import com.example.weathercompose.domain.usecase.settings.GetLastTimeForecastUpdatedUseCase
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.ui.model.LocationItem
@@ -28,27 +28,36 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ForecastViewModel(
     private val loadAllLocationsUseCase: LoadAllLocationsUseCase,
-    // private val loadLocationsUseCase: LoadLocationsUseCase,
     private val setLocationAsHomeUseCase: SetLocationAsHomeUseCase,
     private val deleteLocationUseCase: DeleteLocationUseCase,
     private val locationUIStateMapper: LocationUIStateMapper,
     private val locationItemsMapper: LocationItemMapper,
-    private val saveLocationUseCase: SaveLocationUseCase,
     private val loadForecastUseCase: LoadForecastUseCase,
     private val loadLocationUseCase: LoadLocationUseCase,
     private val setCurrentTemperatureUnitUseCase: SetCurrentTemperatureUnitUseCase,
     private val getTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase,
     private val setForecastUpdateFrequencyUseCase: SetForecastUpdateFrequencyUseCase,
     private val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase,
+    private val getLastTimeForecastUpdatedUseCase: GetLastTimeForecastUpdatedUseCase,
     private val networkManager: NetworkManager,
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
+
+    private var _currentTemperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS
+    val currentTemperatureUnit: TemperatureUnit get() = _currentTemperatureUnit
+
+    private var _currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency =
+        ForecastUpdateFrequency.ONE_HOUR
+    val currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency
+        get() = _currentForecastUpdateFrequencyInHours
+
 
     private val _locationsUIStates = MutableStateFlow<DataState<List<LocationUIState>>>(
         value = DataState.Initial
@@ -59,27 +68,21 @@ class ForecastViewModel(
     private val _locationItems = MutableStateFlow<List<LocationItem>>(emptyList())
     val locationItems: StateFlow<List<LocationItem>> = _locationItems.asStateFlow()
 
-    private var _currentTemperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS
-    val currentTemperatureUnit: TemperatureUnit get() = _currentTemperatureUnit
-
-    private var _currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency =
-        ForecastUpdateFrequency.ONE_HOUR
-    val currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency
-        get() = _currentForecastUpdateFrequencyInHours
-
     private val _weatherAndDayTimeState = MutableStateFlow(
         value = WeatherAndDayTimeState.NO_PRECIPITATION_DAY
     )
     val weatherAndDayTimeState: StateFlow<WeatherAndDayTimeState>
         get() = _weatherAndDayTimeState
 
+    private var currentSelectedPage: Int = 0
+
     init {
         _locationsUIStates.value = DataState.Loading
         observeLocationsState()
+        observeLastTimeForecastUpdated()
         observeLocationsAndTemperatureUnit()
         observeTemperatureUnit()
         observeForecastUpdateFrequency()
-//        loadAllLocations()
         loadLocations()
     }
 
@@ -89,21 +92,12 @@ class ForecastViewModel(
         }
     }
 
-    /*
-    private fun loadAllLocations() {
-        viewModelScope.launch {
-            loadLocationsUseCase().collect { locations ->
-                _locationsState.value = locations
-            }
-        }
-    }
-     */
-
     private fun observeLocationsState() {
         viewModelScope.launch {
             _locationsState
                 .filterNotNull()
                 .collect { locations ->
+                    //Log.d(TAG, "Locations are: $locations")
                     val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
 
                     sortedLocations.forEach { location ->
@@ -113,7 +107,10 @@ class ForecastViewModel(
                                 newForecastDataState = DataState.Loading,
                             )
                             launch {
-                                loadForecast(location = location)
+                                loadForecast(
+                                    loadingStrategy = LoadForecastUseCase.LoadingStrategy.DEFAULT,
+                                    location = location
+                                )
                             }
                         }
                     }
@@ -125,64 +122,6 @@ class ForecastViewModel(
         val isDataReady = location.forecastDataState is DataState.Ready
         val isDataLoading = location.forecastDataState is DataState.Loading
         return !isDataReady && !isDataLoading
-    }
-
-    private fun observeLocationsAndTemperatureUnit() {
-        viewModelScope.launch {
-            combine(
-                _locationsState.filterNotNull(),
-                getTemperatureUnitUseCase()
-            ) { locations, unit ->
-                val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
-
-                updateLocationItems(locations = locations, temperatureUnit = unit)
-                sortedLocations.map { location ->
-                    locationUIStateMapper.mapToUIState(location = location, temperatureUnit = unit)
-                }
-            }.collect { items ->
-                if (items.isNotEmpty()) {
-                    _locationsUIStates.value = DataState.Ready(data = items)
-                } else {
-                    _locationsUIStates.value = DataState.NoData
-                }
-            }
-        }
-    }
-
-    private fun observeTemperatureUnit() {
-        viewModelScope.launch {
-            getTemperatureUnitUseCase().collect { unit ->
-                _currentTemperatureUnit = unit
-            }
-        }
-    }
-
-    private fun observeForecastUpdateFrequency() {
-        viewModelScope.launch {
-            getForecastUpdateFrequencyUseCase().collect { frequency ->
-                _currentForecastUpdateFrequencyInHours = frequency
-            }
-        }
-    }
-
-    private suspend fun loadForecast(location: LocationDomainModel) {
-        val forecastLoadResult = loadForecastUseCase(
-            forceLoadFromNetwork = false,
-            locationDomainModel = location
-        )
-        val forecastLoadState = when (forecastLoadResult) {
-            is Result.Success -> {
-                DataState.Ready(forecastLoadResult.data)
-            }
-
-            is Result.Error -> {
-                DataState.Error(forecastLoadResult.error)
-            }
-        }
-        updateForecastDataStateForLocation(
-            locationId = location.id,
-            newForecastDataState = forecastLoadState,
-        )
     }
 
     private fun updateForecastDataStateForLocation(
@@ -200,6 +139,99 @@ class ForecastViewModel(
                 } else {
                     location
                 }
+            }
+        }
+    }
+
+    private suspend fun loadForecast(
+        loadingStrategy: LoadForecastUseCase.LoadingStrategy,
+        location: LocationDomainModel
+    ) {
+        val forecastLoadResult = loadForecastUseCase(
+            loadingStrategy = loadingStrategy,
+            locationDomainModel = location,
+        )
+        val forecastLoadState = when (forecastLoadResult) {
+            is Result.Success -> {
+                DataState.Ready(forecastLoadResult.data)
+            }
+
+            is Result.Error -> {
+                DataState.Error(forecastLoadResult.error)
+            }
+        }
+        updateForecastDataStateForLocation(
+            locationId = location.id,
+            newForecastDataState = forecastLoadState,
+        )
+    }
+
+    private fun observeLastTimeForecastUpdated() {
+        viewModelScope.launch {
+            getLastTimeForecastUpdatedUseCase().drop(1).collect {
+                //Log.d(TAG, "Last time update: $it")
+                _locationsState.value?.forEach { location ->
+                    launch {
+                        loadForecast(
+                            loadingStrategy = LoadForecastUseCase.LoadingStrategy.FORCE_CACHE,
+                            location = location,
+                        )
+                    }
+                }
+                (_locationsUIStates.value as? DataState.Ready)?.let { state ->
+                    _weatherAndDayTimeState.value =
+                        state.data[currentSelectedPage].weatherAndDayTimeState
+                }
+            }
+        }
+    }
+
+    private fun observeLocationsAndTemperatureUnit() {
+        viewModelScope.launch {
+            combine(
+                _locationsState.filterNotNull(),
+                getTemperatureUnitUseCase()
+            ) { locations, unit ->
+                val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
+
+                _locationItems.value = mapLocationItems(
+                    locations = locations,
+                    temperatureUnit = unit,
+                )
+                sortedLocations.map { location ->
+                    locationUIStateMapper.mapToUIState(location = location, temperatureUnit = unit)
+                }
+            }.collect { items ->
+                if (items.isNotEmpty()) {
+                    _locationsUIStates.value = DataState.Ready(data = items)
+                } else {
+                    _locationsUIStates.value = DataState.NoData
+                }
+            }
+        }
+    }
+
+    private fun mapLocationItems(
+        locations: List<LocationDomainModel>,
+        temperatureUnit: TemperatureUnit
+    ): List<LocationItem> {
+        return locations.map { location ->
+            locationItemsMapper.mapToLocationItem(location, temperatureUnit)
+        }
+    }
+
+    private fun observeTemperatureUnit() {
+        viewModelScope.launch {
+            getTemperatureUnitUseCase().collect { unit ->
+                _currentTemperatureUnit = unit
+            }
+        }
+    }
+
+    private fun observeForecastUpdateFrequency() {
+        viewModelScope.launch {
+            getForecastUpdateFrequencyUseCase().collect { frequency ->
+                _currentForecastUpdateFrequencyInHours = frequency
             }
         }
     }
@@ -236,26 +268,6 @@ class ForecastViewModel(
         setForecastUpdateFrequencyUseCase(forecastUpdateFrequency = forecastUpdateFrequency)
     }
 
-    private fun updateLocationItems(
-        locations: List<LocationDomainModel>,
-        temperatureUnit: TemperatureUnit,
-    ) {
-        _locationItems.update {
-            locations.map { location ->
-                locationItemsMapper.mapToLocationItem(
-                    location = location,
-                    temperatureUnit = temperatureUnit,
-                )
-            }
-        }
-    }
-
-    /*
-    private fun updateLocationsUIStates(locations: List<LocationDomainModel>) {
-        _locationsUIStates.update { locations.map { locationUIStateMapper.mapToUIState(it) } }
-    }
-     */
-
     fun isNetworkAvailable(): Boolean {
         return networkManager.isInternetAvailable()
     }
@@ -272,6 +284,7 @@ class ForecastViewModel(
     fun onPageSelected(page: Int) {
         (_locationsUIStates.value as? DataState.Ready)?.let { state ->
             _weatherAndDayTimeState.value = state.data[page].weatherAndDayTimeState
+            currentSelectedPage = page
         }
     }
 
@@ -280,7 +293,7 @@ class ForecastViewModel(
             location.id == locationId
         }
 
-        if(searchedLocation == null){
+        if (searchedLocation == null) {
             _locationsUIStates.value = DataState.Loading
             loadLocationUseCase(locationId = locationId)?.let { loadedLocation ->
                 _locationsState.update { locations ->

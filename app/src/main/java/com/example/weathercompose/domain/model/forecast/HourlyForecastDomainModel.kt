@@ -6,9 +6,11 @@ import java.time.LocalTime
 data class HourlyForecastDomainModel(
     val date: LocalDate,
     val time: LocalTime,
-    val weatherDescription: WeatherDescription,
     val temperature: Double,
+    val relativeHumidity: Int,
     val precipitationProbability: Int,
+    val weatherDescription: WeatherDescription,
+    val windSpeed: Double,
     val isDay: Boolean,
 ) {
 

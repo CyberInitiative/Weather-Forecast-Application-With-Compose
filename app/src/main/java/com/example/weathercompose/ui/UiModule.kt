@@ -11,18 +11,17 @@ val uiModule = module {
     viewModel {
         ForecastViewModel(
             loadAllLocationsUseCase = get(),
-            //loadLocationsUseCase = get(),
             setLocationAsHomeUseCase = get(),
             deleteLocationUseCase = get(),
             locationUIStateMapper = get(),
             locationItemsMapper = get(),
-            saveLocationUseCase = get(),
             loadForecastUseCase = get(),
             loadLocationUseCase = get(),
             setCurrentTemperatureUnitUseCase = get(),
             getTemperatureUnitUseCase = get(),
             setForecastUpdateFrequencyUseCase = get(),
             getForecastUpdateFrequencyUseCase = get(),
+            getLastTimeForecastUpdatedUseCase = get(),
             networkManager = get(),
         )
     }

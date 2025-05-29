@@ -19,9 +19,11 @@ data class HourlyForecastEntity(
     val dailyForecastId: Long,
     val date: String,
     val time: String,
-    val weatherDescription: WeatherDescription,
     val temperature: Double,
+    val relativeHumidity: Int,
     val precipitationProbability: Int,
+    val weatherDescription: WeatherDescription,
+    val windSpeed: Double,
     val isDay: Boolean,
     @PrimaryKey(autoGenerate = true)
     val hourlyForecastId: Long = 0,

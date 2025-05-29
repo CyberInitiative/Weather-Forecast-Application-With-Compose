@@ -6,6 +6,7 @@ import com.example.weathercompose.data.model.forecast.DailyForecastResponse
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DailyForecastMapper(
     private val hourlyForecastMapper: HourlyForecastMapper,
@@ -44,8 +45,8 @@ class DailyForecastMapper(
                         ),
                         maxTemperature = maxTemperatureData!![index],
                         minTemperature = minTemperatureData!![index],
-                        sunrise = sunrises!![index],
-                        sunset = sunsets!![index],
+                        sunrise = LocalDateTime.parse(sunrises!![index]).toLocalTime().toString(),
+                        sunset = LocalDateTime.parse(sunsets!![index]).toLocalTime().toString(),
                         hourlyForecasts = hourlyForecastDomainModels!!
                     )
                 )
