@@ -3,7 +3,6 @@ package com.example.weathercompose.ui.compose.forecast_screen
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -69,15 +68,12 @@ fun LocationAndWeatherInfoSection(
         }
 
         Column(modifier = locationNameModifier) {
-            LocationName(
+            LocationText(
                 name = locationUIState.locationName,
             )
-            Spacer(modifier = Modifier.height(3.dp))
-            if (locationUIState.locationCountry.isNotEmpty()) {
-                LocationName(
-                    name = locationUIState.locationCountry,
-                )
-            }
+            LocationText(
+                name = locationUIState.locationCountry,
+            )
         }
 
         Text(
@@ -100,7 +96,7 @@ fun LocationAndWeatherInfoSection(
         )
 
         Text(
-            text = locationUIState.currentHourWeatherStatus, /*"Thunderstorm with slight hail"*/
+            text = locationUIState.currentHourWeatherStatus,
             modifier = weatherStatusModifier.fillMaxWidth(),
             color = Color.White,
             fontSize = 20.sp,
@@ -111,17 +107,19 @@ fun LocationAndWeatherInfoSection(
 }
 
 @Composable
-private fun LocationName(
+private fun LocationText(
     name: String,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text = name,
-        modifier = modifier
-            .fillMaxWidth(),
-        color = Color.White,
-        fontSize = 35.sp,
-    )
+    Column(modifier = Modifier.height(45.dp)) {
+        Text(
+            text = name,
+            modifier = modifier
+                .fillMaxWidth(),
+            color = Color.White,
+            fontSize = 35.sp,
+        )
+    }
 }
 
 @Composable

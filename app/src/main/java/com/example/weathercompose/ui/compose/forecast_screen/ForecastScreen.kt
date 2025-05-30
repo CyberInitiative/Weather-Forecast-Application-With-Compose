@@ -264,7 +264,7 @@ private fun AdditionalData(
         )
 
         AdditionalDataUnit(
-            icon = R.drawable.sun_sunrise,
+            icon = R.drawable.sun_sunset,
             iconContentDescription = "Sunset icon",
             iconSize = 40.dp,
             firstLevelText = currentLocation.sunset,

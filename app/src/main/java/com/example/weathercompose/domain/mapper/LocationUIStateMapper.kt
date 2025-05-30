@@ -55,7 +55,7 @@ class LocationUIStateMapper(private val context: Context) {
 
         return LocationUIState(
             id = location.id,
-            locationName = "${location.name},",
+            locationName =  getLocationName(location),
             locationCountry = location.country,
             currentHourTemperature = TemperatureUnit.getTemperatureForUI(
                 temperature = currentHourlyForecast.temperature,
@@ -91,6 +91,14 @@ class LocationUIStateMapper(private val context: Context) {
                 location = location
             )
         )
+    }
+
+    private fun getLocationName(location: LocationDomainModel): String{
+        return if(location.country.isEmpty()){
+            location.name
+        } else {
+            "${location.name},"
+        }
     }
 
     private fun onError(location: LocationDomainModel): LocationUIState {
