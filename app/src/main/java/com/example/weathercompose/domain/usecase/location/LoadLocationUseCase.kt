@@ -8,5 +8,5 @@ class LoadLocationUseCase(
 ) {
 
     suspend operator fun invoke(locationId: Long): LocationDomainModel? =
-        locationRepository.load(locationId)
+        locationRepository.findById(locationId)
 }

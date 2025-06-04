@@ -4,33 +4,24 @@ import com.example.weathercompose.data.api.ForecastAPI
 import com.example.weathercompose.data.api.Result
 import com.example.weathercompose.data.database.dao.ForecastDao
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
-import com.example.weathercompose.data.datastore.AppSettings
 import com.example.weathercompose.data.mapper.mapToDailyForecastDomainModel
+import com.example.weathercompose.data.mapper.mapToHourlyForecastDomainModel
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
+import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.domain.repository.ForecastRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDate
+import java.time.LocalTime
 
 class ForecastRepositoryImpl(
     private val dispatcher: CoroutineDispatcher,
     private val forecastAPI: ForecastAPI,
     private val forecastDao: ForecastDao,
-    private val appSettings: AppSettings,
 ) : ForecastRepository {
-
-    override suspend fun getForecastsByLocationID(
-        locationId: Long
-    ): List<DailyForecastDomainModel> {
-        return withContext(dispatcher) {
-            val dailyForecastWithHourlyForecast = forecastDao.getForecastsByLocationID(
-                locationId = locationId
-            )
-            dailyForecastWithHourlyForecast.map { it.mapToDailyForecastDomainModel() }
-        }
-    }
 
     override suspend fun loadForecast(
         latitude: Double,
@@ -66,6 +57,46 @@ class ForecastRepositoryImpl(
         }
     }
 
+    override suspend fun findDailyForecastsWithHourlyForecastsByLocationId(
+        locationId: Long
+    ): List<DailyForecastDomainModel> {
+        return withContext(dispatcher) {
+            val dailyForecastWithHourlyForecast =
+                forecastDao.findDailyForecastsWithHourlyForecastsByLocationId(
+                    locationId = locationId
+                )
+            dailyForecastWithHourlyForecast.map { it.mapToDailyForecastDomainModel() }
+        }
+    }
+
+    override suspend fun findDailyForecastByLocationIdAndDate(
+        locationId: Long,
+        date: LocalDate
+    ): DailyForecastDomainModel? {
+        return withContext(dispatcher){
+            forecastDao.findDailyForecastByLocationIdAndDate(
+                locationId = locationId,
+                date = date.toString()
+            )?.mapToHourlyForecastDomainModel()
+        }
+    }
+
+    override suspend fun findHourlyForecastsByLocationId(
+        locationId: Long,
+        date: LocalDate,
+        startHour: LocalTime,
+        limit: Int
+    ): List<HourlyForecastDomainModel> {
+        return withContext(dispatcher) {
+            forecastDao.findHourlyForecastsByLocationIdAndDateAndStartHour(
+                locationId = locationId,
+                date = date.toString(),
+                startTime = startHour.toString(),
+                limit = limit,
+            ).map { it.mapToHourlyForecastDomainModel() }
+        }
+    }
+
     override suspend fun saveForecastsForLocation(
         locationId: Long,
         dailyForecastEntities: List<DailyForecastEntity>
@@ -83,7 +114,4 @@ class ForecastRepositoryImpl(
             forecastDao.deleteDailyForecastsByLocationId(locationId = locationId)
         }
     }
-
-    override fun loadAllDailyForecastsWithHourlyForecasts() =
-        forecastDao.loadAllDailyForecastsWithHourlyForecasts()
 }

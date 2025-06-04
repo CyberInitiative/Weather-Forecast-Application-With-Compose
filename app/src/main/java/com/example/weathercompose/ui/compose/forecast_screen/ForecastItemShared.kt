@@ -27,7 +27,7 @@ fun IconWithLabelHorizontal(
     modifier: Modifier = Modifier,
     iconTint: Color = LocalContentColor.current,
 ) {
-    ConstraintLayout(modifier = modifier.padding(vertical = 5.dp)) {
+    ConstraintLayout(modifier = modifier.padding(vertical = 1.5.dp)) {
         val (icon, text) = createRefs()
 
         val iconModifier = Modifier.constrainAs(icon) {

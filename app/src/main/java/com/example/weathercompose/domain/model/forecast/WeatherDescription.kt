@@ -1,5 +1,7 @@
 package com.example.weathercompose.domain.model.forecast
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import com.example.weathercompose.R
 
 // https://open-meteo.com/en/docs
@@ -71,6 +73,7 @@ enum class WeatherDescription {
             }
         }
 
+        @StringRes
         fun weatherDescriptionToString(
             weatherDescription: WeatherDescription,
         ): Int {
@@ -107,6 +110,7 @@ enum class WeatherDescription {
             }
         }
 
+        @DrawableRes
         fun weatherDescriptionToIconRes(
             weatherDescription: WeatherDescription, isDay: Boolean = true,
         ): Int {
@@ -137,7 +141,7 @@ enum class WeatherDescription {
 
                 LIGHT_DRIZZLE -> R.drawable.light_drizzle
                 MODERATE_DRIZZLE -> R.drawable.moderate_drizzle
-                DENSE_DRIZZLE-> R.drawable.dense_drizzle
+                DENSE_DRIZZLE -> R.drawable.dense_drizzle
 
                 LIGHT_FREEZING_DRIZZLE -> R.drawable.freezing_light_drizzle
                 DENSE_FREEZING_DRIZZLE -> R.drawable.freezing_dense_drizzle

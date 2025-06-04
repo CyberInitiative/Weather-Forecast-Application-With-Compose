@@ -7,5 +7,5 @@ class LoadAllLocationsUseCase(
     private val locationRepository: LocationRepository,
 ) {
 
-    suspend operator fun invoke(): List<LocationDomainModel> = locationRepository.loadAll()
+    suspend operator fun invoke(): List<LocationDomainModel> = locationRepository.findAll()
 }

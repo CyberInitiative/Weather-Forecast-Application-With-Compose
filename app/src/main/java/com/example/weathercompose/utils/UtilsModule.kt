@@ -1,9 +1,11 @@
 package com.example.weathercompose.utils
 
-import org.koin.android.ext.koin.androidApplication
+import com.example.weathercompose.widget.WidgetUpdateManager
 import org.koin.dsl.module
 
 val utilsModule = module {
 
-    single { NetworkManager(context = androidApplication()) }
+    single { NetworkManager(context = get()) }
+
+    single { WidgetUpdateManager(context = get()) }
 }

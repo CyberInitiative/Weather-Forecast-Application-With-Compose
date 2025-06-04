@@ -10,6 +10,6 @@ data class DailyForecastItem(
     val weatherIconRes: Int,
     @StringRes
     val weatherDescription: Int,
-    val maxTemperature: Int,
-    val minTemperature: Int,
+    val maxTemperature: String,
+    val minTemperature: String,
 )

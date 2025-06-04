@@ -1,17 +1,14 @@
 package com.example.weathercompose.domain.repository
 
 import com.example.weathercompose.data.api.Result
-import com.example.weathercompose.data.database.entity.combined.DailyForecastWithHourlyForecast
 import com.example.weathercompose.data.database.entity.forecast.DailyForecastEntity
 import com.example.weathercompose.data.model.forecast.CompleteForecastResponse
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
-import kotlinx.coroutines.flow.Flow
+import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
+import java.time.LocalDate
+import java.time.LocalTime
 
 interface ForecastRepository {
-
-    suspend fun getForecastsByLocationID(
-        locationId: Long,
-    ): List<DailyForecastDomainModel>
 
     suspend fun loadForecast(
         latitude: Double,
@@ -22,13 +19,26 @@ interface ForecastRepository {
         forecastDays: Int,
     ): Result<CompleteForecastResponse>
 
+    suspend fun findDailyForecastsWithHourlyForecastsByLocationId(
+        locationId: Long,
+    ): List<DailyForecastDomainModel>
+
+    suspend fun findDailyForecastByLocationIdAndDate(
+        locationId: Long,
+        date: LocalDate,
+    ): DailyForecastDomainModel?
+
+    suspend fun findHourlyForecastsByLocationId(
+        locationId: Long,
+        date: LocalDate,
+        startHour: LocalTime,
+        limit: Int,
+    ): List<HourlyForecastDomainModel>
+
     suspend fun saveForecastsForLocation(
         locationId: Long,
         dailyForecastEntities: List<DailyForecastEntity>,
     )
 
     suspend fun deleteForecastForLocation(locationId: Long)
-
-    fun loadAllDailyForecastsWithHourlyForecasts():
-            Flow<List<DailyForecastWithHourlyForecast>>
 }

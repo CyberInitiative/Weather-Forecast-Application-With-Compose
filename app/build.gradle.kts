@@ -42,6 +42,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 }
 
 dependencies {
@@ -54,6 +57,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // https://mvnrepository.com/artifact/androidx.glance/glance
+    implementation(libs.androidx.glance)
+    // https://mvnrepository.com/artifact/androidx.glance/glance-appwidget
+    implementation(libs.androidx.glance.appwidget)
+    // For interop APIs with Material 3
+    implementation (libs.androidx.glance.material3)
+    // For interop APIs with Material 2
+    implementation (libs.androidx.glance.material)
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-android
     implementation(libs.kotlinx.coroutines.android)

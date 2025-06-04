@@ -64,7 +64,6 @@ import com.example.weathercompose.ui.theme.LimoScene40PerDarker
 import com.example.weathercompose.ui.theme.RomanSilver
 import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -148,7 +147,6 @@ fun MainScreen() {
     }
 
     ScreenContent(
-        coroutineScope = coroutineScope,
         navController = navController,
         forecastViewModel = forecastViewModel,
         weatherAndDayTimeState = weatherAndDayTimeState,
@@ -160,7 +158,6 @@ fun MainScreen() {
 
 @Composable
 private fun ScreenContent(
-    coroutineScope: CoroutineScope,
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
@@ -190,7 +187,6 @@ private fun ScreenContent(
                     .fillMaxSize()
             ) {
                 NavigationHost(
-                    coroutineScope = coroutineScope,
                     navController = navController,
                     forecastViewModel = forecastViewModel,
                     weatherAndDayTimeState = weatherAndDayTimeState,
@@ -203,7 +199,6 @@ private fun ScreenContent(
 
 @Composable
 fun NavigationHost(
-    coroutineScope: CoroutineScope,
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,

@@ -33,14 +33,17 @@ abstract class LocationDao {
      */
 
     @Query("SELECT * FROM locations WHERE isHomeLocation = 1")
-    abstract suspend fun findCurrentHomeLocation(): LocationEntity?
+    abstract suspend fun findHomeLocation(): LocationEntity?
+
+    @Query("SELECT * FROM locations WHERE isHomeLocation = 1")
+    abstract fun observeHomeLocation(): Flow<LocationEntity?>
 
     @Query("UPDATE locations SET isHomeLocation = :isHomeLocation WHERE locationId = :locationId")
     abstract suspend fun updateHomeLocationStatus(locationId: Long, isHomeLocation: Boolean)
 
     @Transaction
     open suspend fun setLocationAsHome(locationId: Long) {
-        findCurrentHomeLocation()?.let { currentHome ->
+        findHomeLocation()?.let { currentHome ->
             updateHomeLocationStatus(locationId = currentHome.locationId, isHomeLocation = false)
             //tapping a location already set as home will unselect it.
             if (currentHome.locationId == locationId) return

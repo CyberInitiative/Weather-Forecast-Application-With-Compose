@@ -81,7 +81,9 @@ class HourlyForecastMapper {
                 val time = dateAndTime.toLocalTime()
 
                 val hourlyForecastEntity = HourlyForecastEntity(
+                    //replaced later with real ids when saved to db.
                     dailyForecastId = NO_DAILY_FORECAST_ID_SET,
+                    locationId = NO_LOCATION_ID_SET,
                     date = date.toString(),
                     time = time.toString(),
                     temperature = temperatureData!![index],
@@ -137,6 +139,7 @@ class HourlyForecastMapper {
 
     companion object {
         private const val NO_DAILY_FORECAST_ID_SET = 0L
+        private const val NO_LOCATION_ID_SET = 0L
 
         private const val DAYLIGHT = 1
         private const val NIGHT = 0

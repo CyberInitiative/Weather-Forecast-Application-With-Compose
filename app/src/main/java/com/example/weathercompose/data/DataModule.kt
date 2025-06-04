@@ -30,7 +30,6 @@ val dataModule = module {
             dispatcher = dispatcher,
             forecastAPI = get(),
             forecastDao = get(),
-            appSettings = get(),
         )
     }
 
@@ -38,7 +37,8 @@ val dataModule = module {
         LocationRepositoryImpl(
             dispatcher = dispatcher,
             geocodingAPI = get(),
-            locationDao = get()
+            locationDao = get(),
+            widgetUpdateManager = get(),
         )
     }
 

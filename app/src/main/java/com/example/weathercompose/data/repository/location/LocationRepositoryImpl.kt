@@ -7,6 +7,7 @@ import com.example.weathercompose.data.mapper.mapToLocationDomainModel
 import com.example.weathercompose.data.mapper.mapToLocationEntity
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.repository.LocationRepository
+import com.example.weathercompose.widget.WidgetUpdateManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,6 +17,7 @@ class LocationRepositoryImpl(
     private val dispatcher: CoroutineDispatcher,
     private val geocodingAPI: GeocodingAPI,
     private val locationDao: LocationDao,
+    private val widgetUpdateManager: WidgetUpdateManager,
 ) : LocationRepository {
 
     override suspend fun search(
@@ -34,19 +36,19 @@ class LocationRepositoryImpl(
         }
     }
 
-    override suspend fun loadAll(): List<LocationDomainModel> {
+    override suspend fun findAll(): List<LocationDomainModel> {
         return withContext(dispatcher) {
             locationDao.loadAll().map { it.mapToLocationDomainModel() }
         }
     }
 
-    override fun loadAllLocationsWithForecasts(): Flow<List<LocationDomainModel>> {
+    override fun findAllLocationsWithForecasts(): Flow<List<LocationDomainModel>> {
         return locationDao.loadAllLocationsWithForecasts().map { locations ->
             locations.map { it.mapToLocationDomainModel() }
         }
     }
 
-    override suspend fun load(locationId: Long): LocationDomainModel? {
+    override suspend fun findById(locationId: Long): LocationDomainModel? {
         return withContext(dispatcher) {
             locationDao.load(locationId = locationId)?.mapToLocationDomainModel()
         }
@@ -59,8 +61,21 @@ class LocationRepositoryImpl(
     }
 
     override suspend fun setLocationAsHome(locationId: Long) {
-        return withContext(dispatcher) {
+        withContext(dispatcher) {
             locationDao.setLocationAsHome(locationId = locationId)
+            widgetUpdateManager.updateAll()
+        }
+    }
+
+    override suspend fun findHomeLocation(): LocationDomainModel? {
+        return withContext(dispatcher) {
+            locationDao.findHomeLocation()?.mapToLocationDomainModel()
+        }
+    }
+
+    override fun observeHomeLocation(): Flow<LocationDomainModel?> {
+        return locationDao.observeHomeLocation().map { location ->
+            location?.mapToLocationDomainModel()
         }
     }
 

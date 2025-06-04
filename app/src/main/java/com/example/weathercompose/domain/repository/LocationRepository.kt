@@ -13,18 +13,21 @@ interface LocationRepository {
         format: String,
     ): List<LocationEntity>
 
-    suspend fun loadAll(): List<LocationDomainModel>
+    suspend fun findAll(): List<LocationDomainModel>
 
-    fun loadAllLocationsWithForecasts(): Flow<List<LocationDomainModel>>
+    fun findAllLocationsWithForecasts(): Flow<List<LocationDomainModel>>
 
-    suspend fun load(locationId: Long): LocationDomainModel?
+    suspend fun findById(locationId: Long): LocationDomainModel?
 
     suspend fun insert(location: LocationEntity): Long
 
     suspend fun setLocationAsHome(locationId: Long)
 
+    suspend fun findHomeLocation(): LocationDomainModel?
+
+    fun observeHomeLocation(): Flow<LocationDomainModel?>
+
     suspend fun delete(location: LocationEntity)
 
     suspend fun deleteLocationById(locationId: Long)
-
 }

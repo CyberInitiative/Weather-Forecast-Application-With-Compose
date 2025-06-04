@@ -104,7 +104,7 @@ fun DailyForecastListItem(
     ) {
 
         Text(
-            modifier = Modifier.padding(top = 15.dp),
+            modifier = Modifier.padding(top = 7.5.dp),
             fontSize = 16.sp,
             text = dailyForecastItem.date,
             textAlign = TextAlign.Center,
@@ -126,7 +126,7 @@ fun DailyForecastListItem(
         )
 
         Text(
-            text = "${dailyForecastItem.maxTemperature}°",
+            text = dailyForecastItem.maxTemperature,
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
@@ -134,8 +134,8 @@ fun DailyForecastListItem(
         )
 
         Text(
-            text = "${dailyForecastItem.minTemperature}°",
-            modifier = Modifier.padding(bottom = 15.dp),
+            text = dailyForecastItem.minTemperature,
+            modifier = Modifier.padding(bottom = 7.5.dp),
             color = SiberianIce,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,

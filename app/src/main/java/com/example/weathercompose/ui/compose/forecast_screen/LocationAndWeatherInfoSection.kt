@@ -3,6 +3,7 @@ package com.example.weathercompose.ui.compose.forecast_screen
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -10,9 +11,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -68,12 +71,8 @@ fun LocationAndWeatherInfoSection(
         }
 
         Column(modifier = locationNameModifier) {
-            LocationText(
-                name = locationUIState.locationName,
-            )
-            LocationText(
-                name = locationUIState.locationCountry,
-            )
+            LocationText(name = locationUIState.locationName)
+            LocationText(name = locationUIState.locationCountry)
         }
 
         Text(
@@ -111,15 +110,37 @@ private fun LocationText(
     name: String,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = Modifier.height(45.dp)) {
-        Text(
+    Row(
+        modifier = Modifier
+            .height(35.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppText(
             text = name,
             modifier = modifier
                 .fillMaxWidth(),
-            color = Color.White,
-            fontSize = 35.sp,
+            fontSize = 28.sp,
         )
     }
+}
+
+@Composable
+private fun AppText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    fontSize: TextUnit = 14.sp,
+    fontWeight: FontWeight? = null,
+) {
+    Text(
+        text = text,
+        modifier = modifier
+            .fillMaxWidth(),
+        color = color,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+    )
 }
 
 @Composable

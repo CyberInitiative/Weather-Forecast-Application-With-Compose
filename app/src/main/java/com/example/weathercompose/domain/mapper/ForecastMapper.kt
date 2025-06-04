@@ -26,11 +26,11 @@ fun DailyForecastDomainModel.mapToDailyForecastItem(
         weatherDescription = WeatherDescription.weatherDescriptionToString(
             weatherDescription = weatherDescription,
         ),
-        maxTemperature = TemperatureUnit.getTemperature(
+        maxTemperature = TemperatureUnit.getTemperatureForUI(
             temperature = maxTemperature,
             temperatureUnit = temperatureUnit
         ),
-        minTemperature = TemperatureUnit.getTemperature(
+        minTemperature = TemperatureUnit.getTemperatureForUI(
             temperature = minTemperature,
             temperatureUnit = temperatureUnit
         ),
@@ -50,15 +50,8 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
     timeZone: String,
     temperatureUnit: TemperatureUnit
 ): HourlyForecastItem {
-    val precipitationProbability = if (isWeatherWithPrecipitations()) {
-        precipitationProbability
-    } else {
-        null
-    }
-
     return HourlyForecastItem(
         time = getTime(time, timeZone),
-        date = date,
         weatherIconRes = WeatherDescription.weatherDescriptionToIconRes(
             weatherDescription = weatherDescription,
             isDay = isDay,
@@ -66,11 +59,14 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
         weatherDescription = WeatherDescription.weatherDescriptionToString(
             weatherDescription = weatherDescription,
         ),
-        temperature = TemperatureUnit.getTemperature(
+        temperature = TemperatureUnit.getTemperatureForUI(
             temperature = temperature,
             temperatureUnit = temperatureUnit
         ),
-        precipitationProbability = precipitationProbability
+        precipitationProbability = getPrecipitationProbability(
+            precipitationProbability = precipitationProbability,
+            isWeatherWithPrecipitations = isWeatherWithPrecipitations()
+        )
     )
 }
 
@@ -80,5 +76,16 @@ private fun getTime(time: LocalTime, timeZone: String): String {
         "Now"
     } else {
         time.toString()
+    }
+}
+
+private fun getPrecipitationProbability(
+    precipitationProbability: Int,
+    isWeatherWithPrecipitations: Boolean
+): String {
+    return if (isWeatherWithPrecipitations) {
+        "$precipitationProbability%"
+    } else {
+        ""
     }
 }

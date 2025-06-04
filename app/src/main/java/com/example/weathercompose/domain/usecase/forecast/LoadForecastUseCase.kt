@@ -98,7 +98,7 @@ class LoadForecastUseCase(
         isForcedToUseCacheOnly: Boolean,
         locationDomainModel: LocationDomainModel,
     ): Result<List<DailyForecastDomainModel>> {
-        val cachedData = forecastRepository.getForecastsByLocationID(
+        val cachedData = forecastRepository.findDailyForecastsWithHourlyForecastsByLocationId(
             locationId = locationDomainModel.id
         )
 

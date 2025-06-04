@@ -102,12 +102,12 @@ fun HourlyForecastListItem(
     ConstraintLayout(
         modifier = Modifier
             .width(60.dp)
-            .height(150.dp)
+            .height(135.dp)
     ) {
         val (time, weatherIconWithPrecipitationProbability, temperature) = createRefs()
 
         val timeModifier = Modifier.constrainAs(time) {
-            top.linkTo(parent.top, margin = 15.dp)
+            top.linkTo(parent.top, margin = 7.5.dp)
             start.linkTo(parent.start)
             end.linkTo(parent.end)
         }
@@ -121,7 +121,7 @@ fun HourlyForecastListItem(
             }
 
         val temperatureModifier = Modifier.constrainAs(temperature) {
-            bottom.linkTo(parent.bottom, margin = 15.dp)
+            bottom.linkTo(parent.bottom, margin = 7.5.dp)
             start.linkTo(parent.start)
             end.linkTo(parent.end)
         }
@@ -144,7 +144,7 @@ fun HourlyForecastListItem(
             modifier = temperatureModifier,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            text = "${hourlyForecastItem.temperature}°",
+            text = hourlyForecastItem.temperature,
             textAlign = TextAlign.Center,
             color = Color.White,
         )
@@ -153,7 +153,7 @@ fun HourlyForecastListItem(
 
 @Composable
 private fun WeatherIconWithPrecipitationProbability(
-    precipitationProbability: Int?,
+    precipitationProbability: String,
     @DrawableRes
     weatherIcon: Int,
     modifier: Modifier = Modifier
@@ -164,7 +164,9 @@ private fun WeatherIconWithPrecipitationProbability(
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if (precipitationProbability != null) {
+        //val offsetY = if (precipitationProbability != null) (-3.5).dp else 0.dp
+
+        if (precipitationProbability.isNotEmpty()) {
             Text(
                 text = "${precipitationProbability}%",
                 color = SiberianIce,
@@ -177,6 +179,7 @@ private fun WeatherIconWithPrecipitationProbability(
             contentDescription = "The weather icon",
             modifier = Modifier
                 .size(35.dp),
+            //.offset(y = offsetY),
             tint = Color.White,
         )
     }
