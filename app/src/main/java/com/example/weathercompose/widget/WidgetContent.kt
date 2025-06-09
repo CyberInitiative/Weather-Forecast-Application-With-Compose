@@ -1,8 +1,6 @@
 package com.example.weathercompose.widget
 
 import android.content.Context
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.Preferences
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -38,24 +37,31 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.example.weathercompose.R
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
-import com.example.weathercompose.domain.mapper.mapToDailyForecastItem
-import com.example.weathercompose.domain.mapper.mapToHourlyForecastItem
-import com.example.weathercompose.domain.repository.ForecastRepository
-import com.example.weathercompose.domain.repository.LocationRepository
-import com.example.weathercompose.ui.model.DailyForecastItem
-import com.example.weathercompose.ui.model.HourlyForecastItem
-import com.example.weathercompose.utils.getCurrentDateInTimeZone
-import com.example.weathercompose.utils.getCurrentHourInTimeZone
+import com.example.weathercompose.data.model.widget.WidgetHourlyForecast
+import com.example.weathercompose.data.model.widget.WidgetLocationWithForecasts
+import com.example.weathercompose.domain.model.forecast.WeatherDescription
+import com.example.weathercompose.domain.repository.WidgetLocationRepository
+import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.widget.ForecastWidget.Companion.LOCATION_ID_KEY
+import com.example.weathercompose.widget.ForecastWidget.Companion.TEMPERATURE_UNIT_KEY
 import org.koin.compose.koinInject
 
 @Composable
-fun ForecastWidgetContent() {
-    val locationRepository = koinInject<LocationRepository>()
-    val forecastRepository = koinInject<ForecastRepository>()
-    val homeLocation by locationRepository.observeHomeLocation().collectAsState(null)
+fun ForecastWidgetContent(preferences: Preferences) {
+    val widgetForecastRepository = koinInject<WidgetLocationRepository>()
+    val getCurrentTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase = koinInject()
+    var locationWithForecasts by remember {
+        mutableStateOf<WidgetLocationWithForecasts?>(value = null)
+    }
 
-    var dailyForecast by remember { mutableStateOf<DailyForecastItem?>(null) }
-    var hourlyForecasts by remember { mutableStateOf<List<HourlyForecastItem>>(emptyList()) }
+    val temperatureUnitInSettings by getCurrentTemperatureUnitUseCase().collectAsState(
+        initial = TemperatureUnit.CELSIUS
+    )
+
+    val widgetLocationId = preferences[LOCATION_ID_KEY] ?: 0L
+    val widgetTemperatureUnit = preferences[TEMPERATURE_UNIT_KEY]
+        ?.let { unitName -> WidgetTemperatureUnit.valueOf(unitName) }
+        ?: WidgetTemperatureUnit.CELSIUS
 
     Column(
         modifier = GlanceModifier
@@ -65,60 +71,54 @@ fun ForecastWidgetContent() {
     ) {
         val context = LocalContext.current
 
-        when {
-            homeLocation != null -> {
-                LaunchedEffect(homeLocation) {
-                    hourlyForecasts = forecastRepository.findHourlyForecastsByLocationId(
-                        locationId = homeLocation!!.id,
-                        date = getCurrentDateInTimeZone(timeZone = homeLocation!!.timeZone),
-                        startHour = getCurrentHourInTimeZone(timeZone = homeLocation!!.timeZone),
-                        limit = 6,
-                    ).map {
-                        it.mapToHourlyForecastItem(
-                            timeZone = homeLocation!!.timeZone,
-                            temperatureUnit = TemperatureUnit.CELSIUS
-                        )
-                    }
+        LaunchedEffect(widgetLocationId) {
+            locationWithForecasts =
+                widgetForecastRepository.findWidgetLocationsWithForecastsById(
+                    locationId = widgetLocationId
+                )
+        }
 
-                    dailyForecast = forecastRepository.findDailyForecastByLocationIdAndDate(
-                        locationId = homeLocation!!.id,
-                        date = getCurrentDateInTimeZone(timeZone = homeLocation!!.timeZone),
-                    )?.mapToDailyForecastItem(
-                        timeZone = homeLocation!!.timeZone,
-                        temperatureUnit = TemperatureUnit.CELSIUS
-                    )
-                }
-                val currentTemperature = if (hourlyForecasts.isNotEmpty())
-                    hourlyForecasts[0].temperature
-                else "--"
+        when {
+            locationWithForecasts != null -> {
+                val currentHour =
+                    locationWithForecasts?.hourlyForecasts?.firstOrNull()
 
                 OtherData(
-                    currentTemperature = currentTemperature,
-                    locationName = homeLocation!!.name,
-                    weatherDescription = getStr(dailyForecast?.weatherDescription, context),
+                    currentTemperature = getTemperature(
+                        temperature = currentHour?.temperature,
+                        widgetTemperatureUnit = widgetTemperatureUnit,
+                        settingsTemperatureUnit = temperatureUnitInSettings
+                    ),
+                    locationName = locationWithForecasts?.locationName ?: "",
+                    weatherDescription = getWeatherDescription(
+                        weatherDescription = currentHour?.weatherDescription,
+                        context = context
+                    ),
                     modifier = GlanceModifier
                         .defaultWeight(),
-                    dailyMaxTemperature = dailyForecast?.maxTemperature ?: "--",
-                    dailyMinTemperature = dailyForecast?.minTemperature ?: "--",
-                    dailyWeatherIcon = dailyForecast?.weatherIconRes
+                    dailyMaxTemperature = getTemperature(
+                        temperature = locationWithForecasts?.dailyMaxTemperature,
+                        widgetTemperatureUnit = widgetTemperatureUnit,
+                        settingsTemperatureUnit = temperatureUnitInSettings
+                    ),
+                    dailyMinTemperature = getTemperature(
+                        temperature = locationWithForecasts?.dailyMinTemperature,
+                        widgetTemperatureUnit = widgetTemperatureUnit,
+                        settingsTemperatureUnit = temperatureUnitInSettings
+                    ),
+                    dailyWeatherIcon = WeatherDescription.weatherDescriptionToIconRes(
+                        currentHour?.weatherDescription,
+                    )
                 )
                 HourlyForecastRow(
-                    hourlyForecasts = hourlyForecasts,
+                    hourlyForecasts = locationWithForecasts?.hourlyForecasts ?: emptyList(),
                     modifier = GlanceModifier
-                        .defaultWeight()
+                        .defaultWeight(),
+                    widgetTemperatureUnit = widgetTemperatureUnit,
+                    temperatureUnitInSettings = temperatureUnitInSettings
                 )
             }
-
-            else -> hourlyForecasts = emptyList()
         }
-    }
-}
-
-fun getStr(@StringRes description: Int?, context: Context): String {
-    return if (description != null) {
-        context.getString(description)
-    } else {
-        "--"
     }
 }
 
@@ -130,7 +130,6 @@ fun OtherData(
     modifier: GlanceModifier = GlanceModifier,
     dailyMaxTemperature: String,
     dailyMinTemperature: String,
-    @DrawableRes
     dailyWeatherIcon: Int?,
 ) {
     Row(
@@ -190,8 +189,10 @@ fun OtherData(
 
 @Composable
 fun HourlyForecastRow(
-    hourlyForecasts: List<HourlyForecastItem>,
+    hourlyForecasts: List<WidgetHourlyForecast>,
     modifier: GlanceModifier = GlanceModifier,
+    widgetTemperatureUnit: WidgetTemperatureUnit,
+    temperatureUnitInSettings: TemperatureUnit,
 ) {
     Row(
         modifier = modifier
@@ -202,7 +203,9 @@ fun HourlyForecastRow(
         for (i in 1 until hourlyForecasts.size) {
             HourlyForecastItem(
                 hourlyForecastItem = hourlyForecasts[i],
-                modifier = GlanceModifier.defaultWeight()
+                modifier = GlanceModifier.defaultWeight(),
+                widgetTemperatureUnit = widgetTemperatureUnit,
+                settingsTemperatureUnit = temperatureUnitInSettings,
             )
             if (i != hourlyForecasts.lastIndex) {
                 Spacer(modifier = GlanceModifier.width(8.dp))
@@ -213,8 +216,10 @@ fun HourlyForecastRow(
 
 @Composable
 fun HourlyForecastItem(
-    hourlyForecastItem: HourlyForecastItem,
+    hourlyForecastItem: WidgetHourlyForecast,
     modifier: GlanceModifier = GlanceModifier,
+    widgetTemperatureUnit: WidgetTemperatureUnit,
+    settingsTemperatureUnit: TemperatureUnit,
 ) {
     Column(
         modifier = modifier,
@@ -223,13 +228,23 @@ fun HourlyForecastItem(
         WidgetText(text = hourlyForecastItem.time)
         Spacer(modifier = GlanceModifier.height(5.dp))
         Image(
-            provider = ImageProvider(hourlyForecastItem.weatherIconRes),
+            provider = ImageProvider(
+                WeatherDescription.weatherDescriptionToIconRes(
+                    hourlyForecastItem.weatherDescription
+                )
+            ),
             contentDescription = "Weather icon",
             modifier = GlanceModifier.size(30.dp),
             colorFilter = ColorFilter.tint(colorProvider = ColorProvider(color = Color.White))
         )
         Spacer(modifier = GlanceModifier.height(5.dp))
-        WidgetText(text = hourlyForecastItem.temperature)
+        WidgetText(
+            text = getTemperature(
+                temperature = hourlyForecastItem.temperature,
+                widgetTemperatureUnit = widgetTemperatureUnit,
+                settingsTemperatureUnit = settingsTemperatureUnit,
+            )
+        )
     }
 }
 
@@ -249,4 +264,46 @@ fun WidgetText(
             .wrapContentSize(),
         style = style
     )
+}
+
+fun getTemperature(
+    temperature: Double?,
+    widgetTemperatureUnit: WidgetTemperatureUnit,
+    settingsTemperatureUnit: TemperatureUnit,
+): String {
+    return when {
+        temperature == null -> "--"
+        else -> {
+            return when (widgetTemperatureUnit) {
+                WidgetTemperatureUnit.CELSIUS -> {
+                    TemperatureUnit.getTemperatureForUI(
+                        temperature = temperature,
+                        temperatureUnit = TemperatureUnit.CELSIUS
+                    )
+                }
+
+                WidgetTemperatureUnit.FAHRENHEIT -> {
+                    TemperatureUnit.getTemperatureForUI(
+                        temperature = temperature,
+                        temperatureUnit = TemperatureUnit.FAHRENHEIT
+                    )
+                }
+
+                WidgetTemperatureUnit.COMPLY_WITH_SETTINGS -> {
+                    TemperatureUnit.getTemperatureForUI(
+                        temperature = temperature,
+                        temperatureUnit = settingsTemperatureUnit
+                    )
+                }
+            }
+        }
+    }
+}
+
+fun getWeatherDescription(weatherDescription: WeatherDescription?, context: Context): String {
+    return if (weatherDescription != null) {
+        context.getString(WeatherDescription.weatherDescriptionToString(weatherDescription))
+    } else {
+        "--"
+    }
 }

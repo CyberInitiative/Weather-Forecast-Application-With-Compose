@@ -168,7 +168,7 @@ private fun WeatherIconWithPrecipitationProbability(
 
         if (precipitationProbability.isNotEmpty()) {
             Text(
-                text = "${precipitationProbability}%",
+                text = precipitationProbability,
                 color = SiberianIce,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,

@@ -12,7 +12,7 @@ import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
-import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
+import com.example.weathercompose.domain.usecase.location.FindAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ForecastViewModel(
-    private val loadAllLocationsUseCase: LoadAllLocationsUseCase,
+    private val findAllLocationsUseCase: FindAllLocationsUseCase,
     private val setLocationAsHomeUseCase: SetLocationAsHomeUseCase,
     private val deleteLocationUseCase: DeleteLocationUseCase,
     private val locationUIStateMapper: LocationUIStateMapper,
@@ -88,7 +88,7 @@ class ForecastViewModel(
 
     private fun loadLocations() {
         viewModelScope.launch {
-            _locationsState.value = loadAllLocationsUseCase()
+            _locationsState.value = findAllLocationsUseCase()
         }
     }
 

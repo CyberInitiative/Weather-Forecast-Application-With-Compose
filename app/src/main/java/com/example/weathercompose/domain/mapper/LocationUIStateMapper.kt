@@ -5,6 +5,7 @@ import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
+import com.example.weathercompose.domain.model.forecast.WeatherDescription.Companion.isWeatherWithPrecipitationsOrOvercast
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
@@ -55,7 +56,7 @@ class LocationUIStateMapper(private val context: Context) {
 
         return LocationUIState(
             id = location.id,
-            locationName =  getLocationName(location),
+            locationName = getLocationName(location),
             locationCountry = location.country,
             currentHourTemperature = TemperatureUnit.getTemperatureForUI(
                 temperature = currentHourlyForecast.temperature,
@@ -93,8 +94,8 @@ class LocationUIStateMapper(private val context: Context) {
         )
     }
 
-    private fun getLocationName(location: LocationDomainModel): String{
-        return if(location.country.isEmpty()){
+    private fun getLocationName(location: LocationDomainModel): String {
+        return if (location.country.isEmpty()) {
             location.name
         } else {
             "${location.name},"
@@ -136,23 +137,23 @@ class LocationUIStateMapper(private val context: Context) {
             val hourlyForecast = location.getForecastForCurrentHour()
 
             return when {
-                hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
-                    -> {
+                hourlyForecast.isDay && !hourlyForecast.weatherDescription
+                    .isWeatherWithPrecipitationsOrOvercast() -> {
                     WeatherAndDayTimeState.NO_PRECIPITATION_DAY
                 }
 
-                !hourlyForecast.isDay && !hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
-                    -> {
+                !hourlyForecast.isDay && !hourlyForecast.weatherDescription
+                    .isWeatherWithPrecipitationsOrOvercast() -> {
                     WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT
                 }
 
-                hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
-                    -> {
+                hourlyForecast.isDay && hourlyForecast.weatherDescription
+                    .isWeatherWithPrecipitationsOrOvercast() -> {
                     WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY
                 }
 
-                !hourlyForecast.isDay && hourlyForecast.isWeatherWithPrecipitationsOrOvercast()
-                    -> {
+                !hourlyForecast.isDay && hourlyForecast.weatherDescription
+                    .isWeatherWithPrecipitationsOrOvercast() -> {
                     WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT
                 }
 

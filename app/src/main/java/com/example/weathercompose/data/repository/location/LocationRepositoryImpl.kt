@@ -38,19 +38,19 @@ class LocationRepositoryImpl(
 
     override suspend fun findAll(): List<LocationDomainModel> {
         return withContext(dispatcher) {
-            locationDao.loadAll().map { it.mapToLocationDomainModel() }
+            locationDao.findAll().map { it.mapToLocationDomainModel() }
         }
     }
 
     override fun findAllLocationsWithForecasts(): Flow<List<LocationDomainModel>> {
-        return locationDao.loadAllLocationsWithForecasts().map { locations ->
+        return locationDao.findAllLocationsWithForecasts().map { locations ->
             locations.map { it.mapToLocationDomainModel() }
         }
     }
 
     override suspend fun findById(locationId: Long): LocationDomainModel? {
         return withContext(dispatcher) {
-            locationDao.load(locationId = locationId)?.mapToLocationDomainModel()
+            locationDao.findById(locationId = locationId)?.mapToLocationDomainModel()
         }
     }
 

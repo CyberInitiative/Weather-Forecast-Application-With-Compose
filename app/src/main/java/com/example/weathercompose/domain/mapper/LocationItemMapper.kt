@@ -8,6 +8,7 @@ import com.example.weathercompose.domain.model.forecast.WeatherDescription.Compa
 import com.example.weathercompose.domain.model.forecast.WeatherDescription.Companion.weatherDescriptionToString
 import com.example.weathercompose.domain.model.location.LocationDomainModel
 import com.example.weathercompose.ui.model.LocationItem
+import com.example.weathercompose.ui.model.LocationOptionItem
 
 class LocationItemMapper {
     fun mapToLocationItem(
@@ -47,6 +48,13 @@ class LocationItemMapper {
             currentHourWeatherDescription = weatherDescription,
             currentHourWeatherIconRes = icon,
             isHomeLocation = location.isHomeLocation,
+        )
+    }
+
+    fun mapToLocationOption(location: LocationDomainModel): LocationOptionItem {
+        return LocationOptionItem(
+            id = location.id,
+            locationName = location.name
         )
     }
 }

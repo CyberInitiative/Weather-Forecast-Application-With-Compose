@@ -24,7 +24,8 @@ import org.koin.mp.KoinPlatform.getKoin
 import java.util.concurrent.TimeUnit
 
 class WeatherApplication : Application() {
-    private val koinModules = dataModule + domainModule + uiModule + utilsModule + workerModule
+    private val koinModules =
+        dataModule + domainModule + uiModule + coroutineModule + utilsModule + workerModule
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
@@ -37,6 +38,8 @@ class WeatherApplication : Application() {
         }
 
         val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase = getKoin().get()
+
+            //scheduleWidgetsUpdateAtTopOfNextHour(context = this)
 
         applicationScope.launch {
             getForecastUpdateFrequencyUseCase().collect { frequencyInHours ->

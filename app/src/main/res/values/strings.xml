@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">WeatherCompose</string>
+    <string name="title_activity_widget_alarm_dialog_host">WidgetAlarmDialogHostActivity</string>
+
     <!-- weather descriptions -->
     <string name="clear_sky_weather_description">Clear sky</string>
     <string name="mainly_clear_weather_description">Mainly clear</string>
@@ -27,31 +29,14 @@
     <string name="slight_snow_showers_weather_description">Slight snow showers</string>
     <string name="heavy_snow_showers_weather_description">Heavy snow showers</string>
     <string name="thunderstorm_weather_description">Thunderstorm</string>
-    <string name="thunderstorm_with_slight_hail_weather_description">Thunderstorm with slight hail</string>
-    <string name="thunderstorm_with_heavy_hail_weather_description">Thunderstorm with heavy hail</string>
+    <string name="thunderstorm_with_slight_hail_weather_description">
+        Thunderstorm with slight hail
+    </string>
+    <string name="thunderstorm_with_heavy_hail_weather_description">
+        Thunderstorm with heavy hail
+    </string>
     <string name="not_existing_weather_code">Not existing weather code</string>
 
-    <string name="no_data">No data</string>
-
-    <string name="max_temperature_label">max: %d°</string>
-    <string name="min_temperature_label">min: %d°</string>
-    <string name="temperature_label">%d°</string>
-
-    <string name="add_location">Add location</string>
-    <string name="manage_locations">Manage locations</string>
-    <string name="temperature_unit">Temperature unit</string>
-    <string name="update_frequency">Update frequency</string>
-
-    <string name="temperature_unit_dialog_title">Select temperature unit</string>
-    <string name="forecast_update_frequency_dialog_title">Select update frequency</string>
-    
-    <string name="location_search_box_hint">Search…</string>
-    <string name="loading_process_text">Loading…</string>
-
-    <string name="no_locations_found_search_result">No locations found</string>
-    <string name="no_internet_dialog_text">No internet connection. Check your network settings.</string>
-    <string name="go_to_settings_text_button">GO TO SETTINGS</string>
-    
     <string-array name="update_frequency_options">
         <item>1 hour</item>
         <item>2 hours</item>
@@ -60,4 +45,49 @@
         <item>12 hours</item>
         <item>24 hours</item>
     </string-array>
+
+    <string name="celsius_unit">Celsius (°C)</string>
+    <string name="fahrenheit_unit">Fahrenheit (°F)</string>
+    <string name="comply_with_settings_unit">Comply with app settings</string>
+
+    <string name="no_data">No data</string>
+
+    <string name="max_temperature_label">max: %d°</string>
+    <string name="min_temperature_label">min: %d°</string>
+    <string name="temperature_label">%d°</string>
+
+    <string name="add_location">Add location</string>
+    <string name="confirm_button_text">Confirm</string>
+
+    <string name="manage_locations">Manage locations</string>
+    <string name="temperature_unit">Temperature unit</string>
+    <string name="update_frequency">Update frequency</string>
+
+    <string name="temperature_unit_dialog_title">Select temperature unit</string>
+    <string name="forecast_update_frequency_dialog_title">Select update frequency</string>
+
+    <string name="location_search_box_hint">Search…</string>
+    <string name="loading_process_text">Loading…</string>
+
+    <string name="no_locations_found_search_result">No locations found</string>
+    <string name="no_internet_dialog_text">
+        No internet connection. Check your network settings.
+    </string>
+
+    <string name="go_to_settings_text_button">GO TO SETTINGS</string>
+    <string name="do_not_show_again_text_button">DON\'T SHOW AGAIN</string>
+
+    <string name="widget_alarm_dialog_title">Permission request to schedule exact alarms</string>
+    <string name="widget_alarm_dialog_permission_request_paragraph_one">
+        To keep your widgets up-to-date with the latest information, the app needs permission to
+        schedule exact alarms. These alarms silently trigger updates in the background,
+        so you always see the most current data on your home screen without delay.
+    </string>
+    <string name="widget_alarm_dialog_permission_request_paragraph_two">
+        If you choose not to allow this permission, your widgets will still
+        update — just less precisely and possibly with noticeable delays.
+    </string>
+    <string name="widget_alarm_dialog_permission_request_paragraph_three">
+         You can always change this decision later in your device settings.
+    </string>
 </resources>

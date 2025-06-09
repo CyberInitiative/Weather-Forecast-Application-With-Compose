@@ -4,6 +4,7 @@ import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DailyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.HourlyForecastDomainModel
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
+import com.example.weathercompose.domain.model.forecast.WeatherDescription.Companion.isWeatherWithPrecipitations
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.model.HourlyForecastItem
 import com.example.weathercompose.utils.getCurrentDateInTimeZone
@@ -65,7 +66,7 @@ fun HourlyForecastDomainModel.mapToHourlyForecastItem(
         ),
         precipitationProbability = getPrecipitationProbability(
             precipitationProbability = precipitationProbability,
-            isWeatherWithPrecipitations = isWeatherWithPrecipitations()
+            isWeatherWithPrecipitations = weatherDescription.isWeatherWithPrecipitations()
         )
     )
 }

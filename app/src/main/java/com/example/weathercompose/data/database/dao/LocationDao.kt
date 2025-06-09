@@ -12,19 +12,15 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class LocationDao {
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun insert(location: LocationEntity): Long
-
     @Query("SELECT * FROM locations")
-    abstract fun loadAll(): List<LocationEntity>
+    abstract fun findAll(): List<LocationEntity>
 
     @Transaction
     @Query("SELECT * FROM locations")
-    abstract fun loadAllLocationsWithForecasts(): Flow<List<LocationWithDailyForecasts>>
+    abstract fun findAllLocationsWithForecasts(): Flow<List<LocationWithDailyForecasts>>
 
     @Query("SELECT * FROM locations WHERE locationId = :locationId")
-    abstract suspend fun load(locationId: Long): LocationEntity?
+    abstract suspend fun findById(locationId: Long): LocationEntity?
 
     /*
     @Transaction
@@ -50,6 +46,9 @@ abstract class LocationDao {
         }
         updateHomeLocationStatus(locationId = locationId, isHomeLocation = true)
     }
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun insert(location: LocationEntity): Long
 
     @Delete
     abstract suspend fun delete(location: LocationEntity)

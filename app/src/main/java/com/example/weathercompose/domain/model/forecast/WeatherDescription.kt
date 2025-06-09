@@ -112,7 +112,7 @@ enum class WeatherDescription {
 
         @DrawableRes
         fun weatherDescriptionToIconRes(
-            weatherDescription: WeatherDescription, isDay: Boolean = true,
+            weatherDescription: WeatherDescription?, isDay: Boolean = true,
         ): Int {
             return when (weatherDescription) {
                 CLEAR_SKY -> if (isDay) {
@@ -170,6 +170,68 @@ enum class WeatherDescription {
                 THUNDERSTORM_WITH_SLIGHT_HAIL -> R.drawable.thunderstorm_with_slight_hail
                 THUNDERSTORM_WITH_HEAVY_HAIL -> R.drawable.thunderstorm_with_heavy_hail
                 NOT_EXISTING_WEATHER_CODE -> R.drawable.ic_launcher_background
+                null -> R.drawable.ic_launcher_background
+            }
+        }
+
+        fun WeatherDescription.isWeatherWithPrecipitationsOrOvercast(): Boolean {
+            return when (this) {
+                FOG,
+                DEPOSITING_RIME_FOG,
+                OVERCAST,
+                LIGHT_DRIZZLE,
+                MODERATE_DRIZZLE,
+                DENSE_DRIZZLE,
+                LIGHT_FREEZING_DRIZZLE,
+                DENSE_FREEZING_DRIZZLE,
+                SLIGHT_RAIN,
+                MODERATE_RAIN,
+                HEAVY_RAIN,
+                LIGHT_FREEZING_RAIN,
+                HEAVY_FREEZING_RAIN,
+                SLIGHT_SNOW_FALL,
+                MODERATE_SNOW_FALL,
+                HEAVY_SNOW_FALL,
+                SNOW_GRAINS,
+                SLIGHT_RAIN_SHOWERS,
+                MODERATE_RAIN_SHOWERS,
+                VIOLENT_RAIN_SHOWERS,
+                SLIGHT_SNOW_SHOWERS,
+                HEAVY_SNOW_SHOWERS,
+                THUNDERSTORM,
+                THUNDERSTORM_WITH_SLIGHT_HAIL,
+                THUNDERSTORM_WITH_HEAVY_HAIL -> true
+
+                else -> false
+            }
+        }
+
+        fun WeatherDescription.isWeatherWithPrecipitations(): Boolean {
+            return when (this) {
+                LIGHT_DRIZZLE,
+                MODERATE_DRIZZLE,
+                DENSE_DRIZZLE,
+                LIGHT_FREEZING_DRIZZLE,
+                DENSE_FREEZING_DRIZZLE,
+                SLIGHT_RAIN,
+                MODERATE_RAIN,
+                HEAVY_RAIN,
+                LIGHT_FREEZING_RAIN,
+                HEAVY_FREEZING_RAIN,
+                SLIGHT_SNOW_FALL,
+                MODERATE_SNOW_FALL,
+                HEAVY_SNOW_FALL,
+                SNOW_GRAINS,
+                SLIGHT_RAIN_SHOWERS,
+                MODERATE_RAIN_SHOWERS,
+                VIOLENT_RAIN_SHOWERS,
+                SLIGHT_SNOW_SHOWERS,
+                HEAVY_SNOW_SHOWERS,
+                THUNDERSTORM,
+                THUNDERSTORM_WITH_SLIGHT_HAIL,
+                THUNDERSTORM_WITH_HEAVY_HAIL -> true
+
+                else -> false
             }
         }
     }

@@ -4,103 +4,62 @@ import com.example.weathercompose.domain.usecase.forecast.DeleteForecastUseCase
 import com.example.weathercompose.domain.usecase.forecast.LoadForecastUseCase
 import com.example.weathercompose.domain.usecase.forecast.SaveForecastUseCase
 import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
-import com.example.weathercompose.domain.usecase.location.LoadAllLocationsUseCase
+import com.example.weathercompose.domain.usecase.location.FindAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
+import com.example.weathercompose.domain.usecase.settings.GetAllowedToShowWidgetAlarmDialogState
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.GetLastTimeForecastUpdatedUseCase
+import com.example.weathercompose.domain.usecase.settings.SetAllowedToShowWidgetAlarmDialogState
 import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.SetLastTimeForecastUpdatedUseCase
-import kotlinx.coroutines.Dispatchers
-import org.koin.core.parameter.parametersOf
+import com.example.weathercompose.domain.usecase.widget.FindAllWidgetLocations
 import org.koin.dsl.module
 
 val domainModule = module {
     factory {
         LoadForecastUseCase(
-            forecastRepository = get { parametersOf(Dispatchers.IO) },
+            forecastRepository = get(),
             saveForecastUseCase = get(),
             dailyForecastMapper = get(),
         )
     }
 
-    factory { SearchLocationUseCase(locationRepository = get { parametersOf(Dispatchers.IO) }) }
+    factory { SearchLocationUseCase(locationRepository = get()) }
 
-    factory { SaveLocationUseCase(locationRepository = get { parametersOf(Dispatchers.IO) }) }
+    factory { SaveLocationUseCase(locationRepository = get()) }
 
-    factory {
-        LoadLocationUseCase(
-            locationRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { LoadLocationUseCase(locationRepository = get()) }
 
-    factory {
-        LoadAllLocationsUseCase(
-            locationRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { FindAllLocationsUseCase(locationRepository = get()) }
 
-    factory {
-        DeleteLocationUseCase(
-            locationRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { DeleteLocationUseCase(locationRepository = get()) }
 
-    factory {
-        SetLocationAsHomeUseCase(
-            locationRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { SetLocationAsHomeUseCase(locationRepository = get()) }
 
-    factory {
-        DeleteForecastUseCase(
-            forecastRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { DeleteForecastUseCase(forecastRepository = get()) }
 
-    factory {
-        SaveForecastUseCase(
-            forecastRepository = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { SaveForecastUseCase(forecastRepository = get()) }
 
-    factory {
-        SetCurrentTemperatureUnitUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { GetCurrentTemperatureUnitUseCase(appSettings = get()) }
 
-    factory {
-        GetCurrentTemperatureUnitUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { SetCurrentTemperatureUnitUseCase(appSettings = get()) }
 
-    factory {
-        SetForecastUpdateFrequencyUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { GetForecastUpdateFrequencyUseCase(appSettings = get()) }
 
-    factory {
-        GetForecastUpdateFrequencyUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { SetForecastUpdateFrequencyUseCase(appSettings = get()) }
 
-    factory {
-        GetLastTimeForecastUpdatedUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { GetLastTimeForecastUpdatedUseCase(appSettings = get()) }
 
-    factory {
-        SetLastTimeForecastUpdatedUseCase(
-            appSettings = get { parametersOf(Dispatchers.IO) },
-        )
-    }
+    factory { SetLastTimeForecastUpdatedUseCase(appSettings = get()) }
+
+    factory { GetAllowedToShowWidgetAlarmDialogState(appSettings = get()) }
+
+    factory { SetAllowedToShowWidgetAlarmDialogState(appSettings = get()) }
+
+    factory { FindAllWidgetLocations(widgetLocationRepository = get()) }
 }
