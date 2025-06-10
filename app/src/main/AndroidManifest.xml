@@ -45,25 +45,20 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/forecast_widget_info" />
         </receiver>
+
         <receiver
             android:name=".broadcast_receiver.WidgetsUpdateReceiver"
-            android:exported="true" />
+            android:exported="false" />
+
         <receiver
-            android:name=".broadcast_receiver.BootReceiver"
+            android:name=".broadcast_receiver.BootAndAppUpdateReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".broadcast_receiver.AppUpdateReceiver"
-            android:exported="false">
-            <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>

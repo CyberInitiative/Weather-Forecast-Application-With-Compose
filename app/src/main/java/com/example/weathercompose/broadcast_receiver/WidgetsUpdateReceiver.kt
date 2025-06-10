@@ -3,9 +3,7 @@ package com.example.weathercompose.broadcast_receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.glance.appwidget.updateAll
-import com.example.weathercompose.utils.canScheduleExactAlarms
 import com.example.weathercompose.utils.scheduleWidgetsUpdate
 import com.example.weathercompose.widget.ForecastWidget
 import kotlinx.coroutines.CoroutineScope
@@ -20,12 +18,8 @@ class WidgetsUpdateReceiver : BroadcastReceiver() {
         appScope = CoroutineScope(Dispatchers.IO)
     ) {
         if (p0 != null) {
-            Log.d("WidgetsUpdateReceiver", "onReceive() called")
             ForecastWidget().updateAll(context = p0)
-
-            if (canScheduleExactAlarms(context = p0)) {
-                scheduleWidgetsUpdate(context = p0)
-            }
+            scheduleWidgetsUpdate(context = p0)
         }
     }
 }

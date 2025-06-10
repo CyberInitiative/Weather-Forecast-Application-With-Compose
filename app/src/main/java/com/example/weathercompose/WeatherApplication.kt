@@ -39,8 +39,6 @@ class WeatherApplication : Application() {
 
         val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase = getKoin().get()
 
-            //scheduleWidgetsUpdateAtTopOfNextHour(context = this)
-
         applicationScope.launch {
             getForecastUpdateFrequencyUseCase().collect { frequencyInHours ->
                 setForecastUpdatingWorker(frequencyInHours.value)
@@ -51,7 +49,6 @@ class WeatherApplication : Application() {
     private fun setForecastUpdatingWorker(frequencyInHours: Int) {
         val workRequest = PeriodicWorkRequestBuilder<ForecastUpdatingWorker>(
             frequencyInHours.toLong(), TimeUnit.HOURS
-            //16L, TimeUnit.MINUTES
         )
             .setConstraints(
                 Constraints.Builder()

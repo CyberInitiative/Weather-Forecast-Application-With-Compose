@@ -52,6 +52,7 @@ import com.example.weathercompose.ui.theme.Coal
 import com.example.weathercompose.ui.theme.Liberty
 import com.example.weathercompose.ui.theme.SiberianIce
 import com.example.weathercompose.ui.viewmodel.WidgetsConfigureViewModel
+import com.example.weathercompose.utils.canScheduleExactAlarms
 import com.example.weathercompose.widget.WidgetTemperatureUnit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -120,7 +121,7 @@ fun WidgetConfigurationScreen(
         }
     }
 
-    val shouldShowDialog = isDialogVisible && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val shouldShowDialog = isDialogVisible && !canScheduleExactAlarms(context = context)
     if (shouldShowDialog) {
         WidgetAlarmDialog(
             onConfirm = {
