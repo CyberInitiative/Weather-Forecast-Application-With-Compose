@@ -1,4 +1,4 @@
-package com.example.weathercompose.ui.compose
+package com.example.weathercompose.ui.compose.main_screen
 
 import android.content.Intent
 import android.provider.Settings
@@ -9,18 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,20 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
+import com.example.weathercompose.ui.compose.LocationSearchScreen
 import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialog
 import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
@@ -59,7 +43,6 @@ import com.example.weathercompose.ui.theme.Coal
 import com.example.weathercompose.ui.theme.CoalBlack
 import com.example.weathercompose.ui.theme.Fashionista20PerDarker
 import com.example.weathercompose.ui.theme.HiloBay
-import com.example.weathercompose.ui.theme.IntercoastalGray
 import com.example.weathercompose.ui.theme.LimoScene40PerDarker
 import com.example.weathercompose.ui.theme.RomanSilver
 import com.example.weathercompose.ui.theme.VeryDarkShadeCyanBlue
@@ -146,13 +129,23 @@ fun MainScreen() {
         }
     }
 
+    var locationName by remember { mutableStateOf("") }
+    var isLocationNameVisible by remember { mutableStateOf(true) }
+
+    val onLocationNameSet = { name: String -> locationName = name }
+    val onLocationNameVisibilityChange = { isVisible: Boolean -> isLocationNameVisible = isVisible }
+
     ScreenContent(
         navController = navController,
         forecastViewModel = forecastViewModel,
         weatherAndDayTimeState = weatherAndDayTimeState,
         onPrecipitationConditionChange = onAppearanceStateChange,
-        onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
-        onForecastUpdateFrequencyDialogOptionChoose = onForecastUpdateFrequencyDialogOptionChoose,
+        onTemperatureUnitOptionClick = onTemperatureUnitDialogOptionChoose,
+        onForecastUpdateFrequencyOptionClick = onForecastUpdateFrequencyDialogOptionChoose,
+        locationName = locationName,
+        onLocationNameSet = onLocationNameSet,
+        isLocationNameVisible = isLocationNameVisible,
+        onLocationNameVisibilityChange = onLocationNameVisibilityChange
     )
 }
 
@@ -162,9 +155,20 @@ private fun ScreenContent(
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
     onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
-    onTemperatureUnitDialogOptionChoose: () -> Unit,
-    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit,
+    onTemperatureUnitOptionClick: () -> Unit,
+    onForecastUpdateFrequencyOptionClick: () -> Unit,
+    locationName: String,
+    onLocationNameSet: (String) -> Unit,
+    isLocationNameVisible: Boolean,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val destination = currentBackStackEntry?.destination
+
+    val onNavigateLocationsManagerScreen = {
+        navController.navigate(NavigationRoute.LocationsManager)
+    }
+
     AnimatedStatefulGradientBackground(
         weatherAndDayTimeState = weatherAndDayTimeState,
         modifier = Modifier.fillMaxSize(),
@@ -173,11 +177,13 @@ private fun ScreenContent(
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
             topBar = {
-                MainScreenTopAppBar(
-                    navController = navController,
-                    onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
-                    onForecastUpdateFrequencyDialogOptionChoose =
-                    onForecastUpdateFrequencyDialogOptionChoose
+                ForecastScreenTopAppBar(
+                    destination = destination,
+                    onTemperatureUnitOptionClick = onTemperatureUnitOptionClick,
+                    onForecastUpdateFrequencyOptionClick = onForecastUpdateFrequencyOptionClick,
+                    onNavigateToLocationsManagerScreen = onNavigateLocationsManagerScreen,
+                    locationName = locationName,
+                    isLocationNameVisible = isLocationNameVisible
                 )
             },
         ) { innerPadding ->
@@ -191,6 +197,8 @@ private fun ScreenContent(
                     forecastViewModel = forecastViewModel,
                     weatherAndDayTimeState = weatherAndDayTimeState,
                     onPrecipitationConditionChange = onPrecipitationConditionChange,
+                    onLocationNameSet = onLocationNameSet,
+                    onLocationNameVisibilityChange = onLocationNameVisibilityChange,
                 )
             }
         }
@@ -203,6 +211,8 @@ fun NavigationHost(
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
     onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
+    onLocationNameSet: (String) -> Unit,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -225,6 +235,8 @@ fun NavigationHost(
                 onAppearanceStateChange = onPrecipitationConditionChange,
                 onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
                 locationId = locationId,
+                onLocationNameSet = onLocationNameSet,
+                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
             )
         }
 
@@ -267,128 +279,6 @@ fun NavigationHost(
             )
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MainScreenTopAppBar(
-    navController: NavController,
-    onTemperatureUnitDialogOptionChoose: () -> Unit,
-    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit,
-) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
-    val onMenuClick = { menuExpanded = !menuExpanded }
-    val onMenuDismiss = { menuExpanded = false }
-
-    val navigateLocationsManagerScreen =
-        { navController.navigate(NavigationRoute.LocationsManager) }
-
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val destination = currentBackStackEntry?.destination
-
-    TopAppBar(
-        colors = TopAppBarDefaults
-            .topAppBarColors(
-                containerColor = Color.Transparent,
-                titleContentColor = Color.White,
-            ),
-        title = {
-            when {
-                destination?.hasRoute<NavigationRoute.LocationsManager>() == true -> {
-                    Text(
-                        text = stringResource(R.string.manage_locations),
-                        modifier = Modifier.padding(start = 10.dp),
-                        color = Color.White,
-                        fontSize = 20.sp,
-                    )
-                }
-
-                destination?.hasRoute<NavigationRoute.LocationSearch>() == true -> {
-                    Text(
-                        text = stringResource(R.string.add_location),
-                        modifier = Modifier.padding(start = 10.dp),
-                        color = Color.White,
-                        fontSize = 20.sp,
-                    )
-                }
-            }
-
-        },
-        actions = {
-            when {
-                destination?.hasRoute<NavigationRoute.Forecast>() == true -> {
-                    TopAppBarOptionsMenu(
-                        isMenuExpanded = menuExpanded,
-                        onMenuClick = onMenuClick,
-                        closeMenu = onMenuDismiss,
-                        navigateLocationsManagerScreen = navigateLocationsManagerScreen,
-                        onTemperatureUnitDialogOptionChoose = onTemperatureUnitDialogOptionChoose,
-                        onForecastUpdateFrequencyDialogOptionChoose =
-                        onForecastUpdateFrequencyDialogOptionChoose
-                    )
-                }
-
-                else -> {}
-            }
-        }
-    )
-}
-
-@Composable
-private fun TopAppBarOptionsMenu(
-    isMenuExpanded: Boolean,
-    onMenuClick: () -> Unit,
-    closeMenu: () -> Unit,
-    navigateLocationsManagerScreen: () -> Unit,
-    onTemperatureUnitDialogOptionChoose: () -> Unit,
-    onForecastUpdateFrequencyDialogOptionChoose: () -> Unit
-) {
-
-    IconButton(onClick = onMenuClick) {
-        Icon(
-            imageVector = Icons.Filled.MoreVert,
-            contentDescription = "More options",
-            tint = Color.White
-        )
-    }
-
-    DropdownMenu(
-        expanded = isMenuExpanded,
-        onDismissRequest = { closeMenu() }
-    ) {
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.manage_locations), fontSize = 16.sp) },
-            onClick = {
-                closeMenu()
-                navigateLocationsManagerScreen()
-            }
-        )
-        OptionsMenuItemDivider()
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.temperature_unit), fontSize = 16.sp) },
-            onClick = {
-                closeMenu()
-                onTemperatureUnitDialogOptionChoose()
-            }
-        )
-        OptionsMenuItemDivider()
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.update_frequency), fontSize = 16.sp) },
-            onClick = {
-                closeMenu()
-                onForecastUpdateFrequencyDialogOptionChoose()
-            }
-        )
-    }
-}
-
-@Composable
-private fun OptionsMenuItemDivider() {
-    HorizontalDivider(
-        thickness = 0.8.dp,
-        color = IntercoastalGray
-    )
 }
 
 @Composable

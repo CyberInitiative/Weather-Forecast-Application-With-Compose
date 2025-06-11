@@ -56,7 +56,7 @@ class LocationUIStateMapper(private val context: Context) {
 
         return LocationUIState(
             id = location.id,
-            locationName = getLocationName(location),
+            locationName = location.name, //getLocationName(location),
             locationCountry = location.country,
             currentHourTemperature = TemperatureUnit.getTemperatureForUI(
                 temperature = currentHourlyForecast.temperature,

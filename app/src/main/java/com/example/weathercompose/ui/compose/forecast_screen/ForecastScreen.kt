@@ -27,11 +27,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -57,7 +62,9 @@ fun ForecastScreen(
     viewModel: ForecastViewModel,
     onAppearanceStateChange: (WeatherAndDayTimeState) -> Unit,
     onNavigateToLocationSearchScreen: () -> Unit,
-    locationId: Long?
+    locationId: Long?,
+    onLocationNameSet: (String) -> Unit,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
     val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
@@ -106,6 +113,8 @@ fun ForecastScreen(
         locationsUIStates = locationsUIStates,
         uiElementsColor = uiElementsColor,
         pagerState = pagerState,
+        onLocationNameSet = onLocationNameSet,
+        onLocationNameVisibilityChange = onLocationNameVisibilityChange,
     )
 }
 
@@ -114,6 +123,8 @@ private fun ForecastContent(
     locationsUIStates: DataState<List<LocationUIState>>,
     uiElementsColor: Color,
     pagerState: PagerState,
+    onLocationNameSet: (String) -> Unit,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
     when (locationsUIStates) {
         DataState.Initial, DataState.Loading -> {
@@ -125,6 +136,8 @@ private fun ForecastContent(
                 locationsUIStates = locationsUIStates.data,
                 uiElementsColor = uiElementsColor,
                 pagerState = pagerState,
+                onLocationNameSet = onLocationNameSet,
+                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
             )
         }
 
@@ -138,21 +151,27 @@ private fun LoadedData(
     locationsUIStates: List<LocationUIState>,
     uiElementsColor: Color,
     pagerState: PagerState,
+    onLocationNameSet: (String) -> Unit,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
     val sharedScrollState = rememberScrollState()
 
     Column {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f) // Fill available space
+            modifier = Modifier.weight(1f)
         ) { page ->
             val currentLocation = locationsUIStates[page]
+            val isCurrentPage = pagerState.currentPage == page
 
             LocationPage(
                 currentLocation = currentLocation,
                 shouldResetScroll = page != pagerState.currentPage,
                 uiElementsColor = uiElementsColor,
                 scrollState = sharedScrollState,
+                onLocationNameSet = onLocationNameSet,
+                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
+                isCurrentPage = isCurrentPage
             )
         }
 
@@ -169,10 +188,17 @@ private fun LocationPage(
     currentLocation: LocationUIState,
     shouldResetScroll: Boolean,
     uiElementsColor: Color,
-    scrollState: ScrollState
+    scrollState: ScrollState,
+    onLocationNameSet: (String) -> Unit,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
+    isCurrentPage: Boolean,
 ) {
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(value = null) }
+
+
     Column(
         modifier = Modifier
+            .onPlaced { layoutCoordinates: LayoutCoordinates -> coordinates = layoutCoordinates }
             .fillMaxWidth()
             .padding(horizontal = 15.dp)
             .verticalScroll(state = scrollState),
@@ -181,8 +207,17 @@ private fun LocationPage(
         if (currentLocation.isLoading) {
             LoadingProcessIndicator()
         } else {
+            LaunchedEffect(isCurrentPage) {
+                if (isCurrentPage) {
+                    onLocationNameSet(currentLocation.locationName)
+                }
+            }
+
             LocationAndWeatherInfoSection(
-                locationUIState = currentLocation
+                locationUIState = currentLocation,
+                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
+                layoutCoordinates = coordinates,
+                isCurrentPage = isCurrentPage,
             )
 
             Spacer(modifier = Modifier.height(15.dp))

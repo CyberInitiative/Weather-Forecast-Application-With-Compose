@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.weathercompose.ui.compose.MainScreen
+import com.example.weathercompose.ui.compose.main_screen.MainScreen
 import com.example.weathercompose.ui.theme.WeatherComposeTheme
 
 class MainActivity : ComponentActivity() {

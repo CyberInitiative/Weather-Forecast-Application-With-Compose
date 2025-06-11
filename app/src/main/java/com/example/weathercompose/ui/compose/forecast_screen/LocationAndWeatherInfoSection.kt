@@ -2,7 +2,6 @@ package com.example.weathercompose.ui.compose.forecast_screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +31,9 @@ import com.example.weathercompose.ui.ui_state.LocationUIState
 @Composable
 fun LocationAndWeatherInfoSection(
     locationUIState: LocationUIState,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
+    layoutCoordinates: LayoutCoordinates?,
+    isCurrentPage: Boolean,
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -36,6 +42,7 @@ fun LocationAndWeatherInfoSection(
     ) {
         val (
             locationName,
+            locationCountry,
             dayOfWeekAndDate,
             currentTemperature,
             weatherStatus,
@@ -47,8 +54,13 @@ fun LocationAndWeatherInfoSection(
             start.linkTo(parent.start, margin = 10.dp)
         }
 
+        val locationCountryModifier = Modifier.constrainAs(locationCountry) {
+            top.linkTo(locationName.bottom)
+            start.linkTo(parent.start, margin = 10.dp)
+        }
+
         val dateOfWeekAndDateModifier = Modifier.constrainAs(dayOfWeekAndDate) {
-            top.linkTo(locationName.bottom, margin = 3.5.dp)
+            top.linkTo(locationCountry.bottom, margin = 3.5.dp)
             start.linkTo(parent.start, margin = 10.dp)
         }
 
@@ -70,10 +82,31 @@ fun LocationAndWeatherInfoSection(
             width = Dimension.fillToConstraints
         }
 
-        Column(modifier = locationNameModifier) {
-            LocationText(name = locationUIState.locationName)
-            LocationText(name = locationUIState.locationCountry)
-        }
+        LocationText(
+            name = if (locationUIState.locationCountry.isEmpty())
+                locationUIState.locationName
+            else {
+                "${locationUIState.locationName},"
+            },
+            modifier = locationNameModifier
+                .then(
+                    if (isCurrentPage) {
+                        Modifier.isVisible(
+                            parentCoordinates = layoutCoordinates,
+                            onVisibilityChange = { isVisible ->
+                                onLocationNameVisibilityChange(isVisible)
+                            }
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+        )
+
+        LocationText(
+            name = locationUIState.locationCountry,
+            modifier = locationCountryModifier
+        )
 
         Text(
             text = locationUIState.currentDayOfWeekAndDate,
@@ -109,18 +142,19 @@ fun LocationAndWeatherInfoSection(
 private fun LocationText(
     name: String,
     modifier: Modifier = Modifier,
+    fontSize: TextUnit = 28.sp
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .height(35.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppText(
             text = name,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth(),
-            fontSize = 28.sp,
+            fontSize = fontSize,
         )
     }
 }
@@ -192,5 +226,25 @@ fun ImageWithLabelHorizontal(
             color = Color.White,
             fontSize = textSize,
         )
+    }
+}
+
+fun Modifier.isVisible(
+    parentCoordinates: LayoutCoordinates?,
+    onVisibilityChange: (Boolean) -> Unit
+) = composed {
+
+    Modifier.onGloballyPositioned { childCoordinates ->
+        if (parentCoordinates == null ||
+            !childCoordinates.isAttached ||
+            !parentCoordinates.isAttached
+        ) return@onGloballyPositioned
+
+        val childBounds = childCoordinates.boundsInWindow()
+        val parentBounds = parentCoordinates.boundsInWindow()
+
+        val isPartiallyVisible = childBounds.overlaps(parentBounds)
+
+        onVisibilityChange(isPartiallyVisible)
     }
 }
