@@ -42,8 +42,8 @@ import com.example.weathercompose.data.model.widget.WidgetLocationWithForecasts
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.repository.WidgetLocationRepository
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
-import com.example.weathercompose.widget.ForecastWidget.Companion.LOCATION_ID_KEY
-import com.example.weathercompose.widget.ForecastWidget.Companion.TEMPERATURE_UNIT_KEY
+import com.example.weathercompose.widget.PrefKeys.LOCATION_ID_KEY
+import com.example.weathercompose.widget.PrefKeys.TEMPERATURE_UNIT_KEY
 import org.koin.compose.koinInject
 
 @Composable

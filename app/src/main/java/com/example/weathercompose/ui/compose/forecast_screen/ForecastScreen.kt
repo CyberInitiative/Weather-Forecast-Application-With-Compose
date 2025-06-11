@@ -68,6 +68,19 @@ fun ForecastScreen(
 ) {
     val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
+    val pagerState = rememberPagerState(pageCount = {
+        (locationsUIStates as? DataState.Ready)?.data?.size ?: 0
+    })
+    val uiElementsColor by animateColorAsState(
+        targetValue = when (precipitationCondition) {
+            WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
+            WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
+            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
+            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
+        },
+        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
+    )
+    val locationsData = (locationsUIStates as? DataState.Ready)?.data
 
     LaunchedEffect(precipitationCondition) {
         onAppearanceStateChange(precipitationCondition)
@@ -79,35 +92,19 @@ fun ForecastScreen(
         }
     }
 
-    val pagerState = rememberPagerState(pageCount = {
-        (locationsUIStates as? DataState.Ready)?.data?.size ?: 0
-    })
-
     LaunchedEffect(locationId) {
         val currentPage = pagerState.currentPage
-        val locationsData = (locationsUIStates as? DataState.Ready)?.data
         val index = locationsData?.indexOfFirst { it.id == locationId } ?: currentPage
         pagerState.scrollToPage(if (index != -1) index else currentPage)
     }
 
-    LaunchedEffect(pagerState, locationsUIStates) {
-        val locationsData = (locationsUIStates as? DataState.Ready)?.data
+    LaunchedEffect(pagerState, locationsData) {
         if (locationsData?.isNotEmpty() == true) {
             snapshotFlow { pagerState.currentPage }.collect { page ->
                 viewModel.onPageSelected(page)
             }
         }
     }
-
-    val uiElementsColor by animateColorAsState(
-        targetValue = when (precipitationCondition) {
-            WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
-            WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
-            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
-            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
-        },
-        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
-    )
 
     ForecastContent(
         locationsUIStates = locationsUIStates,

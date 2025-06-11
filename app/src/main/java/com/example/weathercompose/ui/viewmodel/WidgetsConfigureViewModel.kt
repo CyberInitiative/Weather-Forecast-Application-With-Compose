@@ -2,16 +2,17 @@ package com.example.weathercompose.ui.viewmodel
 
 import android.content.Context
 import androidx.glance.GlanceId
+import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weathercompose.data.datastore.TEMPERATURE_UNIT_KEY
 import com.example.weathercompose.domain.mapper.LocationItemMapper
 import com.example.weathercompose.domain.usecase.location.FindAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.settings.GetAllowedToShowWidgetAlarmDialogState
 import com.example.weathercompose.domain.usecase.settings.SetAllowedToShowWidgetAlarmDialogState
 import com.example.weathercompose.ui.model.LocationOptionItem
-import com.example.weathercompose.widget.ForecastWidget.Companion.LOCATION_ID_KEY
+import com.example.weathercompose.widget.PrefKeys
 import com.example.weathercompose.widget.WidgetTemperatureUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,10 +50,20 @@ class WidgetsConfigureViewModel(
         }
     }
 
-    suspend fun saveWidgetState(applicationContext: Context, glanceId: GlanceId) {
-        updateAppWidgetState(applicationContext, glanceId) { preferences ->
-            preferences[LOCATION_ID_KEY] = _selectedLocationId.value ?: 0L
-            preferences[TEMPERATURE_UNIT_KEY] = _selectedWidgetTemperatureUnit.value.name
+    suspend fun loadWidgetState(context: Context, glanceId: GlanceId) {
+        val preferences = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+        preferences[PrefKeys.LOCATION_ID_KEY]?.let {
+            _selectedLocationId.value = it
+        }
+        preferences[PrefKeys.TEMPERATURE_UNIT_KEY]?.let {
+            _selectedWidgetTemperatureUnit.value = WidgetTemperatureUnit.valueOf(it)
+        }
+    }
+
+    suspend fun saveWidgetState(context: Context, glanceId: GlanceId) {
+        updateAppWidgetState(context, glanceId) { preferences ->
+            preferences[PrefKeys.LOCATION_ID_KEY] = _selectedLocationId.value ?: 0L
+            preferences[PrefKeys.TEMPERATURE_UNIT_KEY] = _selectedWidgetTemperatureUnit.value.name
         }
     }
 

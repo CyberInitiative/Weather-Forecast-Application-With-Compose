@@ -10,7 +10,6 @@ import com.example.weathercompose.ui.compose.main_screen.MainScreen
 import com.example.weathercompose.ui.theme.WeatherComposeTheme
 
 class MainActivity : ComponentActivity() {
-    //private val forecastViewModel: ForecastViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,31 +22,9 @@ class MainActivity : ComponentActivity() {
                 MainScreen()
             }
         }
-
-        //setForecastUpdatingWorker()
     }
-
-    /*
-    private fun setForecastUpdatingWorker() {
-        val workRequest =
-            PeriodicWorkRequestBuilder<ForecastUpdatingWorker>(1, TimeUnit.HOURS)
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .build()
-
-        WorkManager.getInstance(context = this).enqueueUniquePeriodicWork(
-            FORECAST_UPDATING_WORK,
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
-    }
-     */
 
     companion object {
         private const val TAG = "MainActivity"
-        // private const val FORECAST_UPDATING_WORK = "forecast_updating_work"
     }
 }

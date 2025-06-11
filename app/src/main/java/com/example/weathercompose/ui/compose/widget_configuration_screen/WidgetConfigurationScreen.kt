@@ -31,8 +31,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.GlanceId
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.compose.dialog.WidgetAlarmDialog
 import com.example.weathercompose.ui.model.LocationOptionItem
@@ -53,7 +54,9 @@ import com.example.weathercompose.ui.theme.Liberty
 import com.example.weathercompose.ui.theme.SiberianIce
 import com.example.weathercompose.ui.viewmodel.WidgetsConfigureViewModel
 import com.example.weathercompose.utils.canScheduleExactAlarms
+import com.example.weathercompose.widget.ForecastWidget
 import com.example.weathercompose.widget.WidgetTemperatureUnit
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -61,7 +64,8 @@ import kotlinx.coroutines.launch
 fun WidgetConfigurationScreen(
     paddingValues: PaddingValues,
     viewModel: WidgetsConfigureViewModel,
-    onConfirmWidgetConfiguration: () -> Job
+    glanceId: GlanceId,
+    setResultOKAndFinish: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -72,7 +76,7 @@ fun WidgetConfigurationScreen(
     val selectedLocationId by viewModel.selectedLocationId.collectAsState()
     val selectedTemperatureUnitOrdinal by viewModel.selectedWidgetTemperatureUnit.collectAsState()
 
-    var isDialogVisible by remember { mutableStateOf(false) }
+    var isDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     val colorStops = arrayOf(
         0.0f to CastleMoat,
@@ -83,9 +87,21 @@ fun WidgetConfigurationScreen(
         colorStops = colorStops,
     )
 
+    LaunchedEffect(locationOptionsState, glanceId) {
+        viewModel.loadWidgetState(context = context, glanceId = glanceId)
+    }
+
     LaunchedEffect(allowedToShowWidgetAlarmDialogState) {
         if (allowedToShowWidgetAlarmDialogState == true) {
             isDialogVisible = true
+        }
+    }
+
+    val confirmWidgetConfigurations = {
+        coroutineScope.launch(Dispatchers.IO) {
+            viewModel.saveWidgetState(context = context, glanceId = glanceId)
+            ForecastWidget().update(context = context, id = glanceId)
+            setResultOKAndFinish()
         }
     }
 
@@ -95,14 +111,12 @@ fun WidgetConfigurationScreen(
         selectedLocationId = selectedLocationId,
         selectedTemperatureUnit = selectedTemperatureUnitOrdinal,
         onTemperatureUnitOptionClick = viewModel::selectTemperatureUnt,
-        onConfirmWidgetConfiguration = onConfirmWidgetConfiguration,
+        onConfirmWidgetConfiguration = confirmWidgetConfigurations,
         paddingValues = paddingValues,
         background = gradientBackground,
     )
 
-    val onDismiss = {
-        isDialogVisible = false
-    }
+    val onDismiss = { isDialogVisible = false }
     val onDoNotShowAgain = {
         coroutineScope.launch {
             viewModel.setAllowedToShowWidgetAlarmDialogState(
@@ -124,9 +138,7 @@ fun WidgetConfigurationScreen(
     val shouldShowDialog = isDialogVisible && !canScheduleExactAlarms(context = context)
     if (shouldShowDialog) {
         WidgetAlarmDialog(
-            onConfirm = {
-                onConfirm()
-            },
+            onConfirm = { onConfirm() },
             onDoNotShowAgain = { onDoNotShowAgain() },
             onDismiss = { onDismiss() },
         )
@@ -256,7 +268,6 @@ private fun WidgetConfigurationLocationOption(
             selected = (locationOption.id == selectedLocationId),
             modifier = Modifier
                 .padding(end = 15.dp),
-            //.background(Color.Blue),
             colors = RadioButtonDefaults.colors(
                 selectedColor = Color.White,
                 unselectedColor = SiberianIce,
@@ -297,19 +308,3 @@ private fun ConfirmLocationButton(
         )
     }
 }
-
-/*
-//                isDialogVisible = false
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                    val alarmManager =
-//                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//                    if (!alarmManager.canScheduleExactAlarms()) {
-//
-//                        (context as? Activity)?.finish()
-//                    } else {
-//                        // Разрешение уже есть
-//                    }
-//                } else {
-//                    // На версиях ниже Android 12 разрешение не нужно — можно сразу ставить точные будильники
-//                }
- */

@@ -1,5 +1,6 @@
 package com.example.weathercompose.ui.compose.dialog
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -59,31 +58,28 @@ private const val LOCATION_ID = "location_id"
 
 @Composable
 fun MainScreen() {
+    val forecastViewModel: ForecastViewModel = koinViewModel()
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
-
-    val forecastViewModel: ForecastViewModel = koinViewModel()
-
     var weatherAndDayTimeState by rememberSaveable {
         mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
     }
-
-    val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
-        weatherAndDayTimeState = state
-    }
-
+    var locationName by rememberSaveable { mutableStateOf("") }
+    var isLocationNameVisible by rememberSaveable { mutableStateOf(true) }
     var isTemperatureUnitDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isForecastUpdateFrequencyDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isNoInternetDialogVisible by rememberSaveable { mutableStateOf(false) }
 
-    val onTemperatureUnitDialogOptionChoose = {
-        isTemperatureUnitDialogVisible = true
-    }
+    val onLocationNameSet = { name: String -> locationName = name }
+    val onLocationNameVisibilityChange = { isVisible: Boolean -> isLocationNameVisible = isVisible }
 
-    val onForecastUpdateFrequencyDialogOptionChoose = {
-        isForecastUpdateFrequencyDialogVisible = true
+    val onAppearanceStateChange = { state: WeatherAndDayTimeState ->
+        weatherAndDayTimeState = state
     }
+    val onTemperatureUnitDialogOptionChoose = { isTemperatureUnitDialogVisible = true }
+    val onForecastUpdateFrequencyOptionClick = { isForecastUpdateFrequencyDialogVisible = true }
 
     if (isTemperatureUnitDialogVisible) {
         TemperatureDialog(
@@ -129,19 +125,13 @@ fun MainScreen() {
         }
     }
 
-    var locationName by remember { mutableStateOf("") }
-    var isLocationNameVisible by remember { mutableStateOf(true) }
-
-    val onLocationNameSet = { name: String -> locationName = name }
-    val onLocationNameVisibilityChange = { isVisible: Boolean -> isLocationNameVisible = isVisible }
-
-    ScreenContent(
+    MainScreenContent(
         navController = navController,
         forecastViewModel = forecastViewModel,
         weatherAndDayTimeState = weatherAndDayTimeState,
         onPrecipitationConditionChange = onAppearanceStateChange,
         onTemperatureUnitOptionClick = onTemperatureUnitDialogOptionChoose,
-        onForecastUpdateFrequencyOptionClick = onForecastUpdateFrequencyDialogOptionChoose,
+        onForecastUpdateFrequencyOptionClick = onForecastUpdateFrequencyOptionClick,
         locationName = locationName,
         onLocationNameSet = onLocationNameSet,
         isLocationNameVisible = isLocationNameVisible,
@@ -150,7 +140,7 @@ fun MainScreen() {
 }
 
 @Composable
-private fun ScreenContent(
+private fun MainScreenContent(
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
