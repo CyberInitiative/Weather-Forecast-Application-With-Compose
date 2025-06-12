@@ -1,10 +1,12 @@
 package com.example.weathercompose.widget
 
 import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,6 +20,10 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -42,16 +48,26 @@ import com.example.weathercompose.data.model.widget.WidgetLocationWithForecasts
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.repository.WidgetLocationRepository
 import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.ui.activity.MainActivity
+import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.widget.PrefKeys.LOCATION_ID_KEY
 import com.example.weathercompose.widget.PrefKeys.TEMPERATURE_UNIT_KEY
 import org.koin.compose.koinInject
 
+const val LOCATION_ID_PARAM = "location_id"
+
 @Composable
 fun ForecastWidgetContent(preferences: Preferences) {
+    val context = LocalContext.current
     val widgetForecastRepository = koinInject<WidgetLocationRepository>()
     val getCurrentTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase = koinInject()
     var locationWithForecasts by remember {
         mutableStateOf<WidgetLocationWithForecasts?>(value = null)
+    }
+
+    @DrawableRes
+    var backgroundRes by remember {
+        mutableIntStateOf(value = R.drawable.no_precipitation_day_widget_background)
     }
 
     val temperatureUnitInSettings by getCurrentTemperatureUnitUseCase().collectAsState(
@@ -63,21 +79,48 @@ fun ForecastWidgetContent(preferences: Preferences) {
         ?.let { unitName -> WidgetTemperatureUnit.valueOf(unitName) }
         ?: WidgetTemperatureUnit.CELSIUS
 
+    LaunchedEffect(widgetLocationId) {
+        locationWithForecasts = widgetForecastRepository.findWidgetLocationsWithForecastsById(
+            locationId = widgetLocationId
+        )
+        locationWithForecasts?.getPrecipitationsAndTimeOfDayStateForCurrentHour()?.let { state ->
+            backgroundRes = when (state) {
+                WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> {
+                    R.drawable.no_precipitation_day_widget_background
+                }
+
+                WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> {
+                    R.drawable.no_precipitation_night_widget_background
+                }
+
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> {
+                    R.drawable.overcast_or_precipitation_day_widget_background
+                }
+
+                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> {
+                    R.drawable.overcast_or_precipitation_night_widget_background
+                }
+            }
+        }
+    }
+
     Column(
         modifier = GlanceModifier
             .padding(horizontal = 10.dp)
             .fillMaxSize()
-            .background(imageProvider = ImageProvider(R.drawable.forecast_widget_background))
-    ) {
-        val context = LocalContext.current
-
-        LaunchedEffect(widgetLocationId) {
-            locationWithForecasts =
-                widgetForecastRepository.findWidgetLocationsWithForecastsById(
-                    locationId = widgetLocationId
+            .clickable(
+                actionStartActivity<MainActivity>(
+                    parameters = actionParametersOf(
+                        ActionParameters.Key<Long>(LOCATION_ID_PARAM) to widgetLocationId
+                    )
                 )
-        }
-
+            )
+            .background(
+                imageProvider = ImageProvider(
+                    resId = backgroundRes
+                )
+            )
+    ) {
         when {
             locationWithForecasts != null -> {
                 val currentHour =

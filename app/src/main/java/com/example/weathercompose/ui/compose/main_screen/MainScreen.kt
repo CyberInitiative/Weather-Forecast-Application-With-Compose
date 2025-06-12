@@ -22,19 +22,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
-import com.example.weathercompose.ui.compose.LocationSearchScreen
 import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialog
 import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
-import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
-import com.example.weathercompose.ui.compose.location_manager.LocationManagerContent
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.theme.CastleMoat
@@ -54,10 +47,8 @@ private const val TAG = "MainScreenCompose"
 
 private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
-private const val LOCATION_ID = "location_id"
-
 @Composable
-fun MainScreen() {
+fun MainScreen(widgetLocationId: Long) {
     val forecastViewModel: ForecastViewModel = koinViewModel()
 
     val context = LocalContext.current
@@ -118,6 +109,17 @@ fun MainScreen() {
         )
     }
 
+    LaunchedEffect(widgetLocationId) {
+        if (widgetLocationId != 0L) {
+            navController.navigate(NavigationRoute.Forecast) {
+                popUpTo(0) { inclusive = true }
+            }
+
+            val forecastBackStackEntry = navController.getBackStackEntry(NavigationRoute.Forecast)
+            forecastBackStackEntry.savedStateHandle[LOCATION_ID] = widgetLocationId
+        }
+    }
+
     LaunchedEffect(Unit) {
         delay(300)
         if (!forecastViewModel.isNetworkAvailable()) {
@@ -135,7 +137,7 @@ fun MainScreen() {
         locationName = locationName,
         onLocationNameSet = onLocationNameSet,
         isLocationNameVisible = isLocationNameVisible,
-        onLocationNameVisibilityChange = onLocationNameVisibilityChange
+        onLocationNameVisibilityChange = onLocationNameVisibilityChange,
     )
 }
 
@@ -191,82 +193,6 @@ private fun MainScreenContent(
                     onLocationNameVisibilityChange = onLocationNameVisibilityChange,
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun NavigationHost(
-    navController: NavHostController,
-    forecastViewModel: ForecastViewModel,
-    weatherAndDayTimeState: WeatherAndDayTimeState,
-    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
-    onLocationNameSet: (String) -> Unit,
-    onLocationNameVisibilityChange: (Boolean) -> Unit,
-) {
-    NavHost(
-        navController = navController,
-        startDestination = NavigationRoute.Forecast,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        composable<NavigationRoute.Forecast> { backStackEntry ->
-            val locationId: Long? = backStackEntry.savedStateHandle.get<Long>(LOCATION_ID)
-
-            val onNavigateToLocationSearchScreen = {
-                navController.navigate(
-                    route = NavigationRoute.LocationSearch(
-                        isLocationsEmpty = forecastViewModel.isLocationsEmpty()
-                    )
-                )
-            }
-
-            ForecastScreen(
-                viewModel = forecastViewModel,
-                onAppearanceStateChange = onPrecipitationConditionChange,
-                onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
-                locationId = locationId,
-                onLocationNameSet = onLocationNameSet,
-                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
-            )
-        }
-
-        composable<NavigationRoute.LocationsManager> {
-            val onNavigateToForecastScreen: (Long?) -> Unit = { locationId: Long? ->
-                navController.previousBackStackEntry?.savedStateHandle?.set(LOCATION_ID, locationId)
-                navController.popBackStack()
-            }
-
-            val onNavigateToSearchScreen = {
-                navController.navigate(
-                    route = NavigationRoute.LocationSearch(isLocationsEmpty = false)
-                )
-            }
-
-            LocationManagerContent(
-                viewModel = forecastViewModel,
-                weatherAndDayTimeState = weatherAndDayTimeState,
-                onNavigateToSearchScreen = onNavigateToSearchScreen,
-                onNavigateToForecastScreen = onNavigateToForecastScreen
-            )
-        }
-
-        composable<NavigationRoute.LocationSearch> { backStackEntry ->
-            val locationSearch: NavigationRoute.LocationSearch = backStackEntry.toRoute()
-
-            val onNavigateToForecastScreen: (LocationEntity) -> Unit = { location: LocationEntity ->
-                val forecastBackStackEntry =
-                    navController.getBackStackEntry(NavigationRoute.Forecast)
-                forecastBackStackEntry.savedStateHandle[LOCATION_ID] = location.locationId
-                navController.popBackStack(NavigationRoute.Forecast, inclusive = false)
-            }
-
-            LocationSearchScreen(
-                viewModel = koinViewModel(),
-                forecastViewModel = forecastViewModel,
-                weatherAndDayTimeState = weatherAndDayTimeState,
-                isLocationsEmpty = locationSearch.isLocationsEmpty,
-                onNavigateToForecastScreen = onNavigateToForecastScreen
-            )
         }
     }
 }

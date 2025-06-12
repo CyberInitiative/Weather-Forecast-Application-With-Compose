@@ -10,4 +10,13 @@
 
     <color name="castle_moat">#FF448DDF</color>
     <color name="coal">#FF7CB9E8</color>
+
+    <color name="very_dark_shade_cyan_blue">#FF001328</color>
+    <color name="coal_black">#FF002F63</color>
+
+    <color name="roman_silver">#FF838996</color>
+    <color name="hilo_bay">#FF758AA2</color>
+
+    <color name="limo_scene_40_per_darker">#FF1F2331</color>
+    <color name="fashionista_20_per_darker">#FF404664</color>
 </resources>

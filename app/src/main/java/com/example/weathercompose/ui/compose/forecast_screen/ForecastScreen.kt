@@ -92,10 +92,13 @@ fun ForecastScreen(
         }
     }
 
-    LaunchedEffect(locationId) {
-        val currentPage = pagerState.currentPage
-        val index = locationsData?.indexOfFirst { it.id == locationId } ?: currentPage
-        pagerState.scrollToPage(if (index != -1) index else currentPage)
+    LaunchedEffect(locationId, locationsData) {
+        if (locationsData.isNullOrEmpty() || locationId == null) return@LaunchedEffect
+
+        val index = locationsData.indexOfFirst { it.id == locationId }
+        if (index != -1) {
+            pagerState.scrollToPage(index)
+        }
     }
 
     LaunchedEffect(pagerState, locationsData) {
