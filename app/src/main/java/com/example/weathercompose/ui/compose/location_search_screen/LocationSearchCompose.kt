@@ -1,4 +1,4 @@
-package com.example.weathercompose.ui.compose
+package com.example.weathercompose.ui.compose.location_search_screen
 
 import android.app.Activity
 import android.content.Intent

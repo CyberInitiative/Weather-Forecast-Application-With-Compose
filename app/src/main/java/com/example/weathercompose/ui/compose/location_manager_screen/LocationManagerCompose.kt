@@ -1,4 +1,4 @@
-package com.example.weathercompose.ui.compose.location_manager
+package com.example.weathercompose.ui.compose.location_manager_screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize

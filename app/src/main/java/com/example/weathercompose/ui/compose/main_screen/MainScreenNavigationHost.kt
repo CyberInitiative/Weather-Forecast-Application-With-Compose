@@ -8,9 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.weathercompose.data.database.entity.location.LocationEntity
-import com.example.weathercompose.ui.compose.LocationSearchScreen
 import com.example.weathercompose.ui.compose.forecast_screen.ForecastScreen
-import com.example.weathercompose.ui.compose.location_manager.LocationManagerContent
+import com.example.weathercompose.ui.compose.location_manager_screen.LocationManagerContent
+import com.example.weathercompose.ui.compose.location_search_screen.LocationSearchScreen
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel

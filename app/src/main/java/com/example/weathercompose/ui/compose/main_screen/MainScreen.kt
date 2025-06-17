@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,6 +55,9 @@ fun MainScreen(widgetLocationId: Long) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
+
+    val settingsTemperatureUnit by forecastViewModel.settingsTemperatureUnit.collectAsState()
+
     var weatherAndDayTimeState by rememberSaveable {
         mutableStateOf(WeatherAndDayTimeState.NO_PRECIPITATION_DAY)
     }
@@ -74,7 +78,7 @@ fun MainScreen(widgetLocationId: Long) {
 
     if (isTemperatureUnitDialogVisible) {
         TemperatureDialog(
-            temperatureUnit = forecastViewModel.currentTemperatureUnit,
+            temperatureUnit = settingsTemperatureUnit,
             onDismiss = { isTemperatureUnitDialogVisible = false },
             onConfirm = { selectedOption ->
                 isTemperatureUnitDialogVisible = false
@@ -89,7 +93,7 @@ fun MainScreen(widgetLocationId: Long) {
 
     if (isForecastUpdateFrequencyDialogVisible) {
         ForecastUpdateFrequencyDialog(
-            updateFrequency = forecastViewModel.currentForecastUpdateFrequencyInHours,
+            updateFrequency = forecastViewModel.forecastUpdateFrequencyInHours,
             onDismiss = { isForecastUpdateFrequencyDialogVisible = false },
             onConfirm = { selectedOption ->
                 isForecastUpdateFrequencyDialogVisible = false

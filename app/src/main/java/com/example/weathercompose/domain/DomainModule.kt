@@ -10,11 +10,11 @@ import com.example.weathercompose.domain.usecase.location.SaveLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SearchLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
 import com.example.weathercompose.domain.usecase.settings.GetAllowedToShowWidgetAlarmDialogState
-import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.GetSettingsTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.GetLastTimeForecastUpdatedUseCase
 import com.example.weathercompose.domain.usecase.settings.SetAllowedToShowWidgetAlarmDialogState
-import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.SetSettingsTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.SetLastTimeForecastUpdatedUseCase
 import com.example.weathercompose.domain.usecase.widget.FindAllWidgetLocations
@@ -45,9 +45,9 @@ val domainModule = module {
 
     factory { SaveForecastUseCase(forecastRepository = get()) }
 
-    factory { GetCurrentTemperatureUnitUseCase(appSettings = get()) }
+    factory { GetSettingsTemperatureUnitUseCase(appSettings = get()) }
 
-    factory { SetCurrentTemperatureUnitUseCase(appSettings = get()) }
+    factory { SetSettingsTemperatureUnitUseCase(appSettings = get()) }
 
     factory { GetForecastUpdateFrequencyUseCase(appSettings = get()) }
 

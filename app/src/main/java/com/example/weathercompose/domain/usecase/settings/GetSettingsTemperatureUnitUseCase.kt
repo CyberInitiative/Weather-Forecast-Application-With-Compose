@@ -2,12 +2,13 @@ package com.example.weathercompose.domain.usecase.settings
 
 import com.example.weathercompose.data.datastore.AppSettings
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
+import kotlinx.coroutines.flow.Flow
 
-class SetCurrentTemperatureUnitUseCase(
+class GetSettingsTemperatureUnitUseCase(
     private val appSettings: AppSettings
 ) {
 
-    suspend operator fun invoke(temperatureUnit: TemperatureUnit) {
-        appSettings.setCurrentTemperatureUnit(temperatureUnit = temperatureUnit)
+    operator fun invoke(): Flow<TemperatureUnit> {
+        return appSettings.currentTemperatureUnit
     }
 }

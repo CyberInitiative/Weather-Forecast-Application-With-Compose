@@ -58,10 +58,10 @@ class LocationUIStateMapper(private val context: Context) {
             id = location.id,
             locationName = location.name, //getLocationName(location),
             locationCountry = location.country,
-            currentHourTemperature = TemperatureUnit.getTemperatureForUI(
+            currentHourTemperature = TemperatureUnit.getTemperature(
                 temperature = currentHourlyForecast.temperature,
                 temperatureUnit = temperatureUnit
-            ),
+            ).toString(),
             currentDayOfWeekAndDate = getCurrentDateAndDayOfWeek(location.timeZone),
             currentDayMaxTemperature = TemperatureUnit.getTemperatureForUI(
                 temperature = currentDayForecast.maxTemperature,

@@ -47,7 +47,7 @@ import com.example.weathercompose.data.model.widget.WidgetHourlyForecast
 import com.example.weathercompose.data.model.widget.WidgetLocationWithForecasts
 import com.example.weathercompose.domain.model.forecast.WeatherDescription
 import com.example.weathercompose.domain.repository.WidgetLocationRepository
-import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.GetSettingsTemperatureUnitUseCase
 import com.example.weathercompose.ui.activity.MainActivity
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.widget.PrefKeys.LOCATION_ID_KEY
@@ -60,7 +60,7 @@ const val LOCATION_ID_PARAM = "location_id"
 fun ForecastWidgetContent(preferences: Preferences) {
     val context = LocalContext.current
     val widgetForecastRepository = koinInject<WidgetLocationRepository>()
-    val getCurrentTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase = koinInject()
+    val getSettingsTemperatureUnitUseCase: GetSettingsTemperatureUnitUseCase = koinInject()
     var locationWithForecasts by remember {
         mutableStateOf<WidgetLocationWithForecasts?>(value = null)
     }
@@ -70,7 +70,7 @@ fun ForecastWidgetContent(preferences: Preferences) {
         mutableIntStateOf(value = R.drawable.no_precipitation_day_widget_background)
     }
 
-    val temperatureUnitInSettings by getCurrentTemperatureUnitUseCase().collectAsState(
+    val temperatureUnitInSettings by getSettingsTemperatureUnitUseCase().collectAsState(
         initial = TemperatureUnit.CELSIUS
     )
 

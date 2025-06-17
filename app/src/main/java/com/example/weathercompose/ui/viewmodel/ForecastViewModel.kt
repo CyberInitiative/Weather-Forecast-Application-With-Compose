@@ -15,11 +15,11 @@ import com.example.weathercompose.domain.usecase.location.DeleteLocationUseCase
 import com.example.weathercompose.domain.usecase.location.FindAllLocationsUseCase
 import com.example.weathercompose.domain.usecase.location.LoadLocationUseCase
 import com.example.weathercompose.domain.usecase.location.SetLocationAsHomeUseCase
-import com.example.weathercompose.domain.usecase.settings.GetCurrentTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.GetForecastUpdateFrequencyUseCase
 import com.example.weathercompose.domain.usecase.settings.GetLastTimeForecastUpdatedUseCase
-import com.example.weathercompose.domain.usecase.settings.SetCurrentTemperatureUnitUseCase
+import com.example.weathercompose.domain.usecase.settings.GetSettingsTemperatureUnitUseCase
 import com.example.weathercompose.domain.usecase.settings.SetForecastUpdateFrequencyUseCase
+import com.example.weathercompose.domain.usecase.settings.SetSettingsTemperatureUnitUseCase
 import com.example.weathercompose.ui.model.LocationItem
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
@@ -41,8 +41,8 @@ class ForecastViewModel(
     private val locationItemsMapper: LocationItemMapper,
     private val loadForecastUseCase: LoadForecastUseCase,
     private val loadLocationUseCase: LoadLocationUseCase,
-    private val setCurrentTemperatureUnitUseCase: SetCurrentTemperatureUnitUseCase,
-    private val getTemperatureUnitUseCase: GetCurrentTemperatureUnitUseCase,
+    private val setTemperatureUnitUseCase: SetSettingsTemperatureUnitUseCase,
+    private val getTemperatureUnitUseCase: GetSettingsTemperatureUnitUseCase,
     private val setForecastUpdateFrequencyUseCase: SetForecastUpdateFrequencyUseCase,
     private val getForecastUpdateFrequencyUseCase: GetForecastUpdateFrequencyUseCase,
     private val getLastTimeForecastUpdatedUseCase: GetLastTimeForecastUpdatedUseCase,
@@ -50,13 +50,14 @@ class ForecastViewModel(
 ) : ViewModel() {
     private val _locationsState = MutableStateFlow<List<LocationDomainModel>?>(value = null)
 
-    private var _currentTemperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS
-    val currentTemperatureUnit: TemperatureUnit get() = _currentTemperatureUnit
+    private var _settingsTemperatureUnit = MutableStateFlow(TemperatureUnit.CELSIUS)
+    val settingsTemperatureUnit: StateFlow<TemperatureUnit>
+        get() = _settingsTemperatureUnit.asStateFlow()
 
-    private var _currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency =
+    private var _forecastUpdateFrequencyInHours: ForecastUpdateFrequency =
         ForecastUpdateFrequency.ONE_HOUR
-    val currentForecastUpdateFrequencyInHours: ForecastUpdateFrequency
-        get() = _currentForecastUpdateFrequencyInHours
+    val forecastUpdateFrequencyInHours: ForecastUpdateFrequency
+        get() = _forecastUpdateFrequencyInHours
 
 
     private val _locationsUIStates = MutableStateFlow<DataState<List<LocationUIState>>>(
@@ -97,7 +98,6 @@ class ForecastViewModel(
             _locationsState
                 .filterNotNull()
                 .collect { locations ->
-                    //Log.d(TAG, "Locations are: $locations")
                     val sortedLocations = locations.sortedByDescending { it.isHomeLocation }
 
                     sortedLocations.forEach { location ->
@@ -134,7 +134,6 @@ class ForecastViewModel(
                     val updatedLocation = location.copy(
                         forecastDataState = newForecastDataState,
                     )
-
                     updatedLocation
                 } else {
                     location
@@ -169,7 +168,6 @@ class ForecastViewModel(
     private fun observeLastTimeForecastUpdated() {
         viewModelScope.launch {
             getLastTimeForecastUpdatedUseCase().drop(1).collect {
-                //Log.d(TAG, "Last time update: $it")
                 _locationsState.value?.forEach { location ->
                     launch {
                         loadForecast(
@@ -223,7 +221,7 @@ class ForecastViewModel(
     private fun observeTemperatureUnit() {
         viewModelScope.launch {
             getTemperatureUnitUseCase().collect { unit ->
-                _currentTemperatureUnit = unit
+                _settingsTemperatureUnit.value = unit
             }
         }
     }
@@ -231,7 +229,7 @@ class ForecastViewModel(
     private fun observeForecastUpdateFrequency() {
         viewModelScope.launch {
             getForecastUpdateFrequencyUseCase().collect { frequency ->
-                _currentForecastUpdateFrequencyInHours = frequency
+                _forecastUpdateFrequencyInHours = frequency
             }
         }
     }
@@ -242,26 +240,14 @@ class ForecastViewModel(
 
             _locationsState.update { currentList ->
                 currentList?.map { location ->
-                    if (location.id == locationId) {
-                        if (location.isHomeLocation) {
-                            location.copy(isHomeLocation = false)
-                        } else {
-                            location.copy(isHomeLocation = true)
-                        }
-                    } else {
-                        if (location.isHomeLocation) {
-                            location.copy(isHomeLocation = false)
-                        } else {
-                            location
-                        }
-                    }
+                    location.copy(isHomeLocation = location.id == locationId)
                 }
             }
         }
     }
 
     suspend fun setCurrentTemperatureUnit(temperatureUnit: TemperatureUnit) {
-        setCurrentTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
+        setTemperatureUnitUseCase(temperatureUnit = temperatureUnit)
     }
 
     suspend fun setForecastUpdateFrequency(forecastUpdateFrequency: ForecastUpdateFrequency) {

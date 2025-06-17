@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-       widgetLocationId = intent?.getLongExtra(LOCATION_ID_PARAM, 0L) ?: 0L
+        widgetLocationId = intent?.getLongExtra(LOCATION_ID_PARAM, 0L) ?: 0L
 
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
         setContent {

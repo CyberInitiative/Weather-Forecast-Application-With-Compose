@@ -44,13 +44,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
+import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DataState
-import com.example.weathercompose.ui.compose.LoadingProcessIndicator
+import com.example.weathercompose.ui.compose.location_search_screen.LoadingProcessIndicator
+import com.example.weathercompose.ui.compose.shared.toSecondaryBackgroundColor
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
-import com.example.weathercompose.ui.theme.HiloBay25PerDarker
-import com.example.weathercompose.ui.theme.Liberty
-import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
-import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
@@ -68,30 +66,26 @@ fun ForecastScreen(
 ) {
     val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
-    val pagerState = rememberPagerState(pageCount = {
-        (locationsUIStates as? DataState.Ready)?.data?.size ?: 0
-    })
-    val uiElementsColor by animateColorAsState(
-        targetValue = when (precipitationCondition) {
-            WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
-            WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
-            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
-            WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
-        },
-        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
-    )
+    val settingsTemperatureUnit by viewModel.settingsTemperatureUnit.collectAsState()
+
     val locationsData = (locationsUIStates as? DataState.Ready)?.data
+
+    val pagerState = rememberPagerState(pageCount = { locationsData?.size ?: 0 })
+
+    val uiElementsColor by animateColorAsState(
+        targetValue = precipitationCondition.toSecondaryBackgroundColor(),
+        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
+        label = "Animated secondary background color",
+    )
 
     LaunchedEffect(precipitationCondition) {
         onAppearanceStateChange(precipitationCondition)
     }
-
     LaunchedEffect(locationsUIStates) {
         if (locationsUIStates is DataState.NoData) {
             onNavigateToLocationSearchScreen()
         }
     }
-
     LaunchedEffect(locationId, locationsData) {
         if (locationsData.isNullOrEmpty() || locationId == null) return@LaunchedEffect
 
@@ -100,7 +94,6 @@ fun ForecastScreen(
             pagerState.scrollToPage(index)
         }
     }
-
     LaunchedEffect(pagerState, locationsData) {
         if (locationsData?.isNotEmpty() == true) {
             snapshotFlow { pagerState.currentPage }.collect { page ->
@@ -111,6 +104,7 @@ fun ForecastScreen(
 
     ForecastContent(
         locationsUIStates = locationsUIStates,
+        settingsTemperatureUnit = settingsTemperatureUnit,
         uiElementsColor = uiElementsColor,
         pagerState = pagerState,
         onLocationNameSet = onLocationNameSet,
@@ -121,6 +115,7 @@ fun ForecastScreen(
 @Composable
 private fun ForecastContent(
     locationsUIStates: DataState<List<LocationUIState>>,
+    settingsTemperatureUnit: TemperatureUnit,
     uiElementsColor: Color,
     pagerState: PagerState,
     onLocationNameSet: (String) -> Unit,
@@ -134,6 +129,7 @@ private fun ForecastContent(
         is DataState.Ready -> {
             LoadedData(
                 locationsUIStates = locationsUIStates.data,
+                settingsTemperatureUnit = settingsTemperatureUnit,
                 uiElementsColor = uiElementsColor,
                 pagerState = pagerState,
                 onLocationNameSet = onLocationNameSet,
@@ -149,6 +145,7 @@ private fun ForecastContent(
 @Composable
 private fun LoadedData(
     locationsUIStates: List<LocationUIState>,
+    settingsTemperatureUnit: TemperatureUnit,
     uiElementsColor: Color,
     pagerState: PagerState,
     onLocationNameSet: (String) -> Unit,
@@ -166,6 +163,7 @@ private fun LoadedData(
 
             LocationPage(
                 currentLocation = currentLocation,
+                settingsTemperatureUnit = settingsTemperatureUnit,
                 shouldResetScroll = page != pagerState.currentPage,
                 uiElementsColor = uiElementsColor,
                 scrollState = sharedScrollState,
@@ -186,6 +184,7 @@ private fun LoadedData(
 @Composable
 private fun LocationPage(
     currentLocation: LocationUIState,
+    settingsTemperatureUnit: TemperatureUnit,
     shouldResetScroll: Boolean,
     uiElementsColor: Color,
     scrollState: ScrollState,
@@ -215,9 +214,10 @@ private fun LocationPage(
 
             LocationAndWeatherInfoSection(
                 locationUIState = currentLocation,
+                settingsTemperatureUnit = settingsTemperatureUnit,
+                isCurrentPage = isCurrentPage,
                 onLocationNameVisibilityChange = onLocationNameVisibilityChange,
                 layoutCoordinates = coordinates,
-                isCurrentPage = isCurrentPage,
             )
 
             Spacer(modifier = Modifier.height(15.dp))
