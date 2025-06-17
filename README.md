@@ -41,6 +41,5 @@ This project is an Android application that displays weather information. Its fu
 - **Weather Widget**  
   Home screen widget with current weather.
 
-  <img src="https://github.com/user-attachments/assets/763610c5-e19d-4e68-b85d-a7f2ff0cb5e0" width="250" />
-
+  <img src="https://github.com/user-attachments/assets/233ffd85-26bb-4a17-aaf7-0857d570b00f" width="250" /> <img src="https://github.com/user-attachments/assets/0db76be9-4261-40e6-9abc-7ecd40d57165" width="250" />
 
