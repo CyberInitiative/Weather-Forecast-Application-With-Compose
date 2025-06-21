@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -16,16 +18,15 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
-import com.example.weathercompose.ui.compose.shared.AppText
 import com.example.weathercompose.ui.ui_state.LocationUIState
 
 @Composable
 fun LocationAndWeatherInfoSection(
     locationUIState: LocationUIState,
-    settingsTemperatureUnit: TemperatureUnit,
     isCurrentPage: Boolean,
-    onLocationNameVisibilityChange: (Boolean) -> Unit,
+    settingsTemperatureUnit: TemperatureUnit,
     layoutCoordinates: LayoutCoordinates?,
+    onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
     val maxTemp = locationUIState.currentDayMaxTemperature
     val minTemp = locationUIState.currentDayMinTemperature
@@ -89,7 +90,7 @@ fun LocationAndWeatherInfoSection(
             width = Dimension.fillToConstraints
         }
 
-        AppText(
+        Text(
             text = if (locationUIState.locationCountry.isEmpty())
                 locationUIState.locationName
             else {
@@ -110,44 +111,51 @@ fun LocationAndWeatherInfoSection(
                         Modifier
                     }
                 ),
+            color = Color.White,
             fontSize = 28.sp,
         )
 
-        AppText(
+        Text(
             text = locationUIState.locationCountry,
             modifier = locationCountryModifier
                 .fillMaxWidth()
                 .height(30.dp),
+            color = Color.White,
             fontSize = 22.sp,
         )
 
-        AppText(
+        Text(
             text = locationUIState.currentDayOfWeekAndDate,
             modifier = dateOfWeekAndDateModifier.wrapContentWidth(),
+            color = Color.White,
             fontSize = 16.sp,
         )
 
-        AppText(
+        Text(
             text = minAndMaxTemp,
             modifier = maxAndMinTemperatureModifier,
+            color = Color.White,
             fontSize = 25.sp,
         )
 
-        AppText(
+        Text(
             text = locationUIState.currentHourTemperature,
             modifier = currentTemperatureModifier,
+            color = Color.White,
             fontSize = 70.sp,
         )
 
-        AppText(
+        Text(
             text = temperatureUnitSign,
             modifier = temperatureUnitModifier,
+            color = Color.White,
             fontSize = 45.sp,
         )
 
-        AppText(
+        Text(
             text = locationUIState.currentHourWeatherStatus,
             modifier = weatherStatusModifier.fillMaxWidth(),
+            color = Color.White,
             fontSize = 20.sp,
             textAlign = TextAlign.Left,
             maxLines = 3,

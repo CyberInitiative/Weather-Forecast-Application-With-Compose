@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,19 +58,20 @@ import kotlin.math.roundToInt
 
 @Composable
 fun SwipeToRevealLocationItem(
+    locationItem: LocationItem,
     modifier: Modifier = Modifier,
     itemHeight: Dp,
-    locationItem: LocationItem,
+    itemBackgroundColor: Color,
     onLocationItemClick: (Long) -> Unit,
     onLocationDelete: (Long) -> Unit,
     onLocationAsHomeSet: (Long) -> Unit,
-    itemBackgroundColor: Color,
 ) {
-    val scope = rememberCoroutineScope()
-    val offsetX = remember { Animatable(0f) }
-    var areActionsRevealed by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
+    val offsetX = remember{ Animatable(0f) }
+    var areActionsRevealed by rememberSaveable { mutableStateOf(false) }
     var actionsWidth by remember { mutableFloatStateOf(0f) }
+
     val onSetActionsWidth = { width: Float -> actionsWidth = width }
     val onSetActionsRevealedState = { areRevealed: Boolean -> areActionsRevealed = areRevealed }
 
@@ -82,7 +84,7 @@ fun SwipeToRevealLocationItem(
             itemHeight = itemHeight,
             onSetActionsWidth = onSetActionsWidth,
             onDelete = { locationId ->
-                scope.launch {
+                coroutineScope.launch {
                     offsetX.animateTo(0f)
                     areActionsRevealed = false
                     onLocationDelete(locationId)
@@ -92,11 +94,12 @@ fun SwipeToRevealLocationItem(
             locationId = locationItem.id,
             isHomeLocation = locationItem.isHomeLocation,
         )
+
         LocationItemContent(
             itemHeight = itemHeight,
             offsetX = offsetX,
             actionsWidth = actionsWidth,
-            coroutineScope = scope,
+            coroutineScope = coroutineScope,
             locationItem = locationItem,
             areActionsRevealed = areActionsRevealed,
             onLocationItemClick = onLocationItemClick,

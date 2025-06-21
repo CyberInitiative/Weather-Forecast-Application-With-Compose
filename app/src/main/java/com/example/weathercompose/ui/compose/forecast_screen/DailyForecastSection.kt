@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.DailyForecastItem
 import com.example.weathercompose.ui.theme.SiberianIce
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,13 +38,13 @@ fun DailyForecastSection(
     dailyForecasts: List<DailyForecastItem>,
     shouldResetScroll: Boolean,
     backgroundColor: Color,
+    coroutineScope: CoroutineScope,
 ) {
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(shouldResetScroll) {
         if (shouldResetScroll) {
-            scope.launch {
+            coroutineScope.launch {
                 listState.scrollToItem(0)
             }
         }

@@ -3,6 +3,7 @@ package com.example.weathercompose.ui.compose.main_screen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,9 +24,10 @@ fun NavigationHost(
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
     weatherAndDayTimeState: WeatherAndDayTimeState,
-    onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
+    onWeatherAndDayTimeStateChange: (WeatherAndDayTimeState) -> Unit,
     onLocationNameSet: (String) -> Unit,
     onLocationNameVisibilityChange: (Boolean) -> Unit,
+    widgetsBackgroundColor: Color,
 ) {
     NavHost(
         navController = navController,
@@ -44,12 +46,13 @@ fun NavigationHost(
             }
 
             ForecastScreen(
-                viewModel = forecastViewModel,
-                onAppearanceStateChange = onPrecipitationConditionChange,
-                onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
                 locationId = locationId,
+                viewModel = forecastViewModel,
+                onWeatherAndDayTimeStateChange = onWeatherAndDayTimeStateChange,
+                onNavigateToLocationSearchScreen = onNavigateToLocationSearchScreen,
                 onLocationNameSet = onLocationNameSet,
                 onLocationNameVisibilityChange = onLocationNameVisibilityChange,
+                widgetsBackgroundColor = widgetsBackgroundColor,
             )
         }
 
@@ -67,9 +70,9 @@ fun NavigationHost(
 
             LocationManagerContent(
                 viewModel = forecastViewModel,
-                weatherAndDayTimeState = weatherAndDayTimeState,
+                widgetsBackgroundColor = widgetsBackgroundColor,
+                onNavigateToForecastScreen = onNavigateToForecastScreen,
                 onNavigateToSearchScreen = onNavigateToSearchScreen,
-                onNavigateToForecastScreen = onNavigateToForecastScreen
             )
         }
 
@@ -86,9 +89,9 @@ fun NavigationHost(
             LocationSearchScreen(
                 viewModel = koinViewModel(),
                 forecastViewModel = forecastViewModel,
-                weatherAndDayTimeState = weatherAndDayTimeState,
                 isLocationsEmpty = locationSearch.isLocationsEmpty,
-                onNavigateToForecastScreen = onNavigateToForecastScreen
+                widgetsBackgroundColor = widgetsBackgroundColor,
+                onNavigateToForecastScreen = onNavigateToForecastScreen,
             )
         }
     }

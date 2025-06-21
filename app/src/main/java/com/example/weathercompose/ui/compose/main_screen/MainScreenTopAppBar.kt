@@ -37,11 +37,11 @@ import com.example.weathercompose.ui.theme.IntercoastalGray
 @Composable
 fun ForecastScreenTopAppBar(
     destination: NavDestination?,
+    locationName: String,
+    isLocationNameVisible: Boolean,
     onTemperatureUnitOptionClick: () -> Unit,
     onForecastUpdateFrequencyOptionClick: () -> Unit,
     onNavigateToLocationsManagerScreen: () -> Unit,
-    locationName: String,
-    isLocationNameVisible: Boolean,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
 

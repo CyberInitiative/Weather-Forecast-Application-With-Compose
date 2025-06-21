@@ -57,12 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.example.weathercompose.R
 import com.example.weathercompose.data.database.entity.location.LocationEntity
 import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
-import com.example.weathercompose.ui.model.WeatherAndDayTimeState
-import com.example.weathercompose.ui.theme.HiloBay25PerDarker
-import com.example.weathercompose.ui.theme.Liberty
-import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
 import com.example.weathercompose.ui.theme.SiberianIce
-import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.ui_state.LocationSearchState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 import com.example.weathercompose.ui.viewmodel.LocationSearchViewModel
@@ -76,8 +71,8 @@ private const val TAG = "LocationsManagerCompose"
 fun LocationSearchScreen(
     viewModel: LocationSearchViewModel,
     forecastViewModel: ForecastViewModel,
-    weatherAndDayTimeState: WeatherAndDayTimeState,
     isLocationsEmpty: Boolean,
+    widgetsBackgroundColor: Color,
     onNavigateToForecastScreen: (LocationEntity) -> Unit,
 ) {
     val context = LocalContext.current
@@ -102,18 +97,7 @@ fun LocationSearchScreen(
         NoInternetDialog(
             onDismiss = { isNoInternetDialogVisible = false },
             onConfirm = { context.startActivity(Intent(Settings.ACTION_SETTINGS)) },
-            weatherAndDayTimeState = weatherAndDayTimeState
-        )
-    }
-
-    val uiElementsColor by remember(weatherAndDayTimeState) {
-        mutableStateOf(
-            when (weatherAndDayTimeState) {
-                WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> Liberty
-                WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> MediumDarkShadeCyanBlue
-                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> HiloBay25PerDarker
-                WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> Solitaire5PerDarker
-            }
+            widgetsBackgroundColor = widgetsBackgroundColor,
         )
     }
 
@@ -149,7 +133,7 @@ fun LocationSearchScreen(
         onLocationItemClick = onLocationItemClick,
         locationSearchResult = locationSearchResult,
         focusManager = focusManager,
-        uiElementsColor = uiElementsColor,
+        uiElementsColor = widgetsBackgroundColor,
     )
 }
 

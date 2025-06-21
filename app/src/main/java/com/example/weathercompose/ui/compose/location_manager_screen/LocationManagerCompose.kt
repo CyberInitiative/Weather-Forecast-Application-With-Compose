@@ -15,9 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -27,44 +24,18 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.example.weathercompose.R
 import com.example.weathercompose.ui.model.LocationItem
-import com.example.weathercompose.ui.model.WeatherAndDayTimeState
-import com.example.weathercompose.ui.theme.HiloBay25PerDarker
-import com.example.weathercompose.ui.theme.Liberty
-import com.example.weathercompose.ui.theme.MediumDarkShadeCyanBlue
-import com.example.weathercompose.ui.theme.Solitaire5PerDarker
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
 @Composable
 fun LocationManagerContent(
     viewModel: ForecastViewModel,
-    weatherAndDayTimeState: WeatherAndDayTimeState,
-    onNavigateToSearchScreen: () -> Unit,
+    widgetsBackgroundColor: Color,
     onNavigateToForecastScreen: (Long?) -> Unit,
+    onNavigateToSearchScreen: () -> Unit,
 ) {
-    BackHandler {
-        onNavigateToForecastScreen(null)
-    }
+    BackHandler { onNavigateToForecastScreen(null) }
 
     val locationItems by viewModel.locationItems.collectAsState()
-
-    var listItemAndAddButtonColor by remember { mutableStateOf(Liberty) }
-    when (weatherAndDayTimeState) {
-        WeatherAndDayTimeState.NO_PRECIPITATION_DAY -> {
-            listItemAndAddButtonColor = Liberty
-        }
-
-        WeatherAndDayTimeState.NO_PRECIPITATION_NIGHT -> {
-            listItemAndAddButtonColor = MediumDarkShadeCyanBlue
-        }
-
-        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_DAY -> {
-            listItemAndAddButtonColor = HiloBay25PerDarker
-        }
-
-        WeatherAndDayTimeState.OVERCAST_OR_PRECIPITATION_NIGHT -> {
-            listItemAndAddButtonColor = Solitaire5PerDarker
-        }
-    }
 
     ConstraintLayout(
         modifier = Modifier
@@ -72,11 +43,13 @@ fun LocationManagerContent(
             .padding(horizontal = 10.dp, vertical = 10.dp)
     ) {
         val (locationList, addLocationButton) = createRefs()
+
         val locationListModifier = Modifier.constrainAs(locationList) {
             top.linkTo(parent.top)
             bottom.linkTo(addLocationButton.top, margin = 20.dp)
             height = Dimension.fillToConstraints
         }
+
         val addLocationButtonModifier = Modifier.constrainAs(addLocationButton) {
             bottom.linkTo(parent.bottom, margin = 5.dp)
             start.linkTo(parent.start)
@@ -89,13 +62,13 @@ fun LocationManagerContent(
             onLocationItemClick = onNavigateToForecastScreen,
             onLocationDelete = viewModel::deleteLocation,
             onLocationAsHomeSet = viewModel::setLocationHomeStatus,
-            itemBackgroundColor = listItemAndAddButtonColor,
+            itemBackgroundColor = widgetsBackgroundColor,
         )
 
         AddLocationButton(
             onButtonClick = onNavigateToSearchScreen,
             modifier = addLocationButtonModifier,
-            backgroundColor = listItemAndAddButtonColor
+            backgroundColor = widgetsBackgroundColor
         )
     }
 }
@@ -117,13 +90,13 @@ private fun LocationList(
             key = { _, item -> item.id }
         ) { index, item ->
             SwipeToRevealLocationItem(
+                locationItem = item,
                 modifier = Modifier.animateItem(),
                 itemHeight = 75.dp,
-                locationItem = item,
+                itemBackgroundColor = itemBackgroundColor,
                 onLocationItemClick = onLocationItemClick,
                 onLocationDelete = onLocationDelete,
                 onLocationAsHomeSet = onLocationAsHomeSet,
-                itemBackgroundColor = itemBackgroundColor
             )
 
             if (index != locationItems.size - 1) {
@@ -148,7 +121,6 @@ private fun AddLocationButton(
         modifier = modifier
             .wrapContentWidth()
             .wrapContentHeight(),
-
         colors = ButtonColors(
             containerColor = backgroundColor,
             contentColor = Color.White,
@@ -159,10 +131,7 @@ private fun AddLocationButton(
         Text(
             text = stringResource(R.string.add_location),
             modifier = Modifier
-                .padding(
-                    vertical = 7.dp,
-                    horizontal = 12.dp
-                ),
+                .padding(horizontal = 12.dp, vertical = 7.dp),
             color = Color.White,
             fontSize = 18.sp,
         )

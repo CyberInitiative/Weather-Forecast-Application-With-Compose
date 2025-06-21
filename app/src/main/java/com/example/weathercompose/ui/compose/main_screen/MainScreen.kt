@@ -29,6 +29,7 @@ import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.ui.compose.dialog.ForecastUpdateFrequencyDialog
 import com.example.weathercompose.ui.compose.dialog.NoInternetDialog
 import com.example.weathercompose.ui.compose.dialog.TemperatureDialog
+import com.example.weathercompose.ui.compose.shared.toSecondaryBackgroundColor
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.navigation.NavigationRoute
 import com.example.weathercompose.ui.theme.CastleMoat
@@ -66,6 +67,11 @@ fun MainScreen(widgetLocationId: Long) {
     var isTemperatureUnitDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isForecastUpdateFrequencyDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isNoInternetDialogVisible by rememberSaveable { mutableStateOf(false) }
+    val widgetsBackgroundColor by animateColorAsState(
+        targetValue = weatherAndDayTimeState.toSecondaryBackgroundColor(),
+        animationSpec = tween(durationMillis = 700),
+        label = "Animated secondary background color",
+    )
 
     val onLocationNameSet = { name: String -> locationName = name }
     val onLocationNameVisibilityChange = { isVisible: Boolean -> isLocationNameVisible = isVisible }
@@ -87,7 +93,7 @@ fun MainScreen(widgetLocationId: Long) {
                     forecastViewModel.setCurrentTemperatureUnit(unit)
                 }
             },
-            weatherAndDayTimeState = weatherAndDayTimeState,
+            widgetsBackgroundColor = widgetsBackgroundColor,
         )
     }
 
@@ -101,7 +107,7 @@ fun MainScreen(widgetLocationId: Long) {
                     forecastViewModel.setForecastUpdateFrequency(selectedOption)
                 }
             },
-            weatherAndDayTimeState = weatherAndDayTimeState,
+            widgetsBackgroundColor = widgetsBackgroundColor,
         )
     }
 
@@ -109,7 +115,7 @@ fun MainScreen(widgetLocationId: Long) {
         NoInternetDialog(
             onDismiss = { isNoInternetDialogVisible = false },
             onConfirm = { context.startActivity(Intent(Settings.ACTION_SETTINGS)) },
-            weatherAndDayTimeState = weatherAndDayTimeState
+            widgetsBackgroundColor = widgetsBackgroundColor,
         )
     }
 
@@ -134,6 +140,7 @@ fun MainScreen(widgetLocationId: Long) {
     MainScreenContent(
         navController = navController,
         forecastViewModel = forecastViewModel,
+        widgetsBackgroundColor = widgetsBackgroundColor,
         weatherAndDayTimeState = weatherAndDayTimeState,
         onPrecipitationConditionChange = onAppearanceStateChange,
         onTemperatureUnitOptionClick = onTemperatureUnitDialogOptionChoose,
@@ -149,6 +156,7 @@ fun MainScreen(widgetLocationId: Long) {
 private fun MainScreenContent(
     navController: NavHostController,
     forecastViewModel: ForecastViewModel,
+    widgetsBackgroundColor: Color,
     weatherAndDayTimeState: WeatherAndDayTimeState,
     onPrecipitationConditionChange: (WeatherAndDayTimeState) -> Unit,
     onTemperatureUnitOptionClick: () -> Unit,
@@ -175,11 +183,11 @@ private fun MainScreenContent(
             topBar = {
                 ForecastScreenTopAppBar(
                     destination = destination,
+                    locationName = locationName,
+                    isLocationNameVisible = isLocationNameVisible,
                     onTemperatureUnitOptionClick = onTemperatureUnitOptionClick,
                     onForecastUpdateFrequencyOptionClick = onForecastUpdateFrequencyOptionClick,
                     onNavigateToLocationsManagerScreen = onNavigateLocationsManagerScreen,
-                    locationName = locationName,
-                    isLocationNameVisible = isLocationNameVisible
                 )
             },
         ) { innerPadding ->
@@ -192,9 +200,10 @@ private fun MainScreenContent(
                     navController = navController,
                     forecastViewModel = forecastViewModel,
                     weatherAndDayTimeState = weatherAndDayTimeState,
-                    onPrecipitationConditionChange = onPrecipitationConditionChange,
+                    onWeatherAndDayTimeStateChange = onPrecipitationConditionChange,
                     onLocationNameSet = onLocationNameSet,
                     onLocationNameVisibilityChange = onLocationNameVisibilityChange,
+                    widgetsBackgroundColor = widgetsBackgroundColor,
                 )
             }
         }

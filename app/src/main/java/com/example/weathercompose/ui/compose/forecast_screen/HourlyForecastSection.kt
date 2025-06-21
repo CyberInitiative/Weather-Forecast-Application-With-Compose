@@ -141,12 +141,12 @@ fun HourlyForecastListItem(
         )
 
         Text(
+            text = hourlyForecastItem.temperature,
             modifier = temperatureModifier,
+            color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            text = hourlyForecastItem.temperature,
             textAlign = TextAlign.Center,
-            color = Color.White,
         )
     }
 }
@@ -164,8 +164,6 @@ private fun WeatherIconWithPrecipitationProbability(
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        //val offsetY = if (precipitationProbability != null) (-3.5).dp else 0.dp
-
         if (precipitationProbability.isNotEmpty()) {
             Text(
                 text = precipitationProbability,
@@ -179,7 +177,6 @@ private fun WeatherIconWithPrecipitationProbability(
             contentDescription = "The weather icon",
             modifier = Modifier
                 .size(35.dp),
-            //.offset(y = offsetY),
             tint = Color.White,
         )
     }

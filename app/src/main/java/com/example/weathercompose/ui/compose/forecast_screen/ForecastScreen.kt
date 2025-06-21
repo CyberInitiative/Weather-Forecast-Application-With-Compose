@@ -1,8 +1,6 @@
 package com.example.weathercompose.ui.compose.forecast_screen
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -29,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -47,40 +48,30 @@ import com.example.weathercompose.R
 import com.example.weathercompose.data.model.forecast.TemperatureUnit
 import com.example.weathercompose.domain.model.forecast.DataState
 import com.example.weathercompose.ui.compose.location_search_screen.LoadingProcessIndicator
-import com.example.weathercompose.ui.compose.shared.toSecondaryBackgroundColor
 import com.example.weathercompose.ui.model.WeatherAndDayTimeState
 import com.example.weathercompose.ui.ui_state.LocationUIState
 import com.example.weathercompose.ui.viewmodel.ForecastViewModel
 
+@Suppress("unused")
 private const val TAG = "ForecastCompose"
-private const val COLOR_TRANSITION_ANIMATION_DURATION: Int = 700
 
 @Composable
 fun ForecastScreen(
     viewModel: ForecastViewModel,
-    onAppearanceStateChange: (WeatherAndDayTimeState) -> Unit,
-    onNavigateToLocationSearchScreen: () -> Unit,
     locationId: Long?,
+    widgetsBackgroundColor: Color,
+    onWeatherAndDayTimeStateChange: (WeatherAndDayTimeState) -> Unit,
+    onNavigateToLocationSearchScreen: () -> Unit,
     onLocationNameSet: (String) -> Unit,
     onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
-    val precipitationCondition by viewModel.weatherAndDayTimeState.collectAsState()
     val locationsUIStates by viewModel.locationsUIStates.collectAsState()
+    val weatherAndDayTimeState by viewModel.weatherAndDayTimeState.collectAsState()
     val settingsTemperatureUnit by viewModel.settingsTemperatureUnit.collectAsState()
 
     val locationsData = (locationsUIStates as? DataState.Ready)?.data
-
     val pagerState = rememberPagerState(pageCount = { locationsData?.size ?: 0 })
 
-    val uiElementsColor by animateColorAsState(
-        targetValue = precipitationCondition.toSecondaryBackgroundColor(),
-        animationSpec = tween(durationMillis = COLOR_TRANSITION_ANIMATION_DURATION),
-        label = "Animated secondary background color",
-    )
-
-    LaunchedEffect(precipitationCondition) {
-        onAppearanceStateChange(precipitationCondition)
-    }
     LaunchedEffect(locationsUIStates) {
         if (locationsUIStates is DataState.NoData) {
             onNavigateToLocationSearchScreen()
@@ -101,12 +92,15 @@ fun ForecastScreen(
             }
         }
     }
+    LaunchedEffect(weatherAndDayTimeState) {
+        onWeatherAndDayTimeStateChange(weatherAndDayTimeState)
+    }
 
     ForecastContent(
         locationsUIStates = locationsUIStates,
-        settingsTemperatureUnit = settingsTemperatureUnit,
-        uiElementsColor = uiElementsColor,
         pagerState = pagerState,
+        widgetsBackgroundColor = widgetsBackgroundColor,
+        settingsTemperatureUnit = settingsTemperatureUnit,
         onLocationNameSet = onLocationNameSet,
         onLocationNameVisibilityChange = onLocationNameVisibilityChange,
     )
@@ -115,9 +109,9 @@ fun ForecastScreen(
 @Composable
 private fun ForecastContent(
     locationsUIStates: DataState<List<LocationUIState>>,
-    settingsTemperatureUnit: TemperatureUnit,
-    uiElementsColor: Color,
     pagerState: PagerState,
+    widgetsBackgroundColor: Color,
+    settingsTemperatureUnit: TemperatureUnit,
     onLocationNameSet: (String) -> Unit,
     onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
@@ -129,25 +123,25 @@ private fun ForecastContent(
         is DataState.Ready -> {
             LoadedData(
                 locationsUIStates = locationsUIStates.data,
-                settingsTemperatureUnit = settingsTemperatureUnit,
-                uiElementsColor = uiElementsColor,
                 pagerState = pagerState,
+                widgetsBackgroundColor = widgetsBackgroundColor,
+                settingsTemperatureUnit = settingsTemperatureUnit,
                 onLocationNameSet = onLocationNameSet,
                 onLocationNameVisibilityChange = onLocationNameVisibilityChange,
             )
         }
 
-        DataState.NoData -> {}
-        is DataState.Error -> {}
+        DataState.NoData -> Unit
+        is DataState.Error -> Unit
     }
 }
 
 @Composable
 private fun LoadedData(
     locationsUIStates: List<LocationUIState>,
-    settingsTemperatureUnit: TemperatureUnit,
-    uiElementsColor: Color,
     pagerState: PagerState,
+    widgetsBackgroundColor: Color,
+    settingsTemperatureUnit: TemperatureUnit,
     onLocationNameSet: (String) -> Unit,
     onLocationNameVisibilityChange: (Boolean) -> Unit,
 ) {
@@ -163,20 +157,21 @@ private fun LoadedData(
 
             LocationPage(
                 currentLocation = currentLocation,
-                settingsTemperatureUnit = settingsTemperatureUnit,
-                shouldResetScroll = page != pagerState.currentPage,
-                uiElementsColor = uiElementsColor,
+                isCurrentPage = isCurrentPage,
                 scrollState = sharedScrollState,
+                shouldResetScroll = page != pagerState.currentPage,
+                widgetsBackgroundColor = widgetsBackgroundColor,
+                settingsTemperatureUnit = settingsTemperatureUnit,
                 onLocationNameSet = onLocationNameSet,
                 onLocationNameVisibilityChange = onLocationNameVisibilityChange,
-                isCurrentPage = isCurrentPage
+
             )
         }
 
         PageIndicator(
-            modifier = Modifier,
             pagerState = pagerState,
-            uiElementsColor = uiElementsColor,
+            modifier = Modifier,
+            unselectedPageColor = widgetsBackgroundColor,
         )
     }
 }
@@ -184,16 +179,16 @@ private fun LoadedData(
 @Composable
 private fun LocationPage(
     currentLocation: LocationUIState,
-    settingsTemperatureUnit: TemperatureUnit,
-    shouldResetScroll: Boolean,
-    uiElementsColor: Color,
+    isCurrentPage: Boolean,
     scrollState: ScrollState,
+    shouldResetScroll: Boolean,
+    widgetsBackgroundColor: Color,
+    settingsTemperatureUnit: TemperatureUnit,
     onLocationNameSet: (String) -> Unit,
     onLocationNameVisibilityChange: (Boolean) -> Unit,
-    isCurrentPage: Boolean,
 ) {
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(value = null) }
-
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -214,17 +209,17 @@ private fun LocationPage(
 
             LocationAndWeatherInfoSection(
                 locationUIState = currentLocation,
-                settingsTemperatureUnit = settingsTemperatureUnit,
                 isCurrentPage = isCurrentPage,
-                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
+                settingsTemperatureUnit = settingsTemperatureUnit,
                 layoutCoordinates = coordinates,
+                onLocationNameVisibilityChange = onLocationNameVisibilityChange,
             )
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            AdditionalData(
+            GeneralWeatherInfo(
                 currentLocation = currentLocation,
-                backgroundColor = uiElementsColor,
+                backgroundColor = widgetsBackgroundColor,
             )
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -232,7 +227,7 @@ private fun LocationPage(
             HourlyForecastSection(
                 hourlyForecasts = currentLocation.hourlyForecasts,
                 shouldResetScroll = shouldResetScroll,
-                backgroundColor = uiElementsColor
+                backgroundColor = widgetsBackgroundColor
             )
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -240,7 +235,8 @@ private fun LocationPage(
             DailyForecastSection(
                 dailyForecasts = currentLocation.dailyForecasts,
                 shouldResetScroll = shouldResetScroll,
-                backgroundColor = uiElementsColor
+                backgroundColor = widgetsBackgroundColor,
+                coroutineScope = coroutineScope,
             )
 
             Spacer(modifier = Modifier.height(5.dp))
@@ -249,7 +245,7 @@ private fun LocationPage(
 }
 
 @Composable
-private fun AdditionalData(
+private fun GeneralWeatherInfo(
     currentLocation: LocationUIState,
     backgroundColor: Color,
 ) {
@@ -259,53 +255,41 @@ private fun AdditionalData(
             .clip(shape = RoundedCornerShape(size = 17.dp))
             .background(color = backgroundColor),
     ) {
-        AdditionalDataUnit(
+        GeneralWeatherInfoUnit(
             icon = R.drawable.wind,
             iconContentDescription = "Wind icon",
-            iconSize = 40.dp,
             firstLevelText = currentLocation.currentWindSpeed,
-            firstLevelTextSize = 13.sp,
-            secondLevelText = "Wind",
-            secondLevelTextSize = 12.sp,
+            secondLevelText = "Wind speed",
             secondLevelFontWeight = FontWeight.Medium,
             modifier = Modifier
                 .weight(1f)
         )
 
-        AdditionalDataUnit(
+        GeneralWeatherInfoUnit(
             icon = R.drawable.humidity,
             iconContentDescription = "Humidity icon",
-            iconSize = 40.dp,
             firstLevelText = currentLocation.currentRelativeHumidity,
-            firstLevelTextSize = 13.sp,
             secondLevelText = "Humidity",
-            secondLevelTextSize = 12.sp,
             secondLevelFontWeight = FontWeight.Medium,
             modifier = Modifier
                 .weight(1f)
         )
 
-        AdditionalDataUnit(
+        GeneralWeatherInfoUnit(
             icon = R.drawable.sun_sunrise,
             iconContentDescription = "Sunrise icon",
-            iconSize = 40.dp,
             firstLevelText = currentLocation.sunrise,
-            firstLevelTextSize = 13.sp,
             secondLevelText = "Sunrise",
-            secondLevelTextSize = 12.sp,
             secondLevelFontWeight = FontWeight.Medium,
             modifier = Modifier
                 .weight(1f)
         )
 
-        AdditionalDataUnit(
+        GeneralWeatherInfoUnit(
             icon = R.drawable.sun_sunset,
             iconContentDescription = "Sunset icon",
-            iconSize = 40.dp,
             firstLevelText = currentLocation.sunset,
-            firstLevelTextSize = 13.sp,
             secondLevelText = "Sunset",
-            secondLevelTextSize = 12.sp,
             secondLevelFontWeight = FontWeight.Medium,
             modifier = Modifier
                 .weight(1f)
@@ -314,7 +298,7 @@ private fun AdditionalData(
 }
 
 @Composable
-private fun AdditionalDataUnit(
+private fun GeneralWeatherInfoUnit(
     @DrawableRes
     icon: Int,
     iconContentDescription: String = "",
@@ -322,11 +306,11 @@ private fun AdditionalDataUnit(
     iconTint: Color = Color.White,
     firstLevelText: String,
     firstLevelTextColor: Color = Color.White,
-    firstLevelTextSize: TextUnit = 14.sp,
+    firstLevelTextSize: TextUnit = 13.sp,
     firstLevelFontWeight: FontWeight? = null,
     secondLevelText: String,
     secondLevelTextColor: Color = Color.White,
-    secondLevelTextSize: TextUnit = 14.sp,
+    secondLevelTextSize: TextUnit = 12.sp,
     secondLevelFontWeight: FontWeight? = null,
     modifier: Modifier = Modifier
 ) {
@@ -349,18 +333,22 @@ private fun AdditionalDataUnit(
         )
         Text(
             text = secondLevelText,
+            modifier = Modifier
+                .width(65.dp),
             color = secondLevelTextColor,
             fontSize = secondLevelTextSize,
-            fontWeight = secondLevelFontWeight
+            fontWeight = secondLevelFontWeight,
+            textAlign = TextAlign.Center,
+            lineHeight = 16.sp,
         )
     }
 }
 
 @Composable
 private fun PageIndicator(
-    modifier: Modifier = Modifier,
     pagerState: PagerState,
-    uiElementsColor: Color,
+    modifier: Modifier = Modifier,
+    unselectedPageColor: Color,
 ) {
     Row(
         modifier = modifier
@@ -373,7 +361,7 @@ private fun PageIndicator(
             val color = if (pagerState.currentPage == iteration) {
                 Color.White
             } else {
-                uiElementsColor
+                unselectedPageColor
             }
 
             Box(

@@ -39,10 +39,11 @@ class WidgetAlarmDialogHostActivity : ComponentActivity() {
             WeatherComposeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     WidgetConfigurationScreen(
-                        paddingValues = innerPadding,
+
                         viewModel = viewModel,
+                        glanceId = glanceId,
+                        paddingValues = innerPadding,
                         setResultOKAndFinish = ::setResultOKAndFinish,
-                        glanceId = glanceId
                     )
                 }
             }
